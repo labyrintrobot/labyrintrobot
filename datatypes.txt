@@ -1,0 +1,7 @@
+Lengths of data types in C and in bytes for 1284p
+char	1
+short	2
+int	2
+long	4
+float	4
+double	4

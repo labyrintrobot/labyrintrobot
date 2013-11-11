@@ -1,0 +1,4 @@
+Below is how to set the optimization level for Atmel Studio 6.
+Project->Properties->Toolchain->AVR/GNU C Compiler->Optimization->Optimization Level
+
+Preferably, it should be set to O0 when debugging.

@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Atmel Studio Solution File, Format Version 11.00
+Project("{54F91283-7BC4-4236-8FF9-10F437C3AD48}") = "kommunikationsmodul", "kommunikationsmodul\kommunikationsmodul.cproj", "{4B19264D-A7A6-4C30-ABCA-2E91FC36F4C1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|AVR = Debug|AVR
+		Release|AVR = Release|AVR
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4B19264D-A7A6-4C30-ABCA-2E91FC36F4C1}.Debug|AVR.ActiveCfg = Debug|AVR
+		{4B19264D-A7A6-4C30-ABCA-2E91FC36F4C1}.Debug|AVR.Build.0 = Debug|AVR
+		{4B19264D-A7A6-4C30-ABCA-2E91FC36F4C1}.Release|AVR.ActiveCfg = Release|AVR
+		{4B19264D-A7A6-4C30-ABCA-2E91FC36F4C1}.Release|AVR.Build.0 = Release|AVR
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Atmel Studio Solution File, Format Version 11.00
+Project("{54F91283-7BC4-4236-8FF9-10F437C3AD48}") = "libcommon", "libcommon\libcommon.cproj", "{BEA428F0-E202-4101-A837-A4616E615569}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|AVR = Debug|AVR
+		Release|AVR = Release|AVR
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BEA428F0-E202-4101-A837-A4616E615569}.Debug|AVR.ActiveCfg = Debug|AVR
+		{BEA428F0-E202-4101-A837-A4616E615569}.Debug|AVR.Build.0 = Debug|AVR
+		{BEA428F0-E202-4101-A837-A4616E615569}.Release|AVR.ActiveCfg = Release|AVR
+		{BEA428F0-E202-4101-A837-A4616E615569}.Release|AVR.Build.0 = Release|AVR
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

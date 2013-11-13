@@ -45,9 +45,13 @@
 #include <board.h>
 #include <compiler.h>
 #include <conf_board.h>
+#include <stdio.h>
+
 
 
 void board_init(void)
 {
-
+	DDRA = 0x00;
+	DDRB = 0xff;
+	DDRD = 0xff;
 }

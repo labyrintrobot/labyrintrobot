@@ -25,10 +25,21 @@
  * Atmel Software Framework (ASF).
  */
 #include <asf.h>
+#include <avr/io.h>
+#include <inttypes.h>
+#include <stdio.h>
 
 int main (void)
 {
 	board_init();
-
+	
+	uint8_t temp;
+	
+	for(;;)
+	{
+		temp = PINA;	
+		PORTB = temp;
+	}
 	// Insert application code here, after the board has been initialized.
 }
+

@@ -26,7 +26,7 @@ public class RealTimeChart {
         underlyingLineChart.getData().add(series);
 	}
 	
-	public void addToLineChart(int x) {
+	public void update(int x) {
         //series.setName(name);
 
         XYChart.Series<Number, Number> series = underlyingLineChart.getData().get(0);

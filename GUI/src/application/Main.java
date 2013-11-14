@@ -21,6 +21,7 @@ public class Main extends Application implements BluetoothAdapter.IMessageReceiv
 
 	private ControllerAdapter controllerAdapter;
 	private BluetoothAdapter bluetoothAdapter;
+	private ControlPad controlPad;
 
 	private RealTimeChart leftChart;
 	private RealTimeChart rightChart;
@@ -39,6 +40,7 @@ public class Main extends Application implements BluetoothAdapter.IMessageReceiv
 
 		bluetoothAdapter = new BluetoothAdapter(this);
 		controllerAdapter = new ControllerAdapter(bluetoothAdapter);
+		controlPad = new ControlPad();
 
 		try {
 			primaryStage.setTitle("Labyrintrobot");
@@ -59,6 +61,7 @@ public class Main extends Application implements BluetoothAdapter.IMessageReceiv
 			northBox.setAlignment(Pos.TOP_CENTER);
 			westBox.setAlignment(Pos.CENTER_RIGHT);
 			southBox.setAlignment(Pos.BOTTOM_CENTER);
+			centerBox.setAlignment(Pos.CENTER);
 
 			rightChart = new RealTimeChart("Right", "Distance", 256);
 			forwardRightChart = new RealTimeChart("Forward, right", "Distance", 256);
@@ -67,6 +70,8 @@ public class Main extends Application implements BluetoothAdapter.IMessageReceiv
 			leftChart = new RealTimeChart("Left", "Distance", 256);
 			gyroChart = new RealTimeChart("Gyro", "Angular rate", 256);
 			tapeChart = new RealTimeChart("Tape sensor", "Hamming distance", 8);
+			
+			ControlPad controlPad = new ControlPad();
 
 			errorLog = new TextArea();
 			errorLog.setEditable(false);
@@ -75,14 +80,14 @@ public class Main extends Application implements BluetoothAdapter.IMessageReceiv
 			westBox.getChildren().add(leftChart.getUnderLyingLineChart());
 			northBox.getChildren().addAll(forwardLeftChart.getUnderLyingLineChart(), forwardChart.getUnderLyingLineChart(), forwardRightChart.getUnderLyingLineChart());
 			southBox.getChildren().addAll(errorLog, tapeChart.getUnderLyingLineChart(), gyroChart.getUnderLyingLineChart());
-			centerBox.getChildren().addAll(pauseButton);
+			centerBox.getChildren().addAll(pauseButton, controlPad);
 
 			BorderPane root = new BorderPane();
 			root.setRight(eastBox);
 			root.setTop(northBox);
 			root.setLeft(westBox);
 			root.setBottom(southBox);
-			root.setCenter(pauseButton);
+			root.setCenter(centerBox);
 			Scene scene = new Scene(root, 1280, 1024);
 			primaryStage.setScene(scene);
 
@@ -208,43 +213,40 @@ public class Main extends Application implements BluetoothAdapter.IMessageReceiv
 		switch (header) {
 		
 		case 0x01:
-			String text;
-			
 			switch (data) {
 			
 			case 0x00:
-				text = "Driving forward";
+				controlPad.pressForward();
 				break;
 				
 			case 0x01:
-				text = "Driving backward";
+				controlPad.pressBackwards();
 				break;
 				
 			case 0x02:
-				text = "Turning right";
+				controlPad.pressRightForward();
 				break;
 				
 			case 0x03:
-				text = "Turning left";
+				controlPad.pressLeftForward();
 				break;
 				
 			case 0x04:
-				text = "Rotating right";
+				controlPad.pressRotateRight();
 				break;
 				
 			case 0x05:
-				text = "Rotating left";
+				controlPad.pressRotateLeft();
 				break;
 				
 			case 0x06:
-				text = "Stop";
+				controlPad.pressStop();
 				break;
 				
 			default:
-				text = "Illegal data received for header " + header + ": " + Integer.toHexString(data);
+				log(errorLog, "Illegal data received for header " + header + ": " + Integer.toHexString(data));
 				break;
 			}
-			log(errorLog, text);
 			break;
 			
 		case 0x03:

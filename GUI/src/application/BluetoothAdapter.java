@@ -37,8 +37,14 @@ public class BluetoothAdapter {
 					// Do nothing
 				}
 				
-				final byte header = (byte)rng.nextInt();
-				final int data = rng.nextInt() & 0xFF;
+				//final byte header = (byte)rng.nextInt(0x0B);
+				final byte header = 0x01;
+				final int data;
+				if (header == 0x01) {
+					data = rng.nextInt(0x07);
+				} else {
+					data = rng.nextInt(0xFF);
+				}
 				
 				// Now, receiveMessage and sendMessage should run on the same thread.
 				Platform.runLater(new Runnable() {

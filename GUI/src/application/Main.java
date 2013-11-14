@@ -1,6 +1,8 @@
 package application;
 
 import javafx.application.Application;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
@@ -41,7 +43,7 @@ public class Main extends Application implements BluetoothAdapter.IMessageReceiv
 		bluetoothAdapter = new BluetoothAdapter(this);
 		controllerAdapter = new ControllerAdapter(bluetoothAdapter);
 		controlPad = new ControlPad();
-		
+
 		controlPad.pressStop();
 
 		try {
@@ -171,11 +173,10 @@ public class Main extends Application implements BluetoothAdapter.IMessageReceiv
 				}
 			});
 
-			scene.setOnKeyPressed(pressEvent);
-			scene.setOnKeyReleased(releaseEvent);
+			pauseButton.setFocusTraversable(false);
 
-			pauseButton.setOnKeyPressed(pressEvent);
-			pauseButton.setOnKeyReleased(releaseEvent);
+			primaryStage.addEventFilter(KeyEvent.KEY_PRESSED, pressEvent);
+			primaryStage.addEventFilter(KeyEvent.KEY_RELEASED, releaseEvent);
 
 			primaryStage.show();
 
@@ -211,64 +212,64 @@ public class Main extends Application implements BluetoothAdapter.IMessageReceiv
 	@Override
 	public void receiveMessage(byte header, int data) {
 		switch (header) {
-		
+
 		case 0x01:
 			switch (data) {
-			
+
 			case 0x00:
 				controlPad.pressForward();
 				break;
-				
+
 			case 0x01:
 				controlPad.pressBackwards();
 				break;
-				
+
 			case 0x02:
 				controlPad.pressRightForward();
 				break;
-				
+
 			case 0x03:
 				controlPad.pressLeftForward();
 				break;
-				
+
 			case 0x04:
 				controlPad.pressRotateRight();
 				break;
-				
+
 			case 0x05:
 				controlPad.pressRotateLeft();
 				break;
-				
+
 			case 0x06:
 				controlPad.pressStop();
 				break;
-				
+
 			default:
 				log(errorLog, "Illegal data received for header " + header + ": " + Integer.toHexString(data));
 				break;
 			}
 			break;
-			
+
 		case 0x03:
 			leftChart.update(data, !paused);
 			break;
-			
+
 		case 0x04:
 			rightChart.update(data, !paused);
 			break;
-			
+
 		case 0x05:
 			forwardRightChart.update(data, !paused);
 			break;
-			
+
 		case 0x06:
 			forwardLeftChart.update(data, !paused);
 			break;
-			
+
 		case 0x07:
 			forwardChart.update(data, !paused);
 			break;
-			
+
 		case 0x08:
 			if ((data & 0x80) == 0) {
 				int hamDist = hammingDistance(0, data);
@@ -277,15 +278,15 @@ public class Main extends Application implements BluetoothAdapter.IMessageReceiv
 				log(errorLog, "Invalid tape sensor data: " + Integer.toHexString(data));
 			}
 			break;
-			
+
 		case 0x09:
 			gyroChart.update(data, !paused);
 			break;
-			
+
 		case 0x0A:
 			log(errorLog, "Error code " + Integer.toHexString(data));
 			break;
-			
+
 		case 0x0B:
 			if (data == 0x00) {
 				bluetoothAdapter.sendMessage(header, data);
@@ -293,7 +294,7 @@ public class Main extends Application implements BluetoothAdapter.IMessageReceiv
 				log(errorLog, "Invalid ping data: " + Integer.toHexString(data));
 			}
 			break;
-			
+
 		default:
 			log(errorLog, "Invalid header: " + Integer.toHexString(data));
 			break;

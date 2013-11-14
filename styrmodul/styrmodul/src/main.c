@@ -31,13 +31,21 @@
 
 #define PULSE_WIDTH_L 0x50
 #define PULSE_WIDTH_R 0x50
-#define PULSE_WIDTH_G 0x60
+#define PULSE_WIDTH_G 0x15
 
 void pwm_start_L();
 void pwm_start_R();
 void pwm_start_G();
 
-
+void forward();
+void backward();
+void rotate_right();
+void rotate_left();
+void forward_right();
+void forward_left();
+void stop();
+void grip_on();
+void grip_off();
 
 void pwm_start_L()
 {
@@ -57,9 +65,38 @@ void pwm_start_G()
 {
 	OCR3AL = PULSE_WIDTH_G;
 	OCR3AH = 0;
-	TCCR3B = 1;
+	TCCR3B = 3;
 }
 
+void forward()
+{
+	PORTB = 0x03;
+	OCR1BL = 0x60;
+	OCR1AL = 0x60;
+}
+
+void backward()
+{
+	PORTB = 0x00;
+	OCR1BL = 0x60;
+	OCR1AL = 0x60;
+}
+
+void stop()
+{
+	PORTB = 0x00;
+	OCR1BL = 0x00;
+	OCR1AL = 0x00;
+}
+
+void grip_on()
+{
+	OCR3AL = 0x11; // 0x11 1.2ms 0x7 0.5 ms
+}
+void grip_off()
+{
+	OCR3AL = 0x1D; //0x1D 2 ms 0x23 2.5 ms
+}
 
 int main (void)
 {
@@ -68,24 +105,30 @@ int main (void)
 	pwm_start_L();
 	pwm_start_R();
 	pwm_start_G();
-	uint8_t temp;
+	uint8_t button, switch_;
 	PORTB = 0xC0;
 	
 	while(1)
 	{
-		temp = PINA;	
-		if(temp != 0)
+		button = PINA & 0x02; // read PortA, pin 1
+		switch_ = PINA & 0x01; // read PortA, pin 0
+			
+		if(button != 0)
 			{
-			PORTB = 0x03;
-			OCR1BL = 0x80;
-			OCR1AL = 0x38;
+				grip_on();
 			}
 			else
 			{
-			PORTB = 0x00;
-			OCR1BL = 0x00;
-			OCR1AL = 0x00;
+				grip_off();
 			}
+		if(switch_ != 0)
+		{
+			forward();
+		}
+		else
+		{
+			stop();
+		}			
 			
 	}
 	// Insert application code here, after the board has been initialized.

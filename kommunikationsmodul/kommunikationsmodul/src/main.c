@@ -50,10 +50,9 @@ int TWI_initialize() {
 
 //function that receives data via I2C if interrupt is raised
 int TWI_receive_data(unsigned char* data){
-	TWCR = (1<<TWINT) | (1<<TWEN);
+	TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWEA);
 	while (!(TWCR & (1<<TWINT)));
 	*data = TWDR;
-	
 }
 
 /************************************************************************/
@@ -113,9 +112,31 @@ int TWI_send_data(unsigned char data) {
 }
 
 //function that sends data if via I2C if needed
-int TWI_send_message(unsigned char address, unsigned char header, unsigned char data) {
+int TWI_master_send_message(unsigned char address, unsigned char header, unsigned char data) {
 	
+	TWI_send_start();
+	
+	TWI_send_address(address , 1);
+	
+	TWI_send_data(header);
+	
+	TWI_send_data(data);
+	
+	TWI_send_stop();
 
+}
+
+int TWI_master_receive_message(unsigned char adress , unsigned char *header , unsigned char *data){
+	
+	TWI_send_start();
+	
+	TWI_send_address(address , 1);
+	
+	TWI_receive_data(header);
+	
+	TWI_receive_data(data);
+	
+	TWI_send_stop();
 }
 
 

@@ -5,6 +5,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
@@ -27,8 +28,8 @@ public class Main extends Application implements BluetoothAdapter.IMessageReceiv
 	private RealTimeChart forwardRightChart;
 	private RealTimeChart forwardChart;
 	private RealTimeChart gyroChart;
-	
-	private TextArea signalLog;
+	private RealTimeChart tapeChart;
+
 	private TextArea errorLog;
 
 	private boolean paused = false;
@@ -57,34 +58,30 @@ public class Main extends Application implements BluetoothAdapter.IMessageReceiv
 			eastBox.setAlignment(Pos.CENTER_RIGHT);
 			northBox.setAlignment(Pos.TOP_CENTER);
 			westBox.setAlignment(Pos.CENTER_RIGHT);
+			southBox.setAlignment(Pos.BOTTOM_CENTER);
 
-			rightChart = new RealTimeChart("Right");
-			forwardRightChart = new RealTimeChart("Forward, right");
-			forwardChart = new RealTimeChart("Forward");
-			forwardLeftChart = new RealTimeChart("Forward, left");
-			leftChart = new RealTimeChart("Left");
-			gyroChart = new RealTimeChart("Gyro");
+			rightChart = new RealTimeChart("Right", "Distance", 256);
+			forwardRightChart = new RealTimeChart("Forward, right", "Distance", 256);
+			forwardChart = new RealTimeChart("Forward", "Distance", 256);
+			forwardLeftChart = new RealTimeChart("Forward, left", "Distance", 256);
+			leftChart = new RealTimeChart("Left", "Distance", 256);
+			gyroChart = new RealTimeChart("Gyro", "Angular rate", 256);
+			tapeChart = new RealTimeChart("Tape sensor", "Hamming distance", 8);
 
 			errorLog = new TextArea();
-			errorLog.setDisable(true);
-			signalLog = new TextArea();
-			signalLog.setDisable(true);
+			errorLog.setEditable(false);
 
 			eastBox.getChildren().add(rightChart.getUnderLyingLineChart());
 			westBox.getChildren().add(leftChart.getUnderLyingLineChart());
 			northBox.getChildren().addAll(forwardLeftChart.getUnderLyingLineChart(), forwardChart.getUnderLyingLineChart(), forwardRightChart.getUnderLyingLineChart());
-			southBox.getChildren().add(signalLog);
-			centerBox.getChildren().addAll(pauseButton, signalLog);
-
-			//leftChart.addToLineChart(7);
-			//leftChart.addToLineChart(8);
-			//leftChart.addToLineChart(9);
+			southBox.getChildren().addAll(errorLog, tapeChart.getUnderLyingLineChart(), gyroChart.getUnderLyingLineChart());
+			centerBox.getChildren().addAll(pauseButton);
 
 			BorderPane root = new BorderPane();
 			root.setRight(eastBox);
 			root.setTop(northBox);
 			root.setLeft(westBox);
-			root.setBottom(signalLog);
+			root.setBottom(southBox);
 			root.setCenter(pauseButton);
 			Scene scene = new Scene(root, 1280, 1024);
 			primaryStage.setScene(scene);
@@ -151,6 +148,21 @@ public class Main extends Application implements BluetoothAdapter.IMessageReceiv
 					} else {
 						pauseButton.setText(PAUSE_TEXT);
 					}
+					rightChart.flush();
+					forwardRightChart.flush();
+					forwardChart.flush();
+					forwardLeftChart.flush();
+					leftChart.flush();
+					gyroChart.flush();
+					tapeChart.flush();
+				}
+			});
+
+			primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+
+				@Override
+				public void handle(WindowEvent we) {
+					bluetoothAdapter.exit();
 				}
 			});
 
@@ -187,86 +199,120 @@ public class Main extends Application implements BluetoothAdapter.IMessageReceiv
 	}
 
 	private void log(TextArea ta, String text) {
-		ta.setText(signalLog.getText() + text + '\n');
+		ta.setText(ta.getText() + text + '\n');
+		ta.positionCaret(ta.getText().length());
 	}
 
 	@Override
-	public void receiveMessage(byte header, byte data) {
-		// TODO concurrent
+	public void receiveMessage(byte header, int data) {
 		switch (header) {
+		
 		case 0x01:
 			String text;
+			
 			switch (data) {
+			
 			case 0x00:
 				text = "Driving forward";
 				break;
+				
 			case 0x01:
 				text = "Driving backward";
 				break;
+				
 			case 0x02:
 				text = "Turning right";
 				break;
+				
 			case 0x03:
 				text = "Turning left";
 				break;
+				
 			case 0x04:
 				text = "Rotating right";
 				break;
+				
 			case 0x05:
 				text = "Rotating left";
 				break;
+				
 			case 0x06:
 				text = "Stop";
 				break;
+				
 			default:
 				text = "Illegal data received for header " + header + ": " + Integer.toHexString(data);
 				break;
 			}
-			log(signalLog, text);
+			log(errorLog, text);
 			break;
+			
 		case 0x03:
-			if (paused == false) {
-				leftChart.update(data);
-			}
+			leftChart.update(data, !paused);
 			break;
+			
 		case 0x04:
-			if (paused == false) {
-				rightChart.update(data);
-			}
+			rightChart.update(data, !paused);
 			break;
+			
 		case 0x05:
-			if (paused == false) {
-				forwardRightChart.update(data);
-			}
+			forwardRightChart.update(data, !paused);
 			break;
+			
 		case 0x06:
-			if (paused == false) {
-				forwardLeftChart.update(data);
-			}
+			forwardLeftChart.update(data, !paused);
 			break;
+			
 		case 0x07:
-			if (paused == false) {
-				forwardChart.update(data);
+			forwardChart.update(data, !paused);
+			break;
+			
+		case 0x08:
+			if ((data & 0x80) == 0) {
+				int hamDist = hammingDistance(0, data);
+				tapeChart.update(hamDist, !paused);
+			} else {				
+				log(errorLog, "Invalid tape sensor data: " + Integer.toHexString(data));
 			}
 			break;
-		case 0x08:
-			// TODO
-			break;
+			
 		case 0x09:
-			// TODO
+			gyroChart.update(data, !paused);
 			break;
+			
 		case 0x0A:
 			log(errorLog, "Error code " + Integer.toHexString(data));
 			break;
+			
 		case 0x0B:
 			if (data == 0x00) {
 				bluetoothAdapter.sendMessage(header, data);
 			} else {
-				// TODO
+				log(errorLog, "Invalid ping data: " + Integer.toHexString(data));
 			}
 			break;
+			
 		default:
+			log(errorLog, "Invalid header: " + Integer.toHexString(data));
 			break;
 		}
+	}
+
+	/*
+	 * From: http://en.wikipedia.org/wiki/Hamming_distance
+	 */
+	int hammingDistance(int x, int y)
+	{
+		int dist = 0;
+		int val = x ^ y;
+
+		// Count the number of set bits
+		while(val != 0)
+		{
+			++dist; 
+			val &= val - 1;
+		}
+
+		return dist;
 	}
 }

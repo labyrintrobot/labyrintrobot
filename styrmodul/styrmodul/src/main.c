@@ -28,9 +28,12 @@
 #include <avr/io.h>
 #include <inttypes.h>
 #include <stdio.h>
+#include <avr/signal.h>
+//#include <avr/>
+#include <avr/interrupt.h>
 
-#define PULSE_WIDTH_L 0x50
-#define PULSE_WIDTH_R 0x50
+#define PULSE_WIDTH_L 0x00
+#define PULSE_WIDTH_R 0x00
 #define PULSE_WIDTH_G 0x15
 
 void pwm_start_L();
@@ -46,6 +49,8 @@ void forward_left();
 void stop();
 void grip_on();
 void grip_off();
+
+void msleep(uint8_t millisec);
 
 void pwm_start_L()
 {
@@ -71,17 +76,44 @@ void pwm_start_G()
 void forward()
 {
 	PORTB = 0x03;
-	OCR1BL = 0x60;
-	OCR1AL = 0x60;
+	OCR1BL = 0x70;
+	OCR1AL = 0x70;
 }
 
 void backward()
 {
 	PORTB = 0x00;
-	OCR1BL = 0x60;
-	OCR1AL = 0x60;
+	OCR1BL = 0x70;
+	OCR1AL = 0x70; 
 }
 
+void forward_left() 
+{
+	PORTB = 0x03;
+	OCR1BL = 0xA0;
+	OCR1AL = 0x30;
+}
+
+void forward_right()
+{
+	PORTB = 0x03;
+	OCR1BL = 0x30;
+	OCR1AL = 0xA0;
+}
+
+void rotate_right()
+{
+	PORTB = 0x02;
+	OCR1BL = 0x70;
+	OCR1AL = 0x70;
+}
+
+void rotate_left()
+{
+	PORTB = 0x01;
+	OCR1BL = 0xA0;
+	OCR1AL = 0xA0;
+}
 void stop()
 {
 	PORTB = 0x00;
@@ -91,11 +123,28 @@ void stop()
 
 void grip_on()
 {
-	OCR3AL = 0x11; // 0x11 1.2ms 0x7 0.5 ms
+	OCR3AL = 0x12; // 0x12 ca 1.25ms, 0x11 1.2ms 0x7 0.5 ms
 }
 void grip_off()
 {
-	OCR3AL = 0x1D; //0x1D 2 ms 0x23 2.5 ms
+	OCR3AL = 0x1B; // 0x1B ca 1.9ms, 0x1D 2 ms 0x23 2.5 ms
+}
+
+#define TICKCOUNT 252
+SIGNAL(SIG_OVERFLOW0)
+{
+	// Gör ingenting
+}
+
+void msleep(uint8_t millisec)
+{
+	while(millisec--)
+	{
+		TCNT0 = TICKCOUNT;
+		MCUCR = 0;
+		MCUCR = (1 << SE);
+		asm volatile ("sleep");
+	}
 }
 
 int main (void)
@@ -115,7 +164,33 @@ int main (void)
 			
 		if(button != 0)
 			{
-				grip_on();
+				forward();
+				uint8_t t;
+				uint8_t x;
+				for(t=0; t<5; t++)
+				{			
+					for(x=0; x < 255; x++)
+					{
+						msleep(200);
+					}
+				}
+				stop();
+				
+					for(x=0; x < 255; x++)
+					{
+						msleep(200);
+					}
+				
+				backward();
+				for(t=0; t<5; t++)
+				{
+					for(x=0; x < 255; x++)
+					{
+						msleep(200);
+					}
+				}											
+					
+				
 			}
 			else
 			{
@@ -123,7 +198,8 @@ int main (void)
 			}
 		if(switch_ != 0)
 		{
-			forward();
+			//forward();
+			rotate_left();
 		}
 		else
 		{

@@ -54,6 +54,6 @@ void board_init(void)
 	DDRA = 0x00; // PortA input 
 	DDRB = 0x43; // PORTB, pin 0,1,6 output
 	DDRD = 0x30; // PortD, pin 4,5 output
-	TCCR1A = 0xa1;
-	TCCR3A = 0xa1;
+	TCCR1A = 0xA1;
+	TCCR3A = 0xA1;
 }

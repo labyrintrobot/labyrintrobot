@@ -20,6 +20,13 @@ int communicationid=1;
 int steerid=2;
 int sensorid=3;
 
+#define TWI_START_STATUS 0x08
+#define TWI_REP_START_STATUS 0x10
+#define TWI_SLAW_ACK_STATUS 0x18
+#define TWI_DATA_WRITE_ACK_STATUS 0x28
+#define TWI_SLAR_ACK_STATUS 0x40
+#define TWI_DATA_REC_ACK_STATUS 0x50
+
 volatile int testcounter=0b01010101;
 
 //interrupt routine for setting the interrupt vector note that the StatusRegister
@@ -37,14 +44,78 @@ ISR(INT0_vect){
 	//sei(); 
 }
 
-//function that recives data via I2C if interupt is raised
-int recivedataI2C(){
+int TWI_initialize() {
 	
 }
 
-//function that sends data if via I2C if needed
-int senddataI2C(int adress){
+//function that receives data via I2C if interrupt is raised
+int TWI_receive_data(unsigned char* data){
+	TWCR = (1<<TWINT) | (1<<TWEN);
+	while (!(TWCR & (1<<TWINT)));
+	*data = TWDR;
 	
+}
+
+/************************************************************************/
+/* Returns 0 if successful                                              */
+/************************************************************************/
+int TWI_send_start(int repeated) {
+	TWCR = (1<<TWINT)|(1<<TWSTA)|(1<<TWEN); // Send START condition
+	while (!(TWCR & (1<<TWINT))); // Wait until TWINT has been set = START was successfully sent
+	if (repeated) {
+		if ((TWSR & 0xF8) != TWI_REP_START_STATUS) {
+			return 1;
+		}
+	} else {
+		if ((TWSR & 0xF8) != TWI_START_STATUS) {
+			return 1;
+		}
+	}
+	return 0;
+}
+
+int TWI_send_stop() {
+	TWCR = (1<<TWINT)|(1<<TWEN)|(1<<TWSTO);
+}
+
+/************************************************************************/
+/* address is the ´7 most significant bits in address. If write is true, 
+it will be a write operation.       */
+/************************************************************************/
+int TWI_send_address(unsigned char address , int write) {
+	
+	if (address == 0) {
+		return 2;
+	}
+	
+	if(write){
+		address&=0b11111110;
+	}
+	else{
+		address|=0b00000001;
+	}
+	
+	TWDR = address; // Write address to register
+	TWCR = (1<<TWINT) | (1<<TWEN); // Send out address
+	if ((write && (TWSR & 0xF8) != TWI_SLAW_ACK_STATUS) || (!write && (TWSR & 0xF8) != TWI_SLAR_ACK_STATUS) ) {
+		return 1;
+	}
+	return 0;
+}
+
+int TWI_send_data(unsigned char data) {
+	TWDR = data; // Write data to register
+	TWCR = (1<<TWINT) | (1<<TWEN); // Send out data
+	if ((TWSR & 0xF8) != TWI_DATA_WRITE_ACK_STATUS) {
+		return 1;
+	}
+	return 0;
+}
+
+//function that sends data if via I2C if needed
+int TWI_send_message(unsigned char address, unsigned char header, unsigned char data) {
+	
+
 }
 
 

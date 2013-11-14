@@ -50,6 +50,8 @@ public class RealTimeChart {
 		
 		if (flush && queue.size() > QUEUE_THRESHOLD) {
         	flush();
+        } else if (queue.size() > QUEUE_THRESHOLD) {
+        	queue.removeFirst();
         }
 	}
 	

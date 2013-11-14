@@ -41,6 +41,8 @@ public class Main extends Application implements BluetoothAdapter.IMessageReceiv
 		bluetoothAdapter = new BluetoothAdapter(this);
 		controllerAdapter = new ControllerAdapter(bluetoothAdapter);
 		controlPad = new ControlPad();
+		
+		controlPad.pressStop();
 
 		try {
 			primaryStage.setTitle("Labyrintrobot");
@@ -70,8 +72,6 @@ public class Main extends Application implements BluetoothAdapter.IMessageReceiv
 			leftChart = new RealTimeChart("Left", "Distance", 256);
 			gyroChart = new RealTimeChart("Gyro", "Angular rate", 256);
 			tapeChart = new RealTimeChart("Tape sensor", "Hamming distance", 8);
-			
-			ControlPad controlPad = new ControlPad();
 
 			errorLog = new TextArea();
 			errorLog.setEditable(false);

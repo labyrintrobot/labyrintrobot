@@ -8,6 +8,8 @@ import javafx.scene.layout.VBox;
 
 public class ControlPad extends VBox {
 
+	final ToggleGroup group;
+
 	private final ToggleButton leftForward;
 	private final ToggleButton forward;
 	private final ToggleButton rightForward;
@@ -35,8 +37,8 @@ public class ControlPad extends VBox {
 		stop = generateButton("⇞");
 		rotateRight = generateButton("↻");
 		backwards = generateButton("↓");
-		
-		ToggleGroup group = new ToggleGroup();
+
+		group = new ToggleGroup();
 		leftForward.setToggleGroup(group);
 		forward.setToggleGroup(group);
 		rightForward.setToggleGroup(group);
@@ -44,22 +46,23 @@ public class ControlPad extends VBox {
 		stop.setToggleGroup(group);
 		rotateRight.setToggleGroup(group);
 		backwards.setToggleGroup(group);
-		group.
-		
+
 		r1.getChildren().addAll(leftForward, forward, rightForward);
 		r2.getChildren().addAll(rotateLeft, stop, rotateRight);
 		r3.getChildren().addAll(backwards);
 
 		this.getChildren().addAll(r1, r2, r3);
+		
+		leftForward.setSelected(true);
 	}
 
 	private ToggleButton generateButton(String text) {
 		ToggleButton b = new ToggleButton(text);
-		//b.setDisable(true);
+		b.setDisable(true);
 		b.setStyle("-fx-font: 26 arial;");
 		return b;
 	}
-	
+
 	public void pressLeftForward() {
 		leftForward.setSelected(true);
 	}

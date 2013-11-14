@@ -44,12 +44,8 @@ ISR(INT0_vect){
 	//sei(); 
 }
 
-int TWI_initialize() {
-	
-}
-
 //function that receives data via I2C if interrupt is raised
-int TWI_receive_data(unsigned char* data){
+void TWI_receive_data(unsigned char* data){
 	TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWEA);
 	while (!(TWCR & (1<<TWINT)));
 	*data = TWDR;
@@ -73,7 +69,7 @@ int TWI_send_start(int repeated) {
 	return 0;
 }
 
-int TWI_send_stop() {
+void TWI_send_stop() {
 	TWCR = (1<<TWINT)|(1<<TWEN)|(1<<TWSTO);
 }
 
@@ -113,30 +109,70 @@ int TWI_send_data(unsigned char data) {
 
 //function that sends data if via I2C if needed
 int TWI_master_send_message(unsigned char address, unsigned char header, unsigned char data) {
+	int err;
 	
-	TWI_send_start();
+	err = TWI_send_start(0);
+	if (err) return err;
 	
-	TWI_send_address(address , 1);
+	err = TWI_send_address(address , 1);
+	if (err) return err;
 	
-	TWI_send_data(header);
+	err = TWI_send_data(header);
+	if (err) return err;
 	
-	TWI_send_data(data);
+	err = TWI_send_data(data);
+	if (err) return err;
 	
 	TWI_send_stop();
-
+	
+	return 0;
 }
 
-int TWI_master_receive_message(unsigned char adress , unsigned char *header , unsigned char *data){
+int TWI_master_receive_message(unsigned char address , unsigned char *header , unsigned char *data){
+	int err;
 	
-	TWI_send_start();
+	err = TWI_send_start(0);
+	if (err) return err;
 	
-	TWI_send_address(address , 1);
+	err = TWI_send_address(address , 1);
+	if (err) return err;
 	
 	TWI_receive_data(header);
 	
 	TWI_receive_data(data);
 	
 	TWI_send_stop();
+	
+	return 0;
+}
+
+int TWI_initialize_bitrate(int bitrate){
+	
+	if(bitrate==5){
+		TWBR=87;//init clockspeed
+		TWSR|=2;//init clockspeed scale
+	}
+	
+	else if(bitrate==50){
+		TWBR=33;//init clockspeed
+		TWSR&=0b11111101;//init clockspeed scale
+		TWSR|=1;//init clockspeed scale
+	}
+	
+	else if(bitrate==200){
+		TWBR=54;//init clockspeed
+		TWSR&=0b11111100;//init clockspeed scale
+	}
+	
+	else if(bitrate==400){
+		TWBR=24;//init clockspeed
+		TWSR&=0b11111100;//init clockspeed scale
+	}
+	else{
+		return 1;
+		
+	}
+	return 0;
 }
 
 
@@ -148,9 +184,6 @@ int main (void)
 	TWSR|=2;//init clockspeed scale
 	
 	// (clk/(16+2*(TWBR)*16))=5000 bits/s
-	
-	// set upon interuptrequest, tells who to serve next.
-	int interuptvector=0;
 	
 	DDRB=0xFF;
 	

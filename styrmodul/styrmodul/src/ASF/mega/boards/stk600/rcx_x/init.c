@@ -54,4 +54,6 @@ void board_init(void)
 	DDRA = 0x00;
 	DDRB = 0xff;
 	DDRD = 0xff;
+	TCCR1A = 0xa1;
+	TCCR3A = 0xa1;
 }

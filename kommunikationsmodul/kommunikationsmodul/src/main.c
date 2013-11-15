@@ -14,6 +14,7 @@
 
 #include <asf.h>
 #include <avr/interrupt.h>
+#include "twi_master.h"
 
 //ID:s for the different modules
 int communicationid=1;
@@ -40,6 +41,8 @@ ISR(INT0_vect){
 int main (void)
 {
 	board_init();
+	
+	TWI_initialize_bitrate(5);
 	
 	TWBR=87;//init clockspeed
 	TWSR|=2;//init clockspeed scale

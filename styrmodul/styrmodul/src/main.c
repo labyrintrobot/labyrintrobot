@@ -29,12 +29,11 @@
 #include <inttypes.h>
 #include <stdio.h>
 #include <avr/signal.h>
-//#include <avr/>
+#define F_CPU 1.5280E6
+#include <util/delay.h>
 #include <avr/interrupt.h>
+#include <functions.h>
 
-#define PULSE_WIDTH_L 0x00
-#define PULSE_WIDTH_R 0x00
-#define PULSE_WIDTH_G 0x15
 
 void pwm_start_L();
 void pwm_start_R();
@@ -49,103 +48,7 @@ void forward_left();
 void stop();
 void grip_on();
 void grip_off();
-
-void msleep(uint8_t millisec);
-
-void pwm_start_L()
-{
-	OCR1AL = PULSE_WIDTH_L;
-	OCR1AH = 0;
-	TCCR1B = 1;
-}
-
-void pwm_start_R()
-{
-	OCR1BL = PULSE_WIDTH_R;
-	OCR1BH = 0;
-	TCCR1B = 1;
-}
-
-void pwm_start_G()
-{
-	OCR3AL = PULSE_WIDTH_G;
-	OCR3AH = 0;
-	TCCR3B = 3;
-}
-
-void forward()
-{
-	PORTB = 0x03;
-	OCR1BL = 0x70;
-	OCR1AL = 0x70;
-}
-
-void backward()
-{
-	PORTB = 0x00;
-	OCR1BL = 0x70;
-	OCR1AL = 0x70; 
-}
-
-void forward_left() 
-{
-	PORTB = 0x03;
-	OCR1BL = 0xA0;
-	OCR1AL = 0x30;
-}
-
-void forward_right()
-{
-	PORTB = 0x03;
-	OCR1BL = 0x30;
-	OCR1AL = 0xA0;
-}
-
-void rotate_right()
-{
-	PORTB = 0x02;
-	OCR1BL = 0x70;
-	OCR1AL = 0x70;
-}
-
-void rotate_left()
-{
-	PORTB = 0x01;
-	OCR1BL = 0xA0;
-	OCR1AL = 0xA0;
-}
-void stop()
-{
-	PORTB = 0x00;
-	OCR1BL = 0x00;
-	OCR1AL = 0x00;
-}
-
-void grip_on()
-{
-	OCR3AL = 0x12; // 0x12 ca 1.25ms, 0x11 1.2ms 0x7 0.5 ms
-}
-void grip_off()
-{
-	OCR3AL = 0x1B; // 0x1B ca 1.9ms, 0x1D 2 ms 0x23 2.5 ms
-}
-
-#define TICKCOUNT 252
-SIGNAL(SIG_OVERFLOW0)
-{
-	// Gör ingenting
-}
-
-void msleep(uint8_t millisec)
-{
-	while(millisec--)
-	{
-		TCNT0 = TICKCOUNT;
-		MCUCR = 0;
-		MCUCR = (1 << SE);
-		asm volatile ("sleep");
-	}
-}
+void forward_regulated(signed e);
 
 int main (void)
 {
@@ -155,57 +58,43 @@ int main (void)
 	pwm_start_R();
 	pwm_start_G();
 	uint8_t button, switch_;
+	signed int e = 0;
 	PORTB = 0xC0;
 	
 	while(1)
 	{
 		button = PINA & 0x02; // read PortA, pin 1
 		switch_ = PINA & 0x01; // read PortA, pin 0
-			
-		if(button != 0)
+		while(switch_ != 0) // man
+		{
+			forward();
+			switch_ = PINA & 0x01;
+		}
+		
+		while(switch_ == 0) //auto
+		{
+			backward();
+			switch_ = PINA & 0x01;
+		}
+/*		if(button != 0)
 			{
-				forward();
-				uint8_t t;
-				uint8_t x;
-				for(t=0; t<5; t++)
-				{			
-					for(x=0; x < 255; x++)
-					{
-						msleep(200);
-					}
-				}
-				stop();
-				
-					for(x=0; x < 255; x++)
-					{
-						msleep(200);
-					}
-				
-				backward();
-				for(t=0; t<5; t++)
-				{
-					for(x=0; x < 255; x++)
-					{
-						msleep(200);
-					}
-				}											
-					
+				forward_regulated(e);
+				_delay_ms(1000);
 				
 			}
 			else
 			{
-				grip_off();
+				stop();
 			}
 		if(switch_ != 0)
 		{
-			//forward();
-			rotate_left();
+		 e = -0x20;
 		}
 		else
 		{
-			stop();
+			e = 0x20;
 		}			
-			
+*/			
 	}
 	// Insert application code here, after the board has been initialized.
 }

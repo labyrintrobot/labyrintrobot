@@ -11,6 +11,7 @@
 #define TWI_START_STATUS 0x08
 #define TWI_SLAW_ACK_STATUS 0x18
 #define TWI_DATA_WRITE_ACK_STATUS 0x28
+#define TWI_DATA_WRITE_NACK_STATUS 0x28
 #define TWI_SLAR_ACK_STATUS 0x40
 #define TWI_DATA_REC_ACK_STATUS 0x50
 #define TWI_DATA_REC_NACK_STATUS 0x58
@@ -19,7 +20,7 @@ void TWI_receive_data(unsigned char* data, int last_byte);
 int TWI_send_start(void);
 void TWI_send_stop(void);
 int TWI_send_address(unsigned char address, int write);
-int TWI_send_data(unsigned char data);
+int TWI_send_data(unsigned char data, int last_byte);
 
 int TWI_initialize_bitrate(int bitrate) {
 	if (bitrate == 5) {
@@ -95,11 +96,18 @@ int TWI_send_address(unsigned char address, int write) {
 	return 0;
 }
 
-int TWI_send_data(unsigned char data) {
+int TWI_send_data(unsigned char data, int last_byte) {
 	TWDR = data; // Write data to register
-	TWCR = (1<<TWINT) | (1<<TWEN); // Send out data
-	if ((TWSR & 0xF8) != TWI_DATA_WRITE_ACK_STATUS) {
-		return 0x05;
+	if (last_byte) {
+		TWCR = (1<<TWINT) | (1<<TWEN);
+		if ((TWSR & 0xF8) != TWI_DATA_WRITE_NACK_STATUS) {
+			return 0x05;
+		}
+	} else {
+		TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWEA);
+		if ((TWSR & 0xF8) != TWI_DATA_WRITE_ACK_STATUS) {
+			return 0x06;
+		}
 	}
 	return 0;
 }
@@ -113,10 +121,10 @@ int TWI_master_send_message(unsigned char address, unsigned char header, unsigne
 	err = TWI_send_address(address, 1);
 	if (err) return err;
 	
-	err = TWI_send_data(header);
+	err = TWI_send_data(header, 0);
 	if (err) return err;
 	
-	err = TWI_send_data(data);
+	err = TWI_send_data(data, 1);
 	if (err) return err;
 	
 	TWI_send_stop();

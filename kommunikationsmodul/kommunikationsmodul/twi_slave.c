@@ -2,7 +2,7 @@
  * twi_master.c
  *
  * Created: 11/14/2013 5:47:41 PM
- *  Author: emibe709
+ *  Author: Emil Berg, Kristoffer Borg
  */ 
 
 #include <asf.h>
@@ -14,24 +14,37 @@
 
 #define TWI_SLAW_ACK_STATUS 0x60
 #define TWI_DATA_REC_ACK_STATUS 0x80
+
+#define TWI_DATA_REC_NACK_STATUS 0x88
+
 #define TWI_REP_START_STOP_STATUS 0xA0
 
 //function that receives data via I2C if interrupt is raised
 int TWI_receive_address(unsigned char* slarrw){
-	TWCR = (1<<TWEN) | (1<<TWEA);
 	while (!(TWCR & (1<<TWINT)));
-	if ((TWSR & 0xF8) != TWI_SLAW_ACK_STATUS) {
+	if ((TWSR & 0xF8) != TWI_SLAW_ACK_STATUS || (TWSR & 0xF8) != TWI_SLAR_ACK_STATUS) {
 		return 1;
 	}
 	*slarrw = TWDR;
 	return 0;
 }
 
-/************************************************************************/
-/* Returns 0 if successful                                              */
-/************************************************************************/
-void TWI_wait_for_start(int repeated) {
-	while(!(TWCR & 0x80));
+int TWI_receive_data(unsigned char* data , int last_byte){
+	while (!(TWCR & (1<<TWINT)));
+	
+	if(last_byte){
+		if ((TWSR & 0xF8) != TWI_DATA_NACK_STATUS) {
+			return 1;
+		}
+		
+	}else{
+		if ((TWSR & 0xF8) != TWI_DATA_ACK_STATUS) {
+			return 1;
+		}
+		
+	}
+	*slarrw = TWDR;
+	return 0;
 }
 
 void TWI_send_stop() {
@@ -65,13 +78,13 @@ int TWI_send_address(unsigned char address , int write) {
 
 int TWI_send_data(unsigned char data, int last_data) {
 	TWDR = data; // Write data to register
-	TWCR = (1<<TWINT) | (1<<TWEN); // Send out data
-	
 	if (last_data) {
+		TWCR = (1<<TWINT) | (1<<TWEN) | (1 << TWEA); // Send out data
 		if ((TWSR & 0xF8) != TWI_LAST_DATA_WRITE_ACK_STATUS) {
 			return 1;
 		}
 	} else {
+		TWCR = (1<<TWINT) | (1<<TWEN); // Send out data
 		if ((TWSR & 0xF8) != TWI_DATA_WRITE_ACK_STATUS) {
 			return 1;
 		}
@@ -130,9 +143,11 @@ int TWI_slave_receive_message(unsigned char *header , unsigned char *data){
 		return 1;
 	}
 	
-	TWI_receive_data(header);
+	err = TWI_receive_data(header, 0);
+	if (err) return 1;
 	
-	TWI_receive_data(data);
+	err = TWI_receive_data(data, 1);
+	if (err) return 1;
 	
 	TWI_send_stop();
 	
@@ -160,7 +175,8 @@ int TWI_initialize_bitrate(int bitrate) {
 }
 
 // Bit to the left is ignored
-void TWI_set_address(unsigned char* address) {
+void TWI_initialize(unsigned char* address) {
 	TWAR = (address << 1) & 0xFE;
 	TWAMR = 0x00;
+	TWCR = (1<<TWEN) | (1<<TWEA);
 }

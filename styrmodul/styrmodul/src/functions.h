@@ -45,15 +45,15 @@ void pwm_start_G()
 void forward()
 {
 	PORTB = 0x03;
-	OCR1BL = 0x70;
-	OCR1AL = 0x70;
+	OCR1BL = 0xA0;
+	OCR1AL = 0xA0;
 }
 
 void backward()
 {
 	PORTB = 0x00;
-	OCR1BL = 0x70;
-	OCR1AL = 0x70;
+	OCR1BL = 0xA0;
+	OCR1AL = 0xA0;
 }
 
 void forward_left()
@@ -77,6 +77,24 @@ void rotate_right()
 	OCR1AL = 0xA0;
 }
 
+void rotate_left90()
+{
+	PORTB = 0x01;
+	OCR1BL = 0xA0;
+	OCR1AL = 0xA0;
+	_delay_ms(560);
+	stop();
+}
+
+void rotate_right90()
+{
+	PORTB = 0x02;
+	OCR1BL = 0xA0;
+	OCR1AL = 0xA0;
+	_delay_ms(560);
+	stop();
+}
+
 void rotate_left()
 {
 	PORTB = 0x01;
@@ -92,7 +110,7 @@ void stop()
 
 void grip_on()
 {
-	OCR3AL = 0x12; // 0x12 ca 1.25ms, 0x11 1.2ms 0x7 0.5 ms
+	OCR3AL = 0x10; // 0x12 ca 1.25ms, 0x11 1.2ms 0x07 0.5 ms
 }
 void grip_off()
 {

@@ -43,6 +43,8 @@ void forward();
 void backward();
 void rotate_right();
 void rotate_left();
+void rotate_right90();
+void rotate_left90();
 void forward_right();
 void forward_left();
 void stop();
@@ -65,7 +67,7 @@ int main (void)
 	{
 		button = PINA & 0x02; // read PortA, pin 1
 		switch_ = PINA & 0x01; // read PortA, pin 0
-		while(switch_ != 0) // man
+/*		while(switch_ != 0) // man
 		{
 			forward();
 			switch_ = PINA & 0x01;
@@ -75,26 +77,46 @@ int main (void)
 		{
 			backward();
 			switch_ = PINA & 0x01;
-		}
-/*		if(button != 0)
+		}*/
+
+		if(button != 0)
 			{
-				forward_regulated(e);
-				_delay_ms(1000);
+				if(switch_ != 0) // testkörning
+				{
+					grip_on();
+					_delay_ms(1000);
+					forward();
+					_delay_ms(3000);
+					rotate_right90();
+					forward();
+					_delay_ms(1500);
+					stop();
+					grip_off();
+					_delay_ms(500);
+					backward();
+					_delay_ms(200);
+					rotate_right90();
+					rotate_right90();
+					forward();
+					_delay_ms(1300);					
+					rotate_left90();
+					forward();
+					_delay_ms(3000);
+			
+				}
+				else
+				{
+					rotate_right90();
+				}
+		
+
 				
 			}
 			else
 			{
 				stop();
 			}
-		if(switch_ != 0)
-		{
-		 e = -0x20;
-		}
-		else
-		{
-			e = 0x20;
-		}			
-*/			
+	
 	}
 	// Insert application code here, after the board has been initialized.
 }

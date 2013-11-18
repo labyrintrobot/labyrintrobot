@@ -71,20 +71,25 @@ int TWI_slave_send_data(uint8_t data, bool nack) {
 }
 
 /************************************************************************/
-/* Sends a message via TWI                                              */
+/* Sends a message to the communication module via TWI. First, it
+issues an interrupt to the communication module.                        */
 /* header: the message header                                           */
 /* data: the message data                                               */
+/* start_sending_irq_fun: a pointer to a function that starts sending 
+the interrupt to the communication module                               */
+/* stop_sending_irq_fn: a pointer to a function that stops sending
+the interrupt to the communication module                               */
 /* returns nonzero if error                                             */
 /************************************************************************/
-int TWI_slave_send_message(uint8_t header, uint8_t data) {
+int TWI_slave_send_message(uint8_t header, uint8_t data, void (*start_sending_irq_fn)(void), void (*stop_sending_irq_fn)(void)) {
 	
 	TWI_common_disable_interrupt();
-	
-	// send interrupt flank
+	start_sending_irq_fn();
 	
 	TWI_MODULE_ADDRESS address;
 	bool write;
 	int err = TWI_slave_receive_address(&address, &write);
+	stop_sending_irq_fn();
 	if (err) return err;
 	
 	// TODO validate address?
@@ -108,7 +113,8 @@ int TWI_slave_send_message(uint8_t header, uint8_t data) {
 }
 
 /************************************************************************/
-/* Blocks until a message is received via TWI                           */
+/* Blocks until a message is received from the communication module via 
+TWI                                                                     */
 /* header[out]: the message header that was received                    */
 /* data[out]: the message data                                          */
 /* returns nonzero if error                                             */

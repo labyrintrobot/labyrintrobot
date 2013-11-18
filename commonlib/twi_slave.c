@@ -9,10 +9,10 @@
 #include "twi_common.h"
 #include "twi_slave.h"
 
-int TWI_receive_address(enum TWI_ADDRESS* from_address, bool* write);
+void TWI_wait_for_start(void);
+int TWI_receive_address(TWI_ADDRESS* from_address, bool* write);
 int TWI_receive_data(uint8_t* data, bool nack);
-void TWI_send_stop(void);
-int TWI_send_address(enum TWI_ADDRESS to_address, bool write);
+int TWI_send_address(TWI_ADDRESS to_address, bool write);
 int TWI_send_data(uint8_t data, bool nack);
 
 enum TWI_STATUS {
@@ -25,7 +25,7 @@ enum TWI_STATUS {
 	TWI_REP_START_STOP_STATUS = 0xA0
 	};
 
-int TWI_receive_address(enum TWI_ADDRESS* from_address, bool* write) {
+int TWI_receive_address(TWI_ADDRESS* from_address, bool* write) {
 	TWI_wait_for_TWINT();
 	if ((TWSR & 0xF8) != TWI_SLAW_ACK_STATUS || (TWSR & 0xF8) != TWI_SLAR_ACK_STATUS) {
 		return 1;
@@ -42,12 +42,12 @@ int TWI_receive_data(uint8_t* data, bool nack) {
 	
 	if(nack) {
 		if ((TWSR & 0xF8) != TWI_DATA_REC_NACK_STATUS) {
-			return 1;
+			return 0x0A;
 		}
 		
 	} else {
 		if ((TWSR & 0xF8) != TWI_DATA_REC_ACK_STATUS) {
-			return 1;
+			return 0x0B;
 		}
 		
 	}
@@ -55,15 +55,11 @@ int TWI_receive_data(uint8_t* data, bool nack) {
 	return 0;
 }
 
-void TWI_send_stop() {
-	TWCR = (1<<TWINT)|(1<<TWEN)|(1<<TWSTO);
-}
-
 /************************************************************************/
 /* address is the ´7 most significant bits in address. If write is true,
 it will be a write operation.       */
 /************************************************************************/
-int TWI_send_address(enum TWI_ADDRESS to_address, bool write) {
+int TWI_send_address(TWI_ADDRESS to_address, bool write) {
 	
 	if (to_address == 0) {
 		return 2;
@@ -79,7 +75,7 @@ int TWI_send_address(enum TWI_ADDRESS to_address, bool write) {
 	TWDR = to_address; // Write address to register
 	TWCR = (1<<TWINT) | (1<<TWEN); // Send out address
 	if ((write && (TWSR & 0xF8) != TWI_SLAW_ACK_STATUS) || (!write && (TWSR & 0xF8) != TWI_SLAR_ACK_STATUS) ) {
-		return 1;
+		return 0x0C;
 	}
 	return 0;
 }
@@ -89,12 +85,12 @@ int TWI_send_data(uint8_t data, bool nack) {
 	if (nack) {
 		TWCR = (1<<TWINT) | (1<<TWEN) | (1 << TWEA); // Send out data
 		if ((TWSR & 0xF8) != TWI_LAST_DATA_WRITE_ACK_STATUS) {
-			return 1;
+			return 0x0D;
 		}
 	} else {
 		TWCR = (1<<TWINT) | (1<<TWEN); // Send out data
 		if ((TWSR & 0xF8) != TWI_DATA_WRITE_ACK_STATUS) {
-			return 1;
+			return 0x0E;
 		}
 	}
 
@@ -108,19 +104,17 @@ int TWI_slave_send_message(uint8_t header, uint8_t data) {
 	
 	// send interrupt flank
 	
-	int err = TWI_wait_for_start();
-	
 	TWI_ADDRESS address;
 	bool write;
-	err = TWI_receive_address(&address, &write);
+	int err = TWI_receive_address(&address, &write);
 	
 	// TODO validate address?
 	
 	if (write) {
-		return 1;
+		return 0x0F;
 	}
 	if ((TWSR & 0xF8) != TWI_SLAR_ACK_STATUS) {
-		return 1;
+		return 0x10;
 	}
 	
 	err = TWI_send_data(header, false);
@@ -138,18 +132,17 @@ int TWI_slave_receive_message(uint8_t *header, uint8_t *data) {
 	
 	TWI_disable_interrupt();
 	
-	int err = TWI_wait_for_start();
 	TWI_ADDRESS address;
 	bool write;
-	TWI_receive_address(&address, &write);
+	int err = TWI_receive_address(&address, &write);
 	
 	// TODO validate address?
 		
 	if (! write) {
-		return 1;
+		return 0x11;
 	}
 	if ((TWSR & 0xF8) != TWI_SLAW_ACK_STATUS) {
-		return 1;
+		return 0x12;
 	}
 	
 	err = TWI_receive_data(header, false);
@@ -157,8 +150,6 @@ int TWI_slave_receive_message(uint8_t *header, uint8_t *data) {
 	
 	err = TWI_receive_data(data, true);
 	if (err) return 1;
-	
-	TWI_send_stop();
 	
 	TWI_enable_interrupt();
 	

@@ -22,7 +22,7 @@ enum STATUS {
 int TWI_receive_data(uint8_t* data, bool last_byte);
 int TWI_send_start(void);
 void TWI_send_stop(void);
-int TWI_send_address(enum TWI_ADDRESS to_address, bool write);
+int TWI_send_address(TWI_ADDRESS to_address, bool write);
 int TWI_send_data(uint8_t data, bool last_byte);
 
 int TWI_receive_data(uint8_t* data, bool nack) {
@@ -57,7 +57,7 @@ void TWI_send_stop() {
 /* address is the ´7 most significant bits in address. If write is true,
 it will be a write operation.       */
 /************************************************************************/
-int TWI_send_address(enum TWI_ADDRESS to_address, bool write) {
+int TWI_send_address(TWI_ADDRESS to_address, bool write) {
 	
 	if (write) {
 		to_address &= 0x0FE; // Set LSB to 0
@@ -96,7 +96,7 @@ int TWI_send_data(uint8_t data, bool nack) {
 	return 0;
 }
 
-int TWI_master_send_message(enum TWI_ADDRESS to_address, uint8_t header, uint8_t data) {
+int TWI_master_send_message(TWI_ADDRESS to_address, uint8_t header, uint8_t data) {
 	
 	TWI_disable_interrupt();
 	
@@ -119,7 +119,7 @@ int TWI_master_send_message(enum TWI_ADDRESS to_address, uint8_t header, uint8_t
 	return 0;
 }
 
-int TWI_master_receive_message(enum TWI_ADDRESS from_address, uint8_t* header, uint8_t* data) {
+int TWI_master_receive_message(TWI_ADDRESS from_address, uint8_t* header, uint8_t* data) {
 	
 	TWI_disable_interrupt();
 	

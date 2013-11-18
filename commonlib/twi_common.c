@@ -26,7 +26,7 @@ void TWI_wait_for_TWINT() {
 	while (!(TWCR & (1<<TWINT)));
 }
 
-int TWI_initialize(enum TWI_ADDRESS my_address, bool enable_interrupts, int bitrate) {
+int TWI_initialize(TWI_ADDRESS my_address, bool enable_interrupts, int bitrate) {
 	
 	if (bitrate == 5) {
 		TWBR = 87; // Clockspeed

@@ -52,43 +52,51 @@ void stop();
 void grip_on();
 void grip_off();
 void forward_regulated(signed e);
+void start_sending();
+void start_sending();
 uint8_t sensor_data;
+
+#include "twi_slave.h"
+#include "twi_common.h"
 
 int main (void)
 {
 	board_init();
-	
-	//pwm_start_L();
-	//pwm_start_R();
-	//pwm_start_G();
+	TWI_common_initialize(TWI_CONTROL_MODULE_ADDRESS, false, 5);
+	pwm_start_L();
+	pwm_start_R();
+	pwm_start_G();
 	uint8_t button, switch_;
-	signed int e = 0;
-	//PORTB = 0xC0;
+	signed e;
+	//PORTB = 0xC0; ? vad gör denna?
 	
-		ADCsetup(); // A/D, test
-		sei(); // Allow interupts A/D, test
-	while(1) // A/D test
-	{
-		_delay_ms(1000);
-		ADCSRA |= 1<<ADSC; // Start ADC converison
-	}
-	
-	/*
+	ADCsetup(); // A/D, test
+	sei(); // Allow interupts A/D, test
+	TWI_slave_send_message(0x00, 0xAA, start_sending, stop_sending);
 	while(1)
 	{
 		button = PINA & 0x02; // read PortA, pin 1
 		switch_ = PINA & 0x01; // read PortA, pin 0
-/*		while(switch_ != 0) // man
+		if(button != 0)
 		{
-			forward();
-			switch_ = PINA & 0x01;
-		}
+			
+			while(switch_ != 0) // man
+			{
+				forward();
+				switch_ = PINA & 0x01;
+			}
 		
-		while(switch_ == 0) //auto
-		{
-			backward();
-			switch_ = PINA & 0x01;
-		}*/
+			while(switch_ == 0) //auto
+			{
+				_delay_ms(100);
+				ADCSRA |= 1<<ADSC; // Start ADC converison
+				//e = 0;
+				e = ADCH-56;
+				forward_regulated(e);	
+				//backward();
+				switch_ = PINA & 0x01;
+			}
+		}
 /*
 		if(button != 0)
 			{
@@ -126,14 +134,14 @@ int main (void)
 			else
 			{
 				stop();
-			}
+			}*/
 	
-	}*/
+	}
 	// Insert application code here, after the board has been initialized.
 }
 
 ISR(ADC_vect) //A/D test
 {
-	PORTB = ADCH; // Store the 8 bit data
+	sensor_data = ADCH; // Store the 8 bit data
 	// Do something with the dataS
 }

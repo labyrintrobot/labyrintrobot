@@ -17,6 +17,8 @@ void stop();
 void grip_on();
 void grip_off();
 void forward_regulated(signed e);
+void start_sending();
+void stop_sending();
 signed int e_last = 0;
 
 void pwm_start_L()
@@ -119,24 +121,34 @@ void forward_regulated(signed e)
 {
 	PORTB = 0x03;
 	signed u, Kp, Kd;
-	Kp = 1;
-	Kd = 1;
-	u = Kp*e + Kd*(e - e_last);
+	Kp = 2;
+	Kd = 0.1; //KD=0.01/deltaT=0.1
+	u = Kp*e + Kd*(e - e_last); //KD-regulator
+	//u=Kp*e; //P-regulator
 	e_last = e;
 	
 	if(u > 0) // turn right
 	{
-		OCR1BL = 0xA0 - u; //right side
-		OCR1AL = 0xA0; // left side
+		OCR1BL = 0x80 - u; //right side
+		OCR1AL = 0x80; // left side
 	}
 	else if(u < 0) // turn left
 	{
-		OCR1BL = 0xA0; //right side
-		OCR1AL = 0xA0 + u; // left side
+		OCR1BL = 0x80; //right side
+		OCR1AL = 0x80 + u; // left side
 	}
 	else if(u == 0) // don't turn
 	{
-		OCR1BL = 0xA0; //right side
-		OCR1AL = 0xA0; // left side
+		OCR1BL = 0x80; //right side
+		OCR1AL = 0x80; // left side
 	}
+}
+
+void start_sending()
+{
+	PORTD = 0x01; 
+}
+void stop_sending()
+{
+	PORTD = 0x00;
 }

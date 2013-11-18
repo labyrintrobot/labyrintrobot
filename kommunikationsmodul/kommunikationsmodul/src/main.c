@@ -47,17 +47,26 @@ void enable_irqs() {
 
 void execute_message(uint8_t header, uint8_t data) {
 	// TODO
+	PORTB = data;
 }
 
 int main (void)
 {
 	board_init();
 	
-	TWI_common_initialize(TWI_COMMUNICATION_MODULE_ADDRESS, true, 500);
+	int err = TWI_common_initialize(TWI_COMMUNICATION_MODULE_ADDRESS, true, 5);
+	if (err) {
+		PORTB = 0b11001100;
+		while (1);
+	}
+	
+	// Errors on PORT A
+	// Messages on PORT B
 	
 	DDRB = 0xFF; // Only out
-	
 	PORTB = 0;
+	DDRA = 0xFF; // Only out
+	PORTA = 0;
 	
 	enable_irqs();
 	
@@ -65,13 +74,18 @@ int main (void)
 	while(1) {
 		
 		if (interrupt_error) {
-			// TODO
+			PORTA = 0b10101010;
+			while (1);
 		}
 		
 		if (sensor_module_interrupt) {
 			uint8_t header;
 			uint8_t data;
-			TWI_master_receive_message(TWI_SENSOR_MODULE_ADDRESS, &header, &data);
+			err = TWI_master_receive_message(TWI_SENSOR_MODULE_ADDRESS, &header, &data);
+			if (err) {
+				PORTA = err;
+				while (1);
+			}
 			
 			execute_message(header, data);
 			
@@ -80,7 +94,11 @@ int main (void)
 		if (control_module_interrupt) {
 			uint8_t header;
 			uint8_t data;
-			TWI_master_receive_message(TWI_CONTROL_MODULE_ADDRESS, &header, &data);
+			err = TWI_master_receive_message(TWI_CONTROL_MODULE_ADDRESS, &header, &data);
+			if (err) {
+				PORTA = err;
+				while (1);
+			}
 			
 			execute_message(header, data);
 			

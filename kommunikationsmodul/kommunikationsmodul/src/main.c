@@ -1,41 +1,52 @@
-//TWBR;//läs initial clockspeed BITRATE REGISTER
-
-//TWCR;//läs
-
-//TWCR initierar händelser och styr bussen
-//:bit7 TWINT skriv 1:a för att initiera händelse efter att de andra bitarna satts
-//:bit2 Enable Bit: gör om portarna till SDA och SCL 
-
-//TWSR;//läs status register läsläsläs
-
-//TWDR;//läs databuffert
-
-//TWAR;//läs if slave then input adress
-
 #include <asf.h>
 #include <avr/interrupt.h>
 #include "twi_master.h"
 
-//ID:s for the different modules
-int communicationid=1;
-int steerid=2;
-int sensorid=3;
+void enable_irqs(void);
 
-volatile int testcounter=0b01010101;
+void execute_message(uint8_t header, uint8_t data);
 
-//interrupt routine for setting the interrupt vector note that the StatusRegister
-//must be saved
-ISR(INT0_vect){
-	char cSREG;
-	cSREG = SREG;/* store SREG value */
-	/* disable interrupts during timed sequence */
-	//cli();
+volatile int interrupt_error = 0;
+volatile bool sensor_module_interrupt = false;
+volatile bool control_module_interrupt = false;
+
+// INT0 interrupts from control module
+ISR(INT0_vect) {
+	uint8_t cSREG;
+	cSREG = SREG;
 	
-	testcounter++;
+	if (control_module_interrupt) {
+		interrupt_error = 0x01;
+	}
 	
-	SREG = cSREG; /* restore SREG value (I-bit) */
+	control_module_interrupt = true;
 	
-	//sei(); 
+	SREG = cSREG; // restore
+}
+
+// INT1 interrupts from sensor module
+ISR(INT1_vect) {
+	uint8_t cSREG;
+	cSREG = SREG;
+	
+	if (sensor_module_interrupt) {
+		interrupt_error = 0x02;
+	}
+	
+	sensor_module_interrupt = true;
+	
+	SREG = cSREG; // restore
+}
+
+void enable_irqs() {
+	EICRA |= (1 << ISC00) | (1 << ISC01); // Interrupts on rising edge
+	EIMSK |= (1 << INT0) | (1 << INT1); // Enable INT0 and INT1
+	EIFR |= (1 << INTF0) | (1 << INTF1);
+	sei(); //enable interrupts
+}
+
+void execute_message(uint8_t header, uint8_t data) {
+	// TODO
 }
 
 int main (void)
@@ -44,36 +55,36 @@ int main (void)
 	
 	TWI_common_initialize(TWI_COMMUNICATION_MODULE_ADDRESS, true, 500);
 	
-	TWBR=87;//init clockspeed
-	TWSR|=2;//init clockspeed scale
+	DDRB = 0xFF; // Only out
 	
-	// (clk/(16+2*(TWBR)*16))=5000 bits/s
+	PORTB = 0;
 	
-	DDRB=0xFF;
-	
-	PORTB=0;
-	
-	sei();//enable interrupts
-	
-	EIMSK&=0b11111110;// clear interrupt request mask
-	EICRA|=0b00000011;// interrupts on rising edge
-	
-	EICRA&=0b11111110;// interrupts on falling edge
-	
-	EIFR|=0b00000001; 
-	EIMSK|=0b00000001;// set interrupt request mask
-	
-	//SREG=;
+	enable_irqs();
 	
 	//main loop 
-	while(1){
+	while(1) {
 		
-		//volatile char interruptflag;
+		if (interrupt_error) {
+			// TODO
+		}
 		
-		PORTB=testcounter;
-		
+		if (sensor_module_interrupt) {
+			uint8_t header;
+			uint8_t data;
+			TWI_master_receive_message(TWI_SENSOR_MODULE_ADDRESS, &header, &data);
+			
+			execute_message(header, data);
+			
+			sensor_module_interrupt = false;
+		}
+		if (control_module_interrupt) {
+			uint8_t header;
+			uint8_t data;
+			TWI_master_receive_message(TWI_CONTROL_MODULE_ADDRESS, &header, &data);
+			
+			execute_message(header, data);
+			
+			control_module_interrupt = false;
+		}
 	}
-	
-
-	// Insert application code here, after the board has been initialized.
 }

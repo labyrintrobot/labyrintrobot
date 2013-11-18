@@ -194,6 +194,14 @@
     <GenerateEepFile>True</GenerateEepFile>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\..\commonlib\twi_common.c">
+      <SubType>compile</SubType>
+      <Link>twi_common.c</Link>
+    </Compile>
+    <Compile Include="..\..\commonlib\twi_common.h">
+      <SubType>compile</SubType>
+      <Link>twi_common.h</Link>
+    </Compile>
     <Compile Include="..\..\commonlib\twi_master.c">
       <SubType>compile</SubType>
       <Link>twi_master.c</Link>
@@ -205,6 +213,10 @@
     <Compile Include="..\..\commonlib\twi_slave.c">
       <SubType>compile</SubType>
       <Link>twi_slave.c</Link>
+    </Compile>
+    <Compile Include="..\..\commonlib\twi_slave.h">
+      <SubType>compile</SubType>
+      <Link>twi_slave.h</Link>
     </Compile>
     <Compile Include="src\main.c">
       <SubType>compile</SubType>

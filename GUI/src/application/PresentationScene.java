@@ -1,8 +1,6 @@
 package application;
 
 import javafx.application.Application;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
@@ -16,35 +14,48 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
-public class Main extends Application implements BluetoothAdapter.IMessageReceiver {
+public class PresentationScene extends Application implements BluetoothAdapter.IMessageReceiver {
 
 	private static final String PAUSE_TEXT = "Pause";
 	private static final String RESUME_TEXT = "Resume";
 
-	private ControllerAdapter controllerAdapter;
-	private BluetoothAdapter bluetoothAdapter;
-	private ControlPad controlPad;
+	private final ControllerAdapter controllerAdapter;
+	private final BluetoothAdapter bluetoothAdapter;
+	private final ControlPad controlPad;
 
-	private RealTimeChart leftChart;
-	private RealTimeChart rightChart;
-	private RealTimeChart forwardLeftChart;
-	private RealTimeChart forwardRightChart;
-	private RealTimeChart forwardChart;
-	private RealTimeChart gyroChart;
-	private RealTimeChart tapeChart;
+	private final RealTimeChart leftChart;
+	private final RealTimeChart rightChart;
+	private final RealTimeChart forwardLeftChart;
+	private final RealTimeChart forwardRightChart;
+	private final RealTimeChart forwardChart;
+	private final RealTimeChart gyroChart;
+	private final RealTimeChart tapeChart;
 
-	private TextArea errorLog;
+	private final TextArea errorLog;
 
 	private boolean paused = false;
+	
+	public PresentationScene() {
+		bluetoothAdapter = new BluetoothAdapter(this);
+		controllerAdapter = new ControllerAdapter(bluetoothAdapter);
+		controlPad = new ControlPad();
+		
+		rightChart = new RealTimeChart("Right", "Distance", 256);
+		forwardRightChart = new RealTimeChart("Forward, right", "Distance", 256);
+		forwardChart = new RealTimeChart("Forward", "Distance", 256);
+		forwardLeftChart = new RealTimeChart("Forward, left", "Distance", 256);
+		leftChart = new RealTimeChart("Left", "Distance", 256);
+		gyroChart = new RealTimeChart("Gyro", "Angular rate", 256);
+		tapeChart = new RealTimeChart("Tape sensor", "Hamming distance", 8);
+
+		errorLog = new TextArea();
+	}
 
 	@Override
 	public void start(Stage primaryStage) {
 
-		bluetoothAdapter = new BluetoothAdapter(this);
-		controllerAdapter = new ControllerAdapter(bluetoothAdapter);
-		controlPad = new ControlPad();
-
 		controlPad.pressStop();
+		errorLog.setEditable(false);
 
 		try {
 			primaryStage.setTitle("Labyrintrobot");
@@ -66,17 +77,7 @@ public class Main extends Application implements BluetoothAdapter.IMessageReceiv
 			westBox.setAlignment(Pos.CENTER_RIGHT);
 			southBox.setAlignment(Pos.BOTTOM_CENTER);
 			centerBox.setAlignment(Pos.CENTER);
-
-			rightChart = new RealTimeChart("Right", "Distance", 256);
-			forwardRightChart = new RealTimeChart("Forward, right", "Distance", 256);
-			forwardChart = new RealTimeChart("Forward", "Distance", 256);
-			forwardLeftChart = new RealTimeChart("Forward, left", "Distance", 256);
-			leftChart = new RealTimeChart("Left", "Distance", 256);
-			gyroChart = new RealTimeChart("Gyro", "Angular rate", 256);
-			tapeChart = new RealTimeChart("Tape sensor", "Hamming distance", 8);
-
-			errorLog = new TextArea();
-			errorLog.setEditable(false);
+			
 
 			eastBox.getChildren().add(rightChart.getUnderLyingLineChart());
 			westBox.getChildren().add(leftChart.getUnderLyingLineChart());
@@ -200,13 +201,9 @@ public class Main extends Application implements BluetoothAdapter.IMessageReceiv
 		listenerThread.start();
 	}
 
-	public static void main(String[] args) {
-		launch(args);
-	}
-
 	private void log(TextArea ta, String text) {
 		ta.setText(ta.getText() + text + '\n');
-		ta.positionCaret(ta.getText().length());
+		ta.positionCaret(ta.getText().length()); // Scroll to end
 	}
 
 	@Override

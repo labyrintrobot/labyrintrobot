@@ -194,19 +194,22 @@
     <GenerateEepFile>True</GenerateEepFile>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\..\commonlib\twi_master.c">
+      <SubType>compile</SubType>
+      <Link>twi_master.c</Link>
+    </Compile>
+    <Compile Include="..\..\commonlib\twi_master.h">
+      <SubType>compile</SubType>
+      <Link>twi_master.h</Link>
+    </Compile>
+    <Compile Include="..\..\commonlib\twi_slave.c">
+      <SubType>compile</SubType>
+      <Link>twi_slave.c</Link>
+    </Compile>
     <Compile Include="src\main.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\ASF\mega\boards\stk600\rcx_x\init.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\twi_master.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="twi_slave.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="twi_master.h">
       <SubType>compile</SubType>
     </Compile>
     <None Include="src\asf.h">

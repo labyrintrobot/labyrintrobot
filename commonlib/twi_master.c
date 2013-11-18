@@ -8,19 +8,21 @@
 #include <asf.h>
 #include "twi_master.h"
 
-#define TWI_START_STATUS 0x08
-#define TWI_SLAW_ACK_STATUS 0x18
-#define TWI_DATA_WRITE_ACK_STATUS 0x28
-#define TWI_DATA_WRITE_NACK_STATUS 0x28
-#define TWI_SLAR_ACK_STATUS 0x40
-#define TWI_DATA_REC_ACK_STATUS 0x50
-#define TWI_DATA_REC_NACK_STATUS 0x58
+enum STATUS {
+	TWI_START_STATUS = 0x08,
+	TWI_SLAW_ACK_STATUS = 0x18,
+	TWI_DATA_WRITE_ACK_STATUS = 0x28,
+	TWI_DATA_WRITE_NACK_STATUS = 0x28,
+	TWI_SLAR_ACK_STATUS = 0x40,
+	TWI_DATA_REC_ACK_STATUS = 0x50,
+	TWI_DATA_REC_NACK_STATUS = 0x58
+	};
 
-void TWI_receive_data(unsigned char* data, int last_byte);
+int TWI_receive_data(uint8_t* data, bool last_byte);
 int TWI_send_start(void);
 void TWI_send_stop(void);
-int TWI_send_address(unsigned char address, int write);
-int TWI_send_data(unsigned char data, int last_byte);
+int TWI_send_address(enum TWI_ADDRESS to_address, bool write);
+int TWI_send_data(uint8_t data, bool last_byte);
 
 int TWI_initialize_bitrate(int bitrate) {
 	if (bitrate == 5) {
@@ -42,14 +44,14 @@ int TWI_initialize_bitrate(int bitrate) {
 	return 0;
 }
 
-int TWI_receive_data(unsigned char* data, int last_byte) {
+int TWI_receive_data(uint8_t* data, bool nack) {
 	while (!(TWCR & (1<<TWINT)));
 	*data = TWDR;
 	
-	if (last_byte && (TWSR & 0xF8) != TWI_DATA_REC_NACK_STATUS) {
-		return 1;
+	if (nack && (TWSR & 0xF8) != TWI_DATA_REC_NACK_STATUS) {
+		return 0x01;
 	} else if ((TWSR & 0xF8) != TWI_DATA_REC_ACK_STATUS) {
-		return 1;
+		return 0x02;
 	}
 	return 0;
 }
@@ -61,7 +63,7 @@ int TWI_send_start() {
 	TWCR = (1<<TWINT) | (1<<TWSTA) | (1<<TWEN); // Send START condition
 	while (!(TWCR & (1<<TWINT))); // Wait START was successfully sent
 	if ((TWSR & 0xF8) != TWI_START_STATUS) {
-		return 0x01;
+		return 0x03;
 	}
 	return 0;
 }
@@ -74,51 +76,51 @@ void TWI_send_stop() {
 /* address is the ´7 most significant bits in address. If write is true,
 it will be a write operation.       */
 /************************************************************************/
-int TWI_send_address(unsigned char address, int write) {
+int TWI_send_address(enum TWI_ADDRESS to_address, bool write) {
 	
-	if (address == 0) {
-		return 0x02;
+	if (to_address == 0) {
+		return 0x04;
 	}
 	
 	if (write) {
-		address &= 0b11111110;
+		to_address &= 0x0FE; // Set LSB to 0
 	} else {
-		address |= 0b00000001;
+		to_address |= 0x01; // Set LSB to 1
 	}
 	
-	TWDR = address; // Write address to register
+	TWDR = to_address; // Write address to register
 	TWCR = (1<<TWINT) | (1<<TWEN); // Send out address
 	if (write && (TWSR & 0xF8) != TWI_SLAW_ACK_STATUS) {
-		return 0x03;
-	} else if (TWSR & 0xF8) != TWI_SLAR_ACK_STATUS) {
-		return 0x04;
+		return 0x05;
+	} else if ((TWSR & 0xF8) != TWI_SLAR_ACK_STATUS) {
+		return 0x06;
 	}
 	return 0;
 }
 
-int TWI_send_data(unsigned char data, int last_byte) {
+int TWI_send_data(uint8_t data, bool nack) {
 	TWDR = data; // Write data to register
-	if (last_byte) {
+	if (nack) {
 		TWCR = (1<<TWINT) | (1<<TWEN);
 		if ((TWSR & 0xF8) != TWI_DATA_WRITE_NACK_STATUS) {
-			return 0x05;
+			return 0x07;
 		}
 	} else {
 		TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWEA);
 		if ((TWSR & 0xF8) != TWI_DATA_WRITE_ACK_STATUS) {
-			return 0x06;
+			return 0x08;
 		}
 	}
 	return 0;
 }
 
-int TWI_master_send_message(unsigned char address, unsigned char header, unsigned char data) {
+int TWI_master_send_message(enum TWI_ADDRESS to_address, uint8_t header, uint8_t data) {
 	int err;
 	
 	err = TWI_send_start();
 	if (err) return err;
 	
-	err = TWI_send_address(address, 1);
+	err = TWI_send_address(to_address, 1);
 	if (err) return err;
 	
 	err = TWI_send_data(header, 0);
@@ -132,13 +134,13 @@ int TWI_master_send_message(unsigned char address, unsigned char header, unsigne
 	return 0;
 }
 
-int TWI_master_receive_message(unsigned char address, unsigned char* header, unsigned char* data) {
+int TWI_master_receive_message(enum TWI_ADDRESS from_address, uint8_t* header, uint8_t* data) {
 	int err;
 	
 	err = TWI_send_start();
 	if (err) return err;
 	
-	err = TWI_send_address(address, 1);
+	err = TWI_send_address(from_address, 1);
 	if (err) return err;
 	
 	err = TWI_receive_data(header, 0);

@@ -55,10 +55,6 @@ int TWI_receive_data(uint8_t* data, bool nack) {
 	return 0;
 }
 
-/************************************************************************/
-/* address is the ´7 most significant bits in address. If write is true,
-it will be a write operation.       */
-/************************************************************************/
 int TWI_send_address(TWI_ADDRESS to_address, bool write) {
 	
 	if (to_address == 0) {
@@ -97,7 +93,12 @@ int TWI_send_data(uint8_t data, bool nack) {
 	return 0;
 }
 
-//function that sends data if via I2C if needed
+/************************************************************************/
+/* Sends a message via TWI                                              */
+/* header: the message header                                           */
+/* data: the message data                                               */
+/* returns nonzero if error                                             */
+/************************************************************************/
 int TWI_slave_send_message(uint8_t header, uint8_t data) {
 	
 	TWI_disable_interrupt();
@@ -128,6 +129,12 @@ int TWI_slave_send_message(uint8_t header, uint8_t data) {
 	return 0;
 }
 
+/************************************************************************/
+/* Blocks until a message is received via TWI                           */
+/* header[out]: the message header that was received                    */
+/* data[out]: the message data                                          */
+/* returns nonzero if error                                             */
+/************************************************************************/
 int TWI_slave_receive_message(uint8_t *header, uint8_t *data) {
 	
 	TWI_disable_interrupt();

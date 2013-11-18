@@ -26,6 +26,18 @@ void TWI_wait_for_TWINT() {
 	while (!(TWCR & (1<<TWINT)));
 }
 
+bool TWI_invalid_status(uint8_t status) {
+	return (TWSR & 0xF8) != TWI_DATA_REC_NACK_STATUS);
+}
+
+/************************************************************************/
+/* Initializes TWI.                                                     */
+/* my_address: the address of this module                               */
+/* enable_interrupts: true if interrupts should be enabled when a 
+message is received                                                     */
+/* bitrate: the bitrate in kHz                                          */
+/* returns nonzero if error                                             */
+/************************************************************************/
 int TWI_initialize(TWI_ADDRESS my_address, bool enable_interrupts, int bitrate) {
 	
 	if (bitrate == 5) {

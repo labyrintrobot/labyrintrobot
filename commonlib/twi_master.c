@@ -19,7 +19,7 @@ enum STATUS {
 	TWI_DATA_REC_NACK_STATUS = 0x58
 	};
 
-int TWI_receive_data(uint8_t* data, bool last_byte);
+int TWI_receive_data(uint8_t* data, bool nack);
 int TWI_send_start(void);
 void TWI_send_stop(void);
 int TWI_send_address(TWI_ADDRESS to_address, bool write);
@@ -29,10 +29,14 @@ int TWI_receive_data(uint8_t* data, bool nack) {
 	TWI_wait_for_TWINT();
 	*data = TWDR;
 	
-	if (nack && (TWSR & 0xF8) != TWI_DATA_REC_NACK_STATUS) {
-		return 0x02;
-	} else if ((TWSR & 0xF8) != TWI_DATA_REC_ACK_STATUS) {
-		return 0x03;
+	if (nack) {
+		if (TWI_invalid_status(TWI_DATA_REC_NACK_STATUS)) {
+			return 0x02;
+		}
+	} else {
+		if (TWI_invalid_status(TWI_DATA_REC_ACK_STATUS)) {
+			return 0x03;
+		}
 	}
 	return 0;
 }
@@ -43,7 +47,8 @@ int TWI_receive_data(uint8_t* data, bool nack) {
 int TWI_send_start() {
 	TWCR = (1<<TWINT) | (1<<TWSTA) | (1<<TWEN); // Send START condition
 	while (!(TWCR & (1<<TWINT))); // Wait until START was successfully sent
-	if ((TWSR & 0xF8) != TWI_START_STATUS) {
+	
+	if (TWI_invalid_status(TWI_START_STATUS)) {
 		return 0x04;
 	}
 	return 0;
@@ -72,10 +77,14 @@ int TWI_send_address(TWI_ADDRESS to_address, bool write) {
 	TWDR = to_address; // Write address to register
 	TWCR = (1<<TWINT) | (1<<TWEN); // Send out address
 	
-	if (write && (TWSR & 0xF8) != TWI_SLAW_ACK_STATUS) {
-		return 0x06;
-	} else if ((TWSR & 0xF8) != TWI_SLAR_ACK_STATUS) {
-		return 0x07;
+	if (write) {
+		if (TWI_invalid_status(TWI_SLAW_ACK_STATUS)) {
+			return 0x06;
+		}
+	} else {
+		if (TWI_invalid_status(TWI_SLAR_ACK_STATUS)) {
+			return 0x07;
+		}
 	}
 	return 0;
 }
@@ -84,12 +93,12 @@ int TWI_send_data(uint8_t data, bool nack) {
 	TWDR = data; // Write data to register
 	if (nack) {
 		TWCR = (1<<TWINT) | (1<<TWEN);
-		if ((TWSR & 0xF8) != TWI_DATA_WRITE_NACK_STATUS) {
+		if (TWI_invalid_status(TWI_DATA_WRITE_NACK_STATUS)) {
 			return 0x08;
 		}
 	} else {
 		TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWEA);
-		if ((TWSR & 0xF8) != TWI_DATA_WRITE_ACK_STATUS) {
+		if (TWI_invalid_status(TWI_DATA_WRITE_ACK_STATUS)) {
 			return 0x09;
 		}
 	}

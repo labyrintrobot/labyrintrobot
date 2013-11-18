@@ -24,6 +24,8 @@ void TWI_enable_interrupt(void);
 
 void TWI_wait_for_TWINT(void);
 
+bool TWI_invalid_status(uint8_t status);
+
 int TWI_initialize(TWI_ADDRESS my_address, bool enable_interrupts, int bitrate);
 
 #endif /* TWI_COMMON_H_ */

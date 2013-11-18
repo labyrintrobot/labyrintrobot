@@ -7,19 +7,23 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Pos;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 
-public class BluetoothScene extends Application {
+public class BluetoothStage extends Application {
 	
 	private final BluetoothDiscoveryListener bluetoothDiscoveryListener;
 	private final ListView<String> deviceList;
 	private final Button startButton;
+	private final ProgressIndicator progressIndicator;
 
-	public BluetoothScene() {
+	public BluetoothStage() {
 		bluetoothDiscoveryListener = new BluetoothDiscoveryListener(new IBluetoothDeviceDiscovered() {
 			
 			@Override
@@ -35,17 +39,23 @@ public class BluetoothScene extends Application {
 		});
 		deviceList = new ListView<String>();
 		startButton = new Button("Start");
+		progressIndicator = new ProgressIndicator();
 	}
 	
 	@Override
-	public void start(Stage primaryStage) {
+	public void start(final Stage primaryStage) {
 
 		try {
 			primaryStage.setTitle("Labyrintrobot");
 
 			BorderPane root = new BorderPane();
 			root.setCenter(deviceList);
-			root.setBottom(startButton);
+			HBox southBox = new HBox();
+			southBox.getChildren().addAll(startButton, progressIndicator);
+			root.setBottom(southBox);
+			southBox.setAlignment(Pos.BOTTOM_CENTER);
+			
+			progressIndicator.setProgress(-1);
 			
 			Scene scene = new Scene(root, 320, 320);
 			primaryStage.setScene(scene);
@@ -56,6 +66,13 @@ public class BluetoothScene extends Application {
 				@Override
 				public void run() {
 					bluetoothDiscoveryListener.start();
+					Platform.runLater(new Runnable() {
+						
+						@Override
+						public void run() {
+							progressIndicator.setProgress(2.0); // Finished
+						}
+					});
 				}
 			};
 			Thread btThread = new Thread(btRunnable);
@@ -73,7 +90,11 @@ public class BluetoothScene extends Application {
 			
 			startButton.setOnAction(new EventHandler<ActionEvent>() {
 				@Override public void handle(ActionEvent e) {
-					String str = deviceList.getSelectionModel().getSelectedItem();
+					String bluetoothServerUrl = deviceList.getSelectionModel().getSelectedItem();
+					
+					Stage stage = new PresentationStage(bluetoothServerUrl);
+		            stage.show();
+		            primaryStage.hide();
 				}
 			});
 

@@ -1,11 +1,8 @@
 package application;
 
-import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
-import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
@@ -13,8 +10,10 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
-public class PresentationScene extends Application implements BluetoothAdapter.IMessageReceiver {
+public class PresentationStage extends Stage implements BluetoothAdapter.IMessageReceiver {
 
 	private static final String PAUSE_TEXT = "Pause";
 	private static final String RESUME_TEXT = "Resume";
@@ -35,7 +34,7 @@ public class PresentationScene extends Application implements BluetoothAdapter.I
 
 	private boolean paused = false;
 	
-	public PresentationScene() {
+	public PresentationStage(String bluetoothServerUrl) {
 		bluetoothAdapter = new BluetoothAdapter(this);
 		controllerAdapter = new ControllerAdapter(bluetoothAdapter);
 		controlPad = new ControlPad();
@@ -49,16 +48,12 @@ public class PresentationScene extends Application implements BluetoothAdapter.I
 		tapeChart = new RealTimeChart("Tape sensor", "Hamming distance", 8);
 
 		errorLog = new TextArea();
-	}
-
-	@Override
-	public void start(Stage primaryStage) {
-
+		
 		controlPad.pressStop();
 		errorLog.setEditable(false);
 
 		try {
-			primaryStage.setTitle("Labyrintrobot");
+			this.setTitle("Labyrintrobot");
 			final Button pauseButton = new Button();
 			if (paused) {
 				pauseButton.setText(RESUME_TEXT);
@@ -92,7 +87,7 @@ public class PresentationScene extends Application implements BluetoothAdapter.I
 			root.setBottom(southBox);
 			root.setCenter(centerBox);
 			Scene scene = new Scene(root, 1280, 1024);
-			primaryStage.setScene(scene);
+			this.setScene(scene);
 
 			EventHandler<KeyEvent> pressEvent = new EventHandler<KeyEvent>() {
 
@@ -166,7 +161,7 @@ public class PresentationScene extends Application implements BluetoothAdapter.I
 				}
 			});
 
-			primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+			this.setOnCloseRequest(new EventHandler<WindowEvent>() {
 
 				@Override
 				public void handle(WindowEvent we) {
@@ -176,10 +171,10 @@ public class PresentationScene extends Application implements BluetoothAdapter.I
 
 			pauseButton.setFocusTraversable(false);
 
-			primaryStage.addEventFilter(KeyEvent.KEY_PRESSED, pressEvent);
-			primaryStage.addEventFilter(KeyEvent.KEY_RELEASED, releaseEvent);
+			this.addEventFilter(KeyEvent.KEY_PRESSED, pressEvent);
+			this.addEventFilter(KeyEvent.KEY_RELEASED, releaseEvent);
 
-			primaryStage.show();
+			this.show();
 
 			listen();
 

@@ -1,5 +1,5 @@
 ﻿/*
- * twi_master.c
+ * twi_slave.c
  *
  * Created: 11/14/2013 5:47:41 PM
  *  Author: Emil Berg, Kristoffer Borg
@@ -9,11 +9,9 @@
 #include "twi_common.h"
 #include "twi_slave.h"
 
-void TWI_wait_for_start(void);
-int TWI_receive_address(TWI_ADDRESS* from_address, bool* write);
-int TWI_receive_data(uint8_t* data, bool nack);
-int TWI_send_address(TWI_ADDRESS to_address, bool write);
-int TWI_send_data(uint8_t data, bool nack);
+int TWI_slave_receive_address(TWI_MODULE_ADDRESS* from_address, bool* write);
+int TWI_slave_receive_data(uint8_t* data, bool nack);
+int TWI_slave_send_data(uint8_t data, bool nack);
 
 enum TWI_STATUS {
 	TWI_SLAR_ACK_STATUS = 0xA8,
@@ -25,10 +23,10 @@ enum TWI_STATUS {
 	TWI_REP_START_STOP_STATUS = 0xA0
 	};
 
-int TWI_receive_address(TWI_ADDRESS* from_address, bool* write) {
-	TWI_wait_for_TWINT();
-	if ((TWSR & 0xF8) != TWI_SLAW_ACK_STATUS || (TWSR & 0xF8) != TWI_SLAR_ACK_STATUS) {
-		return 1;
+int TWI_slave_receive_address(TWI_MODULE_ADDRESS* from_address, bool* write) {
+	TWI_common_wait_for_TWINT();
+	if (TWI_common_invalid_status(TWI_SLAW_ACK_STATUS) || TWI_common_invalid_status(TWI_SLAR_ACK_STATUS)) {
+		return 0x0A;
 	}
 	
 	*from_address = TWDR & 0xFE;
@@ -37,17 +35,17 @@ int TWI_receive_address(TWI_ADDRESS* from_address, bool* write) {
 	return 0;
 }
 
-int TWI_receive_data(uint8_t* data, bool nack) {
-	TWI_wait_for_TWINT();
+int TWI_slave_receive_data(uint8_t* data, bool nack) {
+	TWI_common_wait_for_TWINT();
 	
 	if(nack) {
-		if ((TWSR & 0xF8) != TWI_DATA_REC_NACK_STATUS) {
-			return 0x0A;
+		if (TWI_common_invalid_status(TWI_DATA_REC_NACK_STATUS)) {
+			return 0x0B;
 		}
 		
 	} else {
-		if ((TWSR & 0xF8) != TWI_DATA_REC_ACK_STATUS) {
-			return 0x0B;
+		if (TWI_common_invalid_status(TWI_DATA_REC_ACK_STATUS)) {
+			return 0x0C;
 		}
 		
 	}
@@ -55,37 +53,16 @@ int TWI_receive_data(uint8_t* data, bool nack) {
 	return 0;
 }
 
-int TWI_send_address(TWI_ADDRESS to_address, bool write) {
-	
-	if (to_address == 0) {
-		return 2;
-	}
-	
-	if (write) {
-		to_address &= 0xFE;
-	}
-	else {
-		to_address |= 0x01;
-	}
-	
-	TWDR = to_address; // Write address to register
-	TWCR = (1<<TWINT) | (1<<TWEN); // Send out address
-	if ((write && (TWSR & 0xF8) != TWI_SLAW_ACK_STATUS) || (!write && (TWSR & 0xF8) != TWI_SLAR_ACK_STATUS) ) {
-		return 0x0C;
-	}
-	return 0;
-}
-
-int TWI_send_data(uint8_t data, bool nack) {
+int TWI_slave_send_data(uint8_t data, bool nack) {
 	TWDR = data; // Write data to register
 	if (nack) {
 		TWCR = (1<<TWINT) | (1<<TWEN) | (1 << TWEA); // Send out data
-		if ((TWSR & 0xF8) != TWI_LAST_DATA_WRITE_ACK_STATUS) {
+		if (TWI_common_invalid_status(TWI_LAST_DATA_WRITE_ACK_STATUS)) {
 			return 0x0D;
 		}
 	} else {
 		TWCR = (1<<TWINT) | (1<<TWEN); // Send out data
-		if ((TWSR & 0xF8) != TWI_DATA_WRITE_ACK_STATUS) {
+		if (TWI_common_invalid_status(TWI_DATA_WRITE_ACK_STATUS)) {
 			return 0x0E;
 		}
 	}
@@ -101,30 +78,31 @@ int TWI_send_data(uint8_t data, bool nack) {
 /************************************************************************/
 int TWI_slave_send_message(uint8_t header, uint8_t data) {
 	
-	TWI_disable_interrupt();
+	TWI_common_disable_interrupt();
 	
 	// send interrupt flank
 	
-	TWI_ADDRESS address;
+	TWI_MODULE_ADDRESS address;
 	bool write;
-	int err = TWI_receive_address(&address, &write);
+	int err = TWI_slave_receive_address(&address, &write);
+	if (err) return err;
 	
 	// TODO validate address?
 	
 	if (write) {
 		return 0x0F;
 	}
-	if ((TWSR & 0xF8) != TWI_SLAR_ACK_STATUS) {
+	if (TWI_common_invalid_status(TWI_SLAR_ACK_STATUS)) {
 		return 0x10;
 	}
 	
-	err = TWI_send_data(header, false);
+	err = TWI_slave_send_data(header, false);
 	if (err) return err;
 	
-	err = TWI_send_data(data, true);
+	err = TWI_slave_send_data(data, true);
 	if (err) return err;
 	
-	TWI_enable_interrupt();
+	TWI_common_enable_interrupt();
 	
 	return 0;
 }
@@ -135,30 +113,31 @@ int TWI_slave_send_message(uint8_t header, uint8_t data) {
 /* data[out]: the message data                                          */
 /* returns nonzero if error                                             */
 /************************************************************************/
-int TWI_slave_receive_message(uint8_t *header, uint8_t *data) {
+int TWI_slave_receive_message(uint8_t* header, uint8_t* data) {
 	
-	TWI_disable_interrupt();
+	TWI_common_disable_interrupt();
 	
-	TWI_ADDRESS address;
+	TWI_MODULE_ADDRESS address;
 	bool write;
-	int err = TWI_receive_address(&address, &write);
+	int err = TWI_slave_receive_address(&address, &write);
+	if (err) return err;
 	
 	// TODO validate address?
 		
 	if (! write) {
 		return 0x11;
 	}
-	if ((TWSR & 0xF8) != TWI_SLAW_ACK_STATUS) {
+	if (TWI_common_invalid_status(TWI_SLAW_ACK_STATUS)) {
 		return 0x12;
 	}
 	
-	err = TWI_receive_data(header, false);
-	if (err) return 1;
+	err = TWI_slave_receive_data(header, false);
+	if (err) return err;
 	
-	err = TWI_receive_data(data, true);
-	if (err) return 1;
+	err = TWI_slave_receive_data(data, true);
+	if (err) return err;
 	
-	TWI_enable_interrupt();
+	TWI_common_enable_interrupt();
 	
 	return 0;
 }

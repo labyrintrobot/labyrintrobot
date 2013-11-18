@@ -42,7 +42,7 @@ int main (void)
 {
 	board_init();
 	
-	TWI_initialize_bitrate(5);
+	TWI_common_initialize(TWI_COMMUNICATION_MODULE_ADDRESS, true, 500);
 	
 	TWBR=87;//init clockspeed
 	TWSR|=2;//init clockspeed scale

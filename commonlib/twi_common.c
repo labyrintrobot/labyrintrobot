@@ -9,12 +9,12 @@
 
 bool interrupt_enabled = false;
 
-void TWI_disable_interrupt() {
+void TWI_common_disable_interrupt() {
 	interrupt_enabled = TWCR & 0x01;
 	TWCR &= 0xFE;
 } 
 
-void TWI_enable_interrupt() {
+void TWI_common_enable_interrupt() {
 	if (interrupt_enabled) {
 		TWCR |= 0x01;
 	} else {
@@ -22,12 +22,12 @@ void TWI_enable_interrupt() {
 	}
 }
 
-void TWI_wait_for_TWINT() {
+void TWI_common_wait_for_TWINT() {
 	while (!(TWCR & (1<<TWINT)));
 }
 
-bool TWI_invalid_status(uint8_t status) {
-	return (TWSR & 0xF8) != TWI_DATA_REC_NACK_STATUS);
+bool TWI_common_invalid_status(uint8_t status) {
+	return ((TWSR & 0xF8) != status);
 }
 
 /************************************************************************/
@@ -38,7 +38,7 @@ message is received                                                     */
 /* bitrate: the bitrate in kHz                                          */
 /* returns nonzero if error                                             */
 /************************************************************************/
-int TWI_initialize(TWI_ADDRESS my_address, bool enable_interrupts, int bitrate) {
+int TWI_common_initialize(TWI_MODULE_ADDRESS my_address, bool enable_interrupts, int bitrate) {
 	
 	if (bitrate == 5) {
 		TWBR = 87; // Clockspeed

@@ -19,8 +19,6 @@ void grip_off();
 void forward_regulated(signed e);
 signed int e_last = 0;
 
-
-
 void pwm_start_L()
 {
 	OCR1AL = PULSE_WIDTH_L;

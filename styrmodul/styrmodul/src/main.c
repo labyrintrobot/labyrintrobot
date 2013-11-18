@@ -33,6 +33,7 @@
 #include <util/delay.h>
 #include <avr/interrupt.h>
 #include <functions.h>
+#include <ADC_setup.h>
 
 
 void pwm_start_L();
@@ -51,18 +52,28 @@ void stop();
 void grip_on();
 void grip_off();
 void forward_regulated(signed e);
+uint8_t sensor_data;
 
 int main (void)
 {
 	board_init();
 	
-	pwm_start_L();
-	pwm_start_R();
-	pwm_start_G();
+	//pwm_start_L();
+	//pwm_start_R();
+	//pwm_start_G();
 	uint8_t button, switch_;
 	signed int e = 0;
-	PORTB = 0xC0;
+	//PORTB = 0xC0;
 	
+		ADCsetup(); // A/D, test
+		sei(); // Allow interupts A/D, test
+	while(1) // A/D test
+	{
+		_delay_ms(1000);
+		ADCSRA |= 1<<ADSC; // Start ADC converison
+	}
+	
+	/*
 	while(1)
 	{
 		button = PINA & 0x02; // read PortA, pin 1
@@ -78,7 +89,7 @@ int main (void)
 			backward();
 			switch_ = PINA & 0x01;
 		}*/
-
+/*
 		if(button != 0)
 			{
 				if(switch_ != 0) // testkörning
@@ -117,6 +128,12 @@ int main (void)
 				stop();
 			}
 	
-	}
+	}*/
 	// Insert application code here, after the board has been initialized.
+}
+
+ISR(ADC_vect) //A/D test
+{
+	PORTB = ADCH; // Store the 8 bit data
+	// Do something with the dataS
 }

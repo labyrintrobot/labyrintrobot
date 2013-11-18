@@ -5,10 +5,10 @@
  *  Author: Emil Berg, Kristoffer Borg
  */
 
-#include "twi_common.h"
-
 #ifndef TWI_MASTER_H_
 #define TWI_MASTER_H_
+
+#include "twi_common.h"
 
 int TWI_master_send_message(TWI_MODULE_ADDRESS to_address, uint8_t header, uint8_t data);
 

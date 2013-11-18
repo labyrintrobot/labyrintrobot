@@ -7,6 +7,7 @@
 
 #include <asf.h>
 #include "twi_master.h"
+#include "twi_common_private.h"
 
 enum STATUS {
 	TWI_START_STATUS = 0x08,

@@ -6,8 +6,8 @@
  */ 
 
 #include <asf.h>
-#include "twi_common.h"
 #include "twi_slave.h"
+#include "twi_common_private.h"
 
 int TWI_slave_receive_address(TWI_MODULE_ADDRESS* from_address, bool* write);
 int TWI_slave_receive_data(uint8_t* data, bool nack);

@@ -27,7 +27,6 @@ int TWI_master_send_data(uint8_t data, bool last_byte);
 
 int TWI_master_receive_data(uint8_t* data, bool nack) {
 	TWI_common_wait_for_TWINT();
-	*data = TWDR;
 	
 	if (nack) {
 		if (TWI_common_invalid_status(TWI_DATA_REC_NACK_STATUS)) {
@@ -38,6 +37,8 @@ int TWI_master_receive_data(uint8_t* data, bool nack) {
 			return 0x03;
 		}
 	}
+	
+	*data = TWDR;
 	return 0;
 }
 

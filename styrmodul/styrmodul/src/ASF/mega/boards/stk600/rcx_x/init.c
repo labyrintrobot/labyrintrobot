@@ -51,11 +51,13 @@
 
 void board_init(void)
 {
-	DDRA = 0xF0; // PortA input 
+	DDRA = 0xFF;
+	DDRB = 0xFF;
+	//DDRA = 0xF0; // PortA input 
 	
 	//DDRB = 0xFF; // PORTB, output, A/D test
-	DDRB = 0x43; // PORTB, pin 0,1,6 output
-	DDRD = 0x31; // PortD, pin 0,4,5 output
-	TCCR1A = 0xA1;
-	TCCR3A = 0xA1;
+	//DDRB = 0x43; // PORTB, pin 0,1,6 output
+	//DDRD = 0x31; // PortD, pin 0,4,5 output
+	//TCCR1A = 0xA1;
+	//TCCR3A = 0xA1;
 }

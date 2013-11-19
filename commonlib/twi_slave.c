@@ -84,12 +84,10 @@ int TWI_slave_send_message(uint8_t header, uint8_t data, void (*start_sending_ir
 	
 	TWI_common_disable_interrupt();
 	start_sending_irq_fn();
-<<<<<<< HEAD
+
 	PORTA = 0x10;
 	TWI_MODULE_ADDRESS address;
-=======
-	
->>>>>>> 1432ce7818c0db562c9ca03d2e80188ff785ba61
+
 	bool write;
 	int err = TWI_slave_receive_address(&write);
 	stop_sending_irq_fn();

@@ -32,9 +32,10 @@
 #define F_CPU 1.5280E6
 #include <util/delay.h>
 #include <avr/interrupt.h>
-#include <functions.h>
-#include <ADC_setup.h>
 
+#include <functions.h>
+//#include <ADC_setup.h>
+//#include <auto_functions.h>
 #include "twi_slave.h"
 
 
@@ -52,9 +53,19 @@ int main (void)
 	signed e;
 	//PORTB = 0xC0; ? vad gör denna?
 	
-	ADCsetup(); // A/D, test
-	sei(); // Allow interupts A/D, test
-	TWI_slave_send_message(0x00, 0xAA, start_sending, stop_sending);
+	//ADCsetup(); // A/D, test
+	//sei(); // Allow interupts A/D, test
+	uint8_t header;
+	uint8_t data; 
+	PORTB = TWI_slave_receive_message(&header,&data);
+	PORTA = data;
+	 
+	while(1)
+	{
+		
+	}
+	
+	
 	while(1)
 	{
 		button = PINA & 0x02; // read PortA, pin 1

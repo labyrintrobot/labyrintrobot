@@ -5,7 +5,7 @@
  */ 
 
 #include <asf.h>
-#include "twi_common.h"
+#include "twi_common_private.h"
 
 bool interrupt_enabled = false;
 

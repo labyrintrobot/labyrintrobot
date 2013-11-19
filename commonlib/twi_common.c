@@ -15,7 +15,7 @@ message is received                                                     */
 /* bitrate: the bitrate in kHz                                          */
 /* returns nonzero if error                                             */
 /************************************************************************/
-int TWI_common_initialize(TWI_MODULE_ADDRESS my_address, bool enable_interrupts, int bitrate) {
+int TWI_common_initialize(TWI_MODULE_ADDRESS my_address, bool enable_interrupts, int bitrate, bool master) {
 	
 	if (bitrate == 5) {
 		TWBR = 87; // Clockspeed
@@ -39,11 +39,20 @@ int TWI_common_initialize(TWI_MODULE_ADDRESS my_address, bool enable_interrupts,
 	// TWEN = Enable TWI
 	// TWEA = Enable acknowledgment of own address
 	// TWIE = Enable interrupts
-	if (enable_interrupts) {
-		TWCR = (1<<TWEN) | (1<<TWEA) | (1<<TWIE);
+	if (master) {
+		if (enable_interrupts) {
+			TWCR = (1<<TWEN) | (1<<TWIE);
+		} else {
+			TWCR = (1<<TWEN);
+		}
 	} else {
-		TWCR = (1<<TWEN) | (1<<TWEA);
+		if (enable_interrupts) {
+			TWCR = (1<<TWEN) | (1<<TWEA) | (1<<TWIE);
+		} else {
+			TWCR = (1<<TWEN) | (1<<TWEA);
+		}
 	}
+
 	
 	return 0;
 }

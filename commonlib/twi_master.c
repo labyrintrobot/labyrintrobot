@@ -65,9 +65,9 @@ it will be a write operation.       */
 int TWI_master_send_address(TWI_MODULE_ADDRESS to_address, bool write) {
 	
 	if (write) {
-		to_address &= 0x0FE; // Set LSB to 0
+		to_address &= 0x0FE; // Set LSB to 0 = write
 	} else {
-		to_address |= 0x01; // Set LSB to 1
+		to_address |= 0x01; // Set LSB to 1 = read
 	}
 	
 	if (to_address == 0) {

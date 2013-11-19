@@ -54,7 +54,7 @@ int main (void)
 {
 	board_init();
 	
-	int err = TWI_common_initialize(TWI_COMMUNICATION_MODULE_ADDRESS, true, 5);
+	int err = TWI_common_initialize(TWI_COMMUNICATION_MODULE_ADDRESS, true, 5, true);
 	if (err) {
 		PORTB = 0b11001100;
 		while (1);

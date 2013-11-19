@@ -85,11 +85,12 @@ int TWI_slave_send_message(uint8_t header, uint8_t data, void (*start_sending_ir
 	
 	TWI_common_disable_interrupt();
 	start_sending_irq_fn();
-	
+	PORTA = 0x10;
 	TWI_MODULE_ADDRESS address;
 	bool write;
 	int err = TWI_slave_receive_address(&address, &write);
 	stop_sending_irq_fn();
+	PORTA = 0x30;
 	if (err) return err;
 	
 	// TODO validate address?
@@ -108,7 +109,7 @@ int TWI_slave_send_message(uint8_t header, uint8_t data, void (*start_sending_ir
 	if (err) return err;
 	
 	TWI_common_enable_interrupt();
-	
+	PORTA = 0x70;
 	return 0;
 }
 

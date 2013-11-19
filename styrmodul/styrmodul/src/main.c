@@ -28,41 +28,23 @@
 #include <avr/io.h>
 #include <inttypes.h>
 #include <stdio.h>
-#include <avr/signal.h>
+//#include <avr/signal.h>
 #define F_CPU 1.5280E6
 #include <util/delay.h>
 #include <avr/interrupt.h>
 #include <functions.h>
 #include <ADC_setup.h>
 
+#include "twi_slave.h"
 
-void pwm_start_L();
-void pwm_start_R();
-void pwm_start_G();
 
-void forward();
-void backward();
-void rotate_right();
-void rotate_left();
-void rotate_right90();
-void rotate_left90();
-void forward_right();
-void forward_left();
-void stop();
-void grip_on();
-void grip_off();
-void forward_regulated(signed e);
-void start_sending();
-void start_sending();
 uint8_t sensor_data;
 
-#include "twi_slave.h"
-#include "twi_common.h"
 
 int main (void)
 {
 	board_init();
-	TWI_common_initialize(TWI_CONTROL_MODULE_ADDRESS, false, 5);
+	TWI_common_initialize(TWI_CONTROL_MODULE_ADDRESS, false, 5, false);
 	pwm_start_L();
 	pwm_start_R();
 	pwm_start_G();
@@ -89,7 +71,7 @@ int main (void)
 			while(switch_ == 0) //auto
 			{
 				_delay_ms(100);
-				ADCSRA |= 1<<ADSC; // Start ADC converison
+				ADCSRA |= 1<<ADSC; // Start ADC conversion
 				//e = 0;
 				e = ADCH-56;
 				forward_regulated(e);	

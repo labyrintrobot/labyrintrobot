@@ -9,6 +9,8 @@
 #ifndef ADC_SETUP_H_
 #define ADC_SETUP_H_
 
+void ADCsetup(void);
+
 void ADCsetup()
 {
 	ADCSRA |= (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0); // Set the prescale of the clock to 128 so the ADC clock becomes systemclock/128

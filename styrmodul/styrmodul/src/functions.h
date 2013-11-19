@@ -3,22 +3,24 @@
 #define PULSE_WIDTH_G 0x15
 
 
-void pwm_start_L();
-void pwm_start_R();
-void pwm_start_G();
+void pwm_start_L(void);
+void pwm_start_R(void);
+void pwm_start_G(void);
 
-void forward();
-void backward();
-void rotate_right();
-void rotate_left();
-void forward_right();
-void forward_left();
-void stop();
-void grip_on();
-void grip_off();
+void forward(void);
+void backward(void);
+void rotate_left(void);
+void rotate_right(void);
+void rotate_left90(void);
+void rotate_right90(void);
+void forward_right(void);
+void forward_left(void);
+void stop(void);
+void grip_on(void);
+void grip_off(void);
 void forward_regulated(signed e);
-void start_sending();
-void stop_sending();
+void start_sending(void);
+void stop_sending(void);
 signed int e_last = 0;
 
 void pwm_start_L()
@@ -70,12 +72,6 @@ void forward_right()
 	OCR1AL = 0xA0;
 }
 
-void rotate_right()
-{
-	PORTB = 0x02;
-	OCR1BL = 0xA0;
-	OCR1AL = 0xA0;
-}
 
 void rotate_left90()
 {
@@ -101,6 +97,14 @@ void rotate_left()
 	OCR1BL = 0xA0;
 	OCR1AL = 0xA0;
 }
+
+void rotate_right()
+{
+	PORTB = 0x02;
+	OCR1BL = 0xA0;
+	OCR1AL = 0xA0;
+}
+
 void stop()
 {
 	PORTB = 0x00;

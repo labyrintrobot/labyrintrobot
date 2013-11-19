@@ -1,5 +1,7 @@
 package application;
 
+import java.io.IOException;
+
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
@@ -33,12 +35,15 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
 	private final TextArea errorLog;
 
 	private boolean paused = false;
-	
+
 	public PresentationStage(String bluetoothServerUrl) {
+
 		bluetoothAdapter = new BluetoothAdapter(this);
+
+
 		controllerAdapter = new ControllerAdapter(bluetoothAdapter);
 		controlPad = new ControlPad();
-		
+
 		rightChart = new RealTimeChart("Right", "Distance", 256);
 		forwardRightChart = new RealTimeChart("Forward, right", "Distance", 256);
 		forwardChart = new RealTimeChart("Forward", "Distance", 256);
@@ -48,11 +53,13 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
 		tapeChart = new RealTimeChart("Tape sensor", "Hamming distance", 8);
 
 		errorLog = new TextArea();
-		
+
 		controlPad.pressStop();
 		errorLog.setEditable(false);
 
 		try {
+			bluetoothAdapter.setup(bluetoothServerUrl);
+			
 			this.setTitle("Labyrintrobot");
 			final Button pauseButton = new Button();
 			if (paused) {
@@ -72,7 +79,7 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
 			westBox.setAlignment(Pos.CENTER_RIGHT);
 			southBox.setAlignment(Pos.BOTTOM_CENTER);
 			centerBox.setAlignment(Pos.CENTER);
-			
+
 
 			eastBox.getChildren().add(rightChart.getUnderLyingLineChart());
 			westBox.getChildren().add(leftChart.getUnderLyingLineChart());
@@ -93,25 +100,30 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
 
 				@Override
 				public void handle(KeyEvent t) {
-					switch (t.getCode()) {
-					case RIGHT:
-						controllerAdapter.pressRight();
-						break;
-					case UP:
-						controllerAdapter.pressUp();
-						break;
-					case LEFT:
-						controllerAdapter.pressLeft();
-						break;
-					case DOWN:
-						controllerAdapter.pressDown();
-						break;
-					case C:
-						controllerAdapter.pressC();
-						break;
-					default:
-						// Do nothing
-						break;
+					try {
+						switch (t.getCode()) {
+						case RIGHT:
+							controllerAdapter.pressRight();
+							break;
+						case UP:
+							controllerAdapter.pressUp();
+							break;
+						case LEFT:
+							controllerAdapter.pressLeft();
+							break;
+						case DOWN:
+							controllerAdapter.pressDown();
+							break;
+						case C:
+							controllerAdapter.pressC();
+							break;
+						default:
+							// Do nothing
+							break;
+						}
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
 					}
 				}
 			};
@@ -120,25 +132,30 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
 
 				@Override
 				public void handle(KeyEvent t) {
-					switch (t.getCode()) {
-					case RIGHT:
-						controllerAdapter.releaseRight();
-						break;
-					case UP:
-						controllerAdapter.releaseUp();
-						break;
-					case LEFT:
-						controllerAdapter.releaseLeft();
-						break;
-					case DOWN:
-						controllerAdapter.releaseDown();
-						break;
-					case C:
-						controllerAdapter.releaseC();
-						break;
-					default:
-						// Do nothing
-						break;
+					try {
+						switch (t.getCode()) {
+						case RIGHT:
+							controllerAdapter.releaseRight();
+							break;
+						case UP:
+							controllerAdapter.releaseUp();
+							break;
+						case LEFT:
+							controllerAdapter.releaseLeft();
+							break;
+						case DOWN:
+							controllerAdapter.releaseDown();
+							break;
+						case C:
+							controllerAdapter.releaseC();
+							break;
+						default:
+							// Do nothing
+							break;
+						}
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
 					}
 				}
 			};
@@ -188,7 +205,12 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
 
 			@Override
 			public void run() {
-				bluetoothAdapter.receiveMessages();
+				try {
+					bluetoothAdapter.receiveMessages();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 
 		});
@@ -281,7 +303,12 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
 
 		case 0x0B:
 			if (data == 0x00) {
-				bluetoothAdapter.sendMessage(header, data);
+				try {
+					bluetoothAdapter.sendMessage(header, data);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			} else {
 				log(errorLog, "Invalid ping data: " + Integer.toHexString(data));
 			}

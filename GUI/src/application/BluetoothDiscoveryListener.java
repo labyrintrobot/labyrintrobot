@@ -1,6 +1,5 @@
 package application;
 
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,12 +10,6 @@ import javax.bluetooth.DiscoveryListener;
 import javax.bluetooth.LocalDevice;
 import javax.bluetooth.RemoteDevice;
 import javax.bluetooth.ServiceRecord;
-import javax.bluetooth.UUID;
-import javax.microedition.io.Connector;
-import javax.obex.ClientSession;
-import javax.obex.HeaderSet;
-import javax.obex.Operation;
-import javax.obex.ResponseCodes;
 
 public class BluetoothDiscoveryListener implements DiscoveryListener {
 	
@@ -52,7 +45,7 @@ public class BluetoothDiscoveryListener implements DiscoveryListener {
 				System.out.println("Device Inquiry Completed. ");
 			}
 
-			UUID[] uuidSet = new UUID[1];
+			/*UUID[] uuidSet = new UUID[1];
 			uuidSet[0] = new UUID(0x1105); // OBEX Object Push service
 
 			int[] attrIDs = new int[] { 0x0100 // Service name
@@ -73,7 +66,7 @@ public class BluetoothDiscoveryListener implements DiscoveryListener {
 			}
 			if (DEBUG) {
 				System.out.println("Service search finished.");
-			}
+			}*/
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -126,46 +119,11 @@ public class BluetoothDiscoveryListener implements DiscoveryListener {
 						+ " found " + url);
 
 				if (serviceName.getValue().equals("OBEX Object Push")) {
-					sendMessageToDevice(url);
+					//sendMessageToDevice(url);
 				}
 			} else {
 				System.out.println("Service found " + url);
 			}
-		}
-	}
-
-	public void sendMessageToDevice(String serverURL) {
-		try {
-			System.out.println("Connecting to " + serverURL);
-
-			ClientSession clientSession = (ClientSession) Connector
-					.open(serverURL);
-			HeaderSet hsConnectReply = clientSession.connect(null);
-			if (hsConnectReply.getResponseCode() != ResponseCodes.OBEX_HTTP_OK) {
-				System.out.println("Failed to connect");
-				return;
-			}
-
-			HeaderSet hsOperation = clientSession.createHeaderSet();
-			hsOperation.setHeader(HeaderSet.NAME, "Hello.txt");
-			hsOperation.setHeader(HeaderSet.TYPE, "text");
-
-			// Create PUT Operation
-			Operation putOperation = clientSession.put(hsOperation);
-
-			// Send some text to server
-			byte data[] = "Hello World !!!".getBytes("iso-8859-1");
-			OutputStream os = putOperation.openOutputStream();
-			os.write(data);
-			os.close();
-
-			putOperation.close();
-
-			clientSession.disconnect(null);
-
-			clientSession.close();
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
 	}
 	

@@ -1,5 +1,7 @@
 package application;
 
+import java.io.IOException;
+
 public class ControllerAdapter {
 	private boolean rightPressed = false;
 	private boolean upPressed = false;
@@ -12,21 +14,21 @@ public class ControllerAdapter {
 		this.bluetoothAdapter = bluetoothAdapter;
 	}
 
-	public void pressRight() {
+	public void pressRight() throws IOException {
 		if (rightPressed == false) {
 			rightPressed = true;
 			revalidateButtons();
 		}
 	}
 
-	public void releaseRight() {
+	public void releaseRight() throws IOException {
 		if (rightPressed) {
 			rightPressed = false;
 			revalidateButtons();
 		}
 	}
 
-	public void pressUp() {
+	public void pressUp() throws IOException {
 		if (upPressed == false) {
 			upPressed = true;
 			revalidateButtons();
@@ -34,42 +36,42 @@ public class ControllerAdapter {
 	}
 
 
-	public void releaseUp() {
+	public void releaseUp() throws IOException {
 		if (upPressed) {
 			upPressed = false;
 			revalidateButtons();
 		}
 	}
 
-	public void pressLeft() {
+	public void pressLeft() throws IOException {
 		if (leftPressed == false) {
 			leftPressed = true;
 			revalidateButtons();
 		}
 	}
 
-	public void releaseLeft() {
+	public void releaseLeft() throws IOException {
 		if (leftPressed) {
 			leftPressed = false;
 			revalidateButtons();
 		}
 	}
 
-	public void pressDown() {
+	public void pressDown() throws IOException {
 		if (downPressed == false) {
 			downPressed = true;
 			revalidateButtons();
 		}
 	}
 
-	public void releaseDown() {
+	public void releaseDown() throws IOException {
 		if (downPressed) {
 			downPressed = false;
 			revalidateButtons();
 		}
 	}
 
-	public void pressC() {
+	public void pressC() throws IOException {
 		final byte header = 0x02;
 		final byte data = 0x00;
 
@@ -80,7 +82,7 @@ public class ControllerAdapter {
 		// Do nothing
 	}
 
-	private void revalidateButtons() {
+	private void revalidateButtons() throws IOException {
 		final byte header = 0x00;
 		final byte data;
 

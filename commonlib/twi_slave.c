@@ -9,7 +9,7 @@
 #include "twi_slave.h"
 #include "twi_common_private.h"
 
-int TWI_slave_receive_address(TWI_MODULE_ADDRESS* from_address, bool* write);
+int TWI_slave_receive_address(bool* write);
 int TWI_slave_receive_data(uint8_t* data, bool nack);
 int TWI_slave_send_data(uint8_t data, bool nack);
 
@@ -23,14 +23,14 @@ enum TWI_STATUS {
 	TWI_REP_START_STOP_STATUS = 0xA0
 	};
 
-int TWI_slave_receive_address(TWI_MODULE_ADDRESS* from_address, bool* write) {
+int TWI_slave_receive_address(bool* write) {
 	TWI_common_wait_for_TWINT();
-	if (TWI_common_invalid_status(TWI_SLAW_ACK_STATUS) || TWI_common_invalid_status(TWI_SLAR_ACK_STATUS)) {
+	bool invalid_slaw = TWI_common_invalid_status(TWI_SLAW_ACK_STATUS);
+	bool invalid_slar = TWI_common_invalid_status(TWI_SLAR_ACK_STATUS);
+	if (invalid_slaw && invalid_slar) {
 		return 0x0A;
 	}
-	
-	*from_address = TWDR & 0xFE;
-	*write = TWDR & 0x01;
+	*write = ! invalid_slaw;
 	
 	return 0;
 }
@@ -47,7 +47,6 @@ int TWI_slave_receive_data(uint8_t* data, bool nack) {
 		if (TWI_common_invalid_status(TWI_DATA_REC_ACK_STATUS)) {
 			return 0x0C;
 		}
-		
 	}
 	*data = TWDR;
 	return 0;
@@ -85,21 +84,20 @@ int TWI_slave_send_message(uint8_t header, uint8_t data, void (*start_sending_ir
 	
 	TWI_common_disable_interrupt();
 	start_sending_irq_fn();
+<<<<<<< HEAD
 	PORTA = 0x10;
 	TWI_MODULE_ADDRESS address;
+=======
+	
+>>>>>>> 1432ce7818c0db562c9ca03d2e80188ff785ba61
 	bool write;
-	int err = TWI_slave_receive_address(&address, &write);
+	int err = TWI_slave_receive_address(&write);
 	stop_sending_irq_fn();
 	PORTA = 0x30;
 	if (err) return err;
 	
-	// TODO validate address?
-	
 	if (write) {
 		return 0x0F;
-	}
-	if (TWI_common_invalid_status(TWI_SLAR_ACK_STATUS)) {
-		return 0x10;
 	}
 	
 	err = TWI_slave_send_data(header, false);
@@ -124,18 +122,12 @@ int TWI_slave_receive_message(uint8_t* header, uint8_t* data) {
 	
 	TWI_common_disable_interrupt();
 	
-	TWI_MODULE_ADDRESS address;
 	bool write;
-	int err = TWI_slave_receive_address(&address, &write);
+	int err = TWI_slave_receive_address(&write);
 	if (err) return err;
-	
-	// TODO validate address?
 		
 	if (! write) {
-		return 0x11;
-	}
-	if (TWI_common_invalid_status(TWI_SLAW_ACK_STATUS)) {
-		return 0x12;
+		return 0x10;
 	}
 	
 	err = TWI_slave_receive_data(header, false);

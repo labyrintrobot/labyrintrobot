@@ -46,12 +46,17 @@ int main (void)
 {
 	board_init();
 	TWI_common_initialize(TWI_CONTROL_MODULE_ADDRESS, false, 5, false);
-	pwm_start_L();
-	pwm_start_R();
-	pwm_start_G();
-	uint8_t button, switch_;
-	signed e;
+	//pwm_start_L();
+	//pwm_start_R();
+	//pwm_start_G();
+	//uint8_t button, switch_;
+	//signed e;
 	//PORTB = 0xC0; ? vad gör denna?
+	
+	DDRA = 0xFF;
+	DDRB = 0xFF;
+	PORTA = 0;
+	PORTB = 0;
 	
 	//ADCsetup(); // A/D, test
 	//sei(); // Allow interupts A/D, test
@@ -68,28 +73,28 @@ int main (void)
 	
 	while(1)
 	{
-		button = PINA & 0x02; // read PortA, pin 1
-		switch_ = PINA & 0x01; // read PortA, pin 0
-		if(button != 0)
-		{
-			
-			while(switch_ != 0) // man
-			{
-				forward();
-				switch_ = PINA & 0x01;
-			}
-		
-			while(switch_ == 0) //auto
-			{
-				_delay_ms(100);
-				ADCSRA |= 1<<ADSC; // Start ADC conversion
-				//e = 0;
-				e = ADCH-56;
-				forward_regulated(e);	
-				//backward();
-				switch_ = PINA & 0x01;
-			}
-		}
+		//button = PINA & 0x02; // read PortA, pin 1
+		//switch_ = PINA & 0x01; // read PortA, pin 0
+		//if(button != 0)
+		//{
+			//
+			//while(switch_ != 0) // man
+			//{
+				//forward();
+				//switch_ = PINA & 0x01;
+			//}
+		//
+			//while(switch_ == 0) //auto
+			//{
+				//_delay_ms(100);
+				//ADCSRA |= 1<<ADSC; // Start ADC conversion
+				////e = 0;
+				//e = ADCH-56;
+				//forward_regulated(e);	
+				////backward();
+				//switch_ = PINA & 0x01;
+			//}
+		//}
 /*
 		if(button != 0)
 			{

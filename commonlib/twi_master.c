@@ -47,7 +47,7 @@ int TWI_master_receive_data(uint8_t* data, bool nack) {
 /************************************************************************/
 int TWI_master_send_start() {
 	TWCR = (1<<TWINT) | (1<<TWSTA) | (1<<TWEN); // Send START condition
-	while (!(TWCR & (1<<TWINT))); // Wait until START was successfully sent
+	TWI_common_wait_for_TWINT();
 	
 	if (TWI_common_invalid_status(TWI_START_STATUS)) {
 		return 0x04;

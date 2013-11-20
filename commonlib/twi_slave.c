@@ -12,6 +12,7 @@
 int TWI_slave_receive_address(bool* write);
 int TWI_slave_receive_data(uint8_t* data, bool nack);
 int TWI_slave_send_data(uint8_t data, bool nack);
+int TWI_slave_wait_for_stop(void);
 
 enum TWI_STATUS {
 	TWI_SLAR_ACK_STATUS = 0xA8,
@@ -24,13 +25,17 @@ enum TWI_STATUS {
 	};
 
 int TWI_slave_receive_address(bool* write) {
+	
 	TWI_common_wait_for_TWINT();
+	
 	bool invalid_slaw = TWI_common_invalid_status(TWI_SLAW_ACK_STATUS);
 	bool invalid_slar = TWI_common_invalid_status(TWI_SLAR_ACK_STATUS);
 	if (invalid_slaw && invalid_slar) {
 		return 0x0A;
 	}
 	*write = ! invalid_slaw;
+	
+	TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWEA);
 	
 	return 0;
 }
@@ -49,23 +54,44 @@ int TWI_slave_receive_data(uint8_t* data, bool nack) {
 		}
 	}
 	*data = TWDR;
+	
+	TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWEA);
+	
 	return 0;
 }
 
 int TWI_slave_send_data(uint8_t data, bool nack) {
 	TWDR = data; // Write data to register
 	if (nack) {
+		TWCR = (1<<TWINT) | (1<<TWEN); // Send out data
+	} else {
 		TWCR = (1<<TWINT) | (1<<TWEN) | (1 << TWEA); // Send out data
+	}
+	
+	TWI_common_wait_for_TWINT();
+	
+	if (nack) {
 		if (TWI_common_invalid_status(TWI_LAST_DATA_WRITE_ACK_STATUS)) {
 			return 0x0D;
 		}
 	} else {
-		TWCR = (1<<TWINT) | (1<<TWEN); // Send out data
 		if (TWI_common_invalid_status(TWI_DATA_WRITE_ACK_STATUS)) {
 			return 0x0E;
 		}
 	}
 
+	return 0;
+}
+
+int TWI_slave_wait_for_stop() {
+	TWI_common_wait_for_TWINT();
+	
+	if (TWI_common_invalid_status(TWI_REP_START_STOP_STATUS)) {
+		return 0x0F;
+	}
+	
+	TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWEA);
+	
 	return 0;
 }
 
@@ -85,21 +111,22 @@ int TWI_slave_send_message(uint8_t header, uint8_t data, void (*start_sending_ir
 	//TWI_common_disable_interrupt();
 	start_sending_irq_fn();
 
-	TWI_MODULE_ADDRESS address;
-
 	bool write;
 	int err = TWI_slave_receive_address(&write);
 	stop_sending_irq_fn();
 	if (err) return err;
 	
 	if (write) {
-		return 0x0F;
+		return 0x10;
 	}
 	
 	err = TWI_slave_send_data(header, false);
 	if (err) return err;
 	
 	err = TWI_slave_send_data(data, true);
+	if (err) return err;
+	
+	err = TWI_slave_wait_for_stop();
 	if (err) return err;
 	
 	//TWI_common_enable_interrupt();
@@ -122,13 +149,16 @@ int TWI_slave_receive_message(uint8_t* header, uint8_t* data) {
 	if (err) return err;
 		
 	if (! write) {
-		return 0x10;
+		return 0x11;
 	}
 	
 	err = TWI_slave_receive_data(header, false);
 	if (err) return err;
 	
 	err = TWI_slave_receive_data(data, true);
+	if (err) return err;
+	
+	err = TWI_slave_wait_for_stop();
 	if (err) return err;
 	
 	//TWI_common_enable_interrupt();

@@ -39,13 +39,7 @@ int TWI_common_initialize(TWI_MODULE_ADDRESS my_address, bool enable_interrupts,
 	// TWEN = Enable TWI
 	// TWEA = Enable acknowledgment of own address
 	// TWIE = Enable interrupts
-	if (master) {
-		if (enable_interrupts) {
-			TWCR = (1<<TWEN) | (1<<TWIE);
-		} else {
-			TWCR = (1<<TWEN);
-		}
-	} else {
+	if (! master) {
 		if (enable_interrupts) {
 			TWCR = (1<<TWEN) | (1<<TWEA) | (1<<TWIE);
 		} else {

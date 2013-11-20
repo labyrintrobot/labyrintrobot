@@ -82,7 +82,7 @@ the interrupt to the communication module                               */
 /************************************************************************/
 int TWI_slave_send_message(uint8_t header, uint8_t data, void (*start_sending_irq_fn)(void), void (*stop_sending_irq_fn)(void)) {
 	
-	TWI_common_disable_interrupt();
+	//TWI_common_disable_interrupt();
 	start_sending_irq_fn();
 
 	PORTA = 0x10;
@@ -104,7 +104,7 @@ int TWI_slave_send_message(uint8_t header, uint8_t data, void (*start_sending_ir
 	err = TWI_slave_send_data(data, true);
 	if (err) return err;
 	
-	TWI_common_enable_interrupt();
+	//TWI_common_enable_interrupt();
 	PORTA = 0x70;
 	return 0;
 }
@@ -118,7 +118,7 @@ TWI                                                                     */
 /************************************************************************/
 int TWI_slave_receive_message(uint8_t* header, uint8_t* data) {
 	
-	TWI_common_disable_interrupt();
+	//TWI_common_disable_interrupt();
 	
 	bool write;
 	int err = TWI_slave_receive_address(&write);
@@ -134,7 +134,7 @@ int TWI_slave_receive_message(uint8_t* header, uint8_t* data) {
 	err = TWI_slave_receive_data(data, true);
 	if (err) return err;
 	
-	TWI_common_enable_interrupt();
+	//TWI_common_enable_interrupt();
 	
 	return 0;
 }

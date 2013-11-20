@@ -1,6 +1,9 @@
 #include <asf.h>
 #include <avr/interrupt.h>
+#include <utils/delay.h>
 #include "twi_master.h"
+
+#define F_CPU 14.7456E6
 
 void enable_irqs(void);
 
@@ -63,46 +66,59 @@ int main (void)
 	// Errors on PORT A
 	// Messages on PORT B
 	
-	DDRB = 0xFF; // Only out
+	DDRB = 0xFF; // Err
 	PORTB = 0;
-	DDRA = 0xFF; // Only out
+	DDRA = 0xFF; // Data
 	PORTA = 0;
 	
-	enable_irqs();
+	//enable_irqs();
+	
+	TWI_common_initialize(TWI_COMMUNICATION_MODULE_ADDRESS, false, 5, true);
+	
+	_delay_ms(1000);
+	
+	int err = TWI_master_send_message(TWI_CONTROL_MODULE_ADDRESS, 0b11001100, 0b10101010);
+	PORTB = err;
+	if (err) {
+		
+	} else {
+		PORTA = 0b11100011;
+	}
+	while(1);
 	
 	//main loop 
-	while(1) {
-		
-		if (interrupt_error) {
-			PORTA = 0b10101010;
-			while (1);
-		}
-		
-		if (sensor_module_interrupt) {
-			uint8_t header;
-			uint8_t data;
-			err = TWI_master_receive_message(TWI_SENSOR_MODULE_ADDRESS, &header, &data);
-			if (err) {
-				PORTA = err;
-				while (1);
-			}
-			
-			execute_message(header, data);
-			
-			sensor_module_interrupt = false;
-		}
-		if (control_module_interrupt) {
-			uint8_t header;
-			uint8_t data;
-			err = TWI_master_receive_message(TWI_CONTROL_MODULE_ADDRESS, &header, &data);
-			if (err) {
-				PORTA = err;
-				while (1);
-			}
-			
-			execute_message(header, data);
-			
-			control_module_interrupt = false;
-		}
-	}
+	//while(1) {
+		//
+		//if (interrupt_error) {
+			//PORTA = 0b10101010;
+			//while (1);
+		//}
+		//
+		//if (sensor_module_interrupt) {
+			//uint8_t header;
+			//uint8_t data;
+			//err = TWI_master_receive_message(TWI_SENSOR_MODULE_ADDRESS, &header, &data);
+			//if (err) {
+				//PORTA = err;
+				//while (1);
+			//}
+			//
+			//execute_message(header, data);
+			//
+			//sensor_module_interrupt = false;
+		//}
+		//if (control_module_interrupt) {
+			//uint8_t header;
+			//uint8_t data;
+			//err = TWI_master_receive_message(TWI_CONTROL_MODULE_ADDRESS, &header, &data);
+			//if (err) {
+				//PORTA = err;
+				//while (1);
+			//}
+			//
+			//execute_message(header, data);
+			//
+			//control_module_interrupt = false;
+		//}
+	//}
 }

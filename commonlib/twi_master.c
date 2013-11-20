@@ -60,8 +60,7 @@ void TWI_master_send_stop() {
 }
 
 /************************************************************************/
-/* address is the ´7 most significant bits in address. If write is true,
-it will be a write operation.       */
+/* address: The least significant bit is ignored                        */
 /************************************************************************/
 int TWI_master_send_address(TWI_MODULE_ADDRESS to_address, bool write) {
 	
@@ -108,8 +107,6 @@ int TWI_master_send_data(uint8_t data, bool nack) {
 
 int TWI_master_send_message(TWI_MODULE_ADDRESS to_address, uint8_t header, uint8_t data) {
 	
-	TWI_common_disable_interrupt();
-	
 	int err = TWI_master_send_start();
 	if (err) return err;
 	
@@ -124,14 +121,10 @@ int TWI_master_send_message(TWI_MODULE_ADDRESS to_address, uint8_t header, uint8
 	
 	TWI_master_send_stop();
 	
-	TWI_common_enable_interrupt();
-	
 	return 0;
 }
 
 int TWI_master_receive_message(TWI_MODULE_ADDRESS from_address, uint8_t* header, uint8_t* data) {
-	
-	TWI_common_disable_interrupt();
 	
 	int err = TWI_master_send_start();
 	if (err) return err;
@@ -147,7 +140,17 @@ int TWI_master_receive_message(TWI_MODULE_ADDRESS from_address, uint8_t* header,
 	
 	TWI_master_send_stop();
 	
-	TWI_common_enable_interrupt();
+	return 0;
+}
+
+int TWI_master_reset() {
+	int err;
+	int i;
+	for (i = 0; i < 3; i++) {
+		err = TWI_master_send_start();
+		if (err) return err;
+		TWI_master_send_stop();
+	}
 	
 	return 0;
 }

@@ -1,9 +1,9 @@
+#define F_CPU 14.7456E6
+
 #include <asf.h>
 #include <avr/interrupt.h>
-#include <utils/delay.h>
+#include <util/delay.h>
 #include "twi_master.h"
-
-#define F_CPU 14.7456E6
 
 void enable_irqs(void);
 
@@ -57,12 +57,6 @@ int main (void)
 {
 	board_init();
 	
-	int err = TWI_common_initialize(TWI_COMMUNICATION_MODULE_ADDRESS, true, 5, true);
-	if (err) {
-		PORTB = 0b11001100;
-		while (1);
-	}
-	
 	// Errors on PORT A
 	// Messages on PORT B
 	
@@ -75,7 +69,7 @@ int main (void)
 	
 	TWI_common_initialize(TWI_COMMUNICATION_MODULE_ADDRESS, false, 5, true);
 	
-	_delay_ms(1000);
+	_delay_ms(200);
 	
 	int err = TWI_master_send_message(TWI_CONTROL_MODULE_ADDRESS, 0b11001100, 0b10101010);
 	PORTB = err;

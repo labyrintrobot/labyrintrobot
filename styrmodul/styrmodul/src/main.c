@@ -33,9 +33,9 @@
 #include <util/delay.h>
 #include <avr/interrupt.h>
 
-#include <functions.h>
+#include <man_functions.h>
 //#include <ADC_setup.h>
-//#include <auto_functions.h>
+#include <auto_functions.h>
 #include "twi_slave.h"
 
 
@@ -46,94 +46,54 @@ int main (void)
 {
 	board_init();
 	TWI_common_initialize(TWI_CONTROL_MODULE_ADDRESS, false, 5, false);
-	//pwm_start_L();
-	//pwm_start_R();
-	//pwm_start_G();
-	//uint8_t button, switch_;
-	//signed e;
+	pwm_start_L();
+	pwm_start_R();
+	pwm_start_G();
+	uint8_t button, switch_;
+	signed e;
 	//PORTB = 0xC0; ? vad gör denna?
 	
-	DDRA = 0xFF;
-	DDRB = 0xFF;
-	PORTA = 0;
-	PORTB = 0;
-	
 	//ADCsetup(); // A/D, test
-	//sei(); // Allow interupts A/D, test
+	//sei(); // Allow interrupts A/D, test
 	uint8_t header;
 	uint8_t data; 
-	PORTB = TWI_slave_receive_message(&header,&data);
-	PORTA = data;
+	TWI_slave_receive_message(&header, &data);
 	 
+	
 	while(1)
 	{
+		button = PINA & 0x02; // read PortA, pin 1
+		switch_ = PINA & 0x01; // read PortA, pin 0
 		
-	}
-	
-	
-	while(1)
-	{
-		//button = PINA & 0x02; // read PortA, pin 1
-		//switch_ = PINA & 0x01; // read PortA, pin 0
-		//if(button != 0)
-		//{
-			//
-			//while(switch_ != 0) // man
-			//{
-				//forward();
-				//switch_ = PINA & 0x01;
-			//}
-		//
-			//while(switch_ == 0) //auto
-			//{
-				//_delay_ms(100);
-				//ADCSRA |= 1<<ADSC; // Start ADC conversion
-				////e = 0;
-				//e = ADCH-56;
-				//forward_regulated(e);	
-				////backward();
-				//switch_ = PINA & 0x01;
-			//}
-		//}
-/*
-		if(button != 0)
+		while(switch_ != 0) // man
+		{	
+			TWI_slave_receive_message(&header, &data);
+			if(header == 0x00)
 			{
-				if(switch_ != 0) // testkörning
-				{
-					grip_on();
-					_delay_ms(1000);
-					forward();
-					_delay_ms(3000);
-					rotate_right90();
-					forward();
-					_delay_ms(1500);
-					stop();
-					grip_off();
-					_delay_ms(500);
-					backward();
-					_delay_ms(200);
-					rotate_right90();
-					rotate_right90();
-					forward();
-					_delay_ms(1300);					
-					rotate_left90();
-					forward();
-					_delay_ms(3000);
-			
-				}
-				else
-				{
-					rotate_right90();
-				}
-		
-
-				
+				manual_action(data);
 			}
-			else
+		switch_ = (PINA & 0x01);
+		}
+		
+		while(switch_ == 0) //auto
+		{
+			if(button != 0) //startar auto
 			{
-				stop();
-			}*/
-	
+				find_start();
+				find_goal();
+				return_to_start();
+					
+				/*
+				find start
+				find goal
+				grab target
+				return to start
+				stop
+				*/
+			}
+			switch_ = PINA & 0x01;
+		}
+		
 	}
 	// Insert application code here, after the board has been initialized.
 }

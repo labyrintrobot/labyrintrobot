@@ -77,8 +77,11 @@ int TWI_master_send_address(TWI_MODULE_ADDRESS to_address, bool write) {
 	TWDR = to_address; // Write address to register
 	TWCR = (1<<TWINT) | (1<<TWEN); // Send out address
 	
+	TWI_common_wait_for_TWINT();
+	
 	if (write) {
 		if (TWI_common_invalid_status(TWI_SLAW_ACK_STATUS)) {
+			//return TWSR & (0xF8);
 			return 0x06;
 		}
 	} else {
@@ -93,11 +96,17 @@ int TWI_master_send_data(uint8_t data, bool nack) {
 	TWDR = data; // Write data to register
 	if (nack) {
 		TWCR = (1<<TWINT) | (1<<TWEN);
+	} else {
+		TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWEA);
+	}
+	
+	TWI_common_wait_for_TWINT();
+	
+	if (nack) {
 		if (TWI_common_invalid_status(TWI_DATA_WRITE_NACK_STATUS)) {
 			return 0x08;
 		}
 	} else {
-		TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWEA);
 		if (TWI_common_invalid_status(TWI_DATA_WRITE_ACK_STATUS)) {
 			return 0x09;
 		}

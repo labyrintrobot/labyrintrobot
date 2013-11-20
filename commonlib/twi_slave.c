@@ -10,7 +10,7 @@
 #include "twi_common_private.h"
 
 int TWI_slave_receive_address(bool* write);
-int TWI_slave_receive_data(uint8_t* data, bool nack);
+int TWI_slave_receive_data(uint8_t* data);
 int TWI_slave_send_data(uint8_t data, bool nack);
 int TWI_slave_wait_for_stop(void);
 
@@ -40,18 +40,11 @@ int TWI_slave_receive_address(bool* write) {
 	return 0;
 }
 
-int TWI_slave_receive_data(uint8_t* data, bool nack) {
+int TWI_slave_receive_data(uint8_t* data) {
 	TWI_common_wait_for_TWINT();
 	
-	if(nack) {
-		if (TWI_common_invalid_status(TWI_DATA_REC_NACK_STATUS)) {
-			return 0x0B;
-		}
-		
-	} else {
-		if (TWI_common_invalid_status(TWI_DATA_REC_ACK_STATUS)) {
-			return 0x0C;
-		}
+	if (TWI_common_invalid_status(TWI_DATA_REC_ACK_STATUS)) {
+		return 0x0C;
 	}
 	*data = TWDR;
 	
@@ -152,10 +145,10 @@ int TWI_slave_receive_message(uint8_t* header, uint8_t* data) {
 		return 0x11;
 	}
 	
-	err = TWI_slave_receive_data(header, false);
+	err = TWI_slave_receive_data(header);
 	if (err) return err;
 	
-	err = TWI_slave_receive_data(data, true);
+	err = TWI_slave_receive_data(data);
 	if (err) return err;
 	
 	err = TWI_slave_wait_for_stop();

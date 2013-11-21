@@ -10,16 +10,6 @@
 #include "twi_master.h"
 #include "twi_common_private.h"
 
-enum STATUS {
-	TWI_START_STATUS = 0x08,
-	TWI_SLAW_ACK_STATUS = 0x18,
-	TWI_DATA_WRITE_ACK_STATUS = 0x28,
-	TWI_DATA_WRITE_NACK_STATUS = 0x28,
-	TWI_SLAR_ACK_STATUS = 0x40,
-	TWI_DATA_REC_ACK_STATUS = 0x50,
-	TWI_DATA_REC_NACK_STATUS = 0x58
-	};
-
 int TWI_master_receive_data(uint8_t* data, bool nack);
 int TWI_master_send_start(void);
 void TWI_master_send_stop(void);
@@ -44,11 +34,11 @@ int TWI_master_receive_data(uint8_t* data, bool nack) {
 	TWI_common_wait_for_TWINT();
 	
 	if (nack) {
-		if (TWI_common_invalid_status(TWI_DATA_REC_NACK_STATUS)) {
+		if (TWI_common_invalid_status(TW_MR_DATA_NACK)) {
 			return 0x02;
 		}
 	} else {
-		if (TWI_common_invalid_status(TWI_DATA_REC_ACK_STATUS)) {
+		if (TWI_common_invalid_status(TW_MR_DATA_ACK)) {
 			return 0x03;
 		}
 	}
@@ -67,7 +57,7 @@ int TWI_master_send_start() {
 	TWCR = (1<<TWINT) | (1<<TWSTA) | (1<<TWEN); // Send START condition
 	TWI_common_wait_for_TWINT();
 	
-	if (TWI_common_invalid_status(TWI_START_STATUS)) {
+	if (TWI_common_invalid_status(TW_START)) {
 		return 0x04;
 	}
 	return 0;
@@ -98,12 +88,12 @@ int TWI_master_send_address(TWI_MODULE_ADDRESS to_address, bool write) {
 	TWI_common_wait_for_TWINT();
 	
 	if (write) {
-		if (TWI_common_invalid_status(TWI_SLAW_ACK_STATUS)) {
+		if (TWI_common_invalid_status(TW_MT_SLA_ACK)) {
 			//return TWSR & (0xF8);
 			return 0x06;
 		}
 	} else {
-		if (TWI_common_invalid_status(TWI_SLAR_ACK_STATUS)) {
+		if (TWI_common_invalid_status(TW_MR_SLA_ACK)) {
 			return 0x07;
 		}
 	}
@@ -116,7 +106,7 @@ int TWI_master_send_data(uint8_t data) {
 	
 	TWI_common_wait_for_TWINT();
 	
-	if (TWI_common_invalid_status(TWI_DATA_WRITE_ACK_STATUS)) {
+	if (TWI_common_invalid_status(TW_MT_DATA_ACK)) {
 		return 0x09;
 	}
 	return 0;

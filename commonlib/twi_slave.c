@@ -17,16 +17,6 @@ int TWI_slave_receive_data(uint8_t* data);
 int TWI_slave_send_data(uint8_t data, bool nack);
 int TWI_slave_wait_for_stop(void);
 
-enum TWI_STATUS {
-	TWI_SLAR_ACK_STATUS = 0xA8,
-	TWI_DATA_WRITE_ACK_STATUS = 0xB8,
-	TWI_LAST_DATA_WRITE_ACK_STATUS = 0xC8,
-	TWI_SLAW_ACK_STATUS = 0x60,
-	TWI_DATA_REC_ACK_STATUS = 0x80,
-	TWI_DATA_REC_NACK_STATUS = 0x88,
-	TWI_REP_START_STOP_STATUS = 0xA0
-	};
-	
 /************************************************************************/
 /* Initializes the TWI clockspeed and slave address. Also enables TWI.  */
 /* my_address: the TWI address of this  module                          */
@@ -55,8 +45,8 @@ int TWI_slave_receive_address(bool* write) {
 	
 	TWI_common_wait_for_TWINT();
 	
-	bool invalid_slaw = TWI_common_invalid_status(TWI_SLAW_ACK_STATUS);
-	bool invalid_slar = TWI_common_invalid_status(TWI_SLAR_ACK_STATUS);
+	bool invalid_slaw = TWI_common_invalid_status(TW_SR_SLA_ACK);
+	bool invalid_slar = TWI_common_invalid_status(TW_ST_SLA_ACK);
 	if (invalid_slaw && invalid_slar) {
 		return 0x0A;
 	}
@@ -70,7 +60,7 @@ int TWI_slave_receive_address(bool* write) {
 int TWI_slave_receive_data(uint8_t* data) {
 	TWI_common_wait_for_TWINT();
 	
-	if (TWI_common_invalid_status(TWI_DATA_REC_ACK_STATUS)) {
+	if (TWI_common_invalid_status(TW_SR_DATA_ACK)) {
 		return 0x0C;
 	}
 	*data = TWDR;
@@ -91,11 +81,11 @@ int TWI_slave_send_data(uint8_t data, bool nack) {
 	TWI_common_wait_for_TWINT();
 	
 	if (nack) {
-		if (TWI_common_invalid_status(TWI_LAST_DATA_WRITE_ACK_STATUS)) {
+		if (TWI_common_invalid_status(TW_ST_LAST_DATA)) {
 			return 0x0D;
 		}
 	} else {
-		if (TWI_common_invalid_status(TWI_DATA_WRITE_ACK_STATUS)) {
+		if (TWI_common_invalid_status(TW_ST_DATA_ACK)) {
 			return 0x0E;
 		}
 	}
@@ -106,7 +96,7 @@ int TWI_slave_send_data(uint8_t data, bool nack) {
 int TWI_slave_wait_for_stop() {
 	TWI_common_wait_for_TWINT();
 	
-	if (TWI_common_invalid_status(TWI_REP_START_STOP_STATUS)) {
+	if (TWI_common_invalid_status(TW_SR_STOP)) {
 		return 0x0F;
 	}
 	

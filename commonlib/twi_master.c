@@ -46,6 +46,9 @@ int TWI_master_receive_data(uint8_t* data, bool nack) {
 /* Returns 0 if successful                                              */
 /************************************************************************/
 int TWI_master_send_start() {
+	
+	while((1<<TWSTO) & TWCR); // Wait for stop to finish
+	
 	TWCR = (1<<TWINT) | (1<<TWSTA) | (1<<TWEN); // Send START condition
 	TWI_common_wait_for_TWINT();
 	
@@ -57,8 +60,6 @@ int TWI_master_send_start() {
 
 void TWI_master_send_stop() {
 	TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWSTO);
-	
-	while((1<<TWSTO) & TWCR);
 }
 
 /************************************************************************/

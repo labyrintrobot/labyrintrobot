@@ -195,6 +195,10 @@
     <GenerateEepFile>True</GenerateEepFile>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\..\commonlib\twi_common.c">
+      <SubType>compile</SubType>
+      <Link>twi_common.c</Link>
+    </Compile>
     <Compile Include="..\..\commonlib\twi_common.h">
       <SubType>compile</SubType>
       <Link>twi_common.h</Link>

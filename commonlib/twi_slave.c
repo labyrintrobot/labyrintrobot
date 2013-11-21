@@ -6,9 +6,12 @@
  */ 
 
 #include <asf.h>
+#include <util/twi.h>
 #include "twi_slave.h"
 #include "twi_common_private.h"
 
+void TWI_slave_ACK(void);
+void TWI_slave_NACK(void);
 int TWI_slave_receive_address(bool* write);
 int TWI_slave_receive_data(uint8_t* data);
 int TWI_slave_send_data(uint8_t data, bool nack);
@@ -23,6 +26,30 @@ enum TWI_STATUS {
 	TWI_DATA_REC_NACK_STATUS = 0x88,
 	TWI_REP_START_STOP_STATUS = 0xA0
 	};
+	
+/************************************************************************/
+/* Initializes the TWI clockspeed and slave address. Also enables TWI.  */
+/* my_address: the TWI address of this  module                          */
+/* bitrate: the bitrate in kHz                                          */
+/************************************************************************/
+int TWI_slave_initialize(TWI_MODULE_ADDRESS my_address, TWI_BITRATE bitrate) {
+		
+	int err = TWI_common_initialize(bitrate);
+	if (err) return err;
+	
+	TWAR = my_address & 0xFE;
+	TWAMR = 0x00; // No filtering
+	
+	return 0;
+}
+
+void TWI_slave_ACK() {
+	TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWEA);
+}
+
+void TWI_slave_NACK() {
+	TWCR = (1<<TWINT) | (1<<TWEN);
+}
 
 int TWI_slave_receive_address(bool* write) {
 	
@@ -35,7 +62,7 @@ int TWI_slave_receive_address(bool* write) {
 	}
 	*write = ! invalid_slaw;
 	
-	TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWEA);
+	TWI_slave_ACK();
 	
 	return 0;
 }
@@ -48,7 +75,7 @@ int TWI_slave_receive_data(uint8_t* data) {
 	}
 	*data = TWDR;
 	
-	TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWEA);
+	TWI_slave_ACK();
 	
 	return 0;
 }
@@ -56,9 +83,9 @@ int TWI_slave_receive_data(uint8_t* data) {
 int TWI_slave_send_data(uint8_t data, bool nack) {
 	TWDR = data; // Write data to register
 	if (nack) {
-		TWCR = (1<<TWINT) | (1<<TWEN); // Send out data
+		TWI_slave_NACK();
 	} else {
-		TWCR = (1<<TWINT) | (1<<TWEN) | (1 << TWEA); // Send out data
+		TWI_slave_ACK();
 	}
 	
 	TWI_common_wait_for_TWINT();
@@ -83,7 +110,7 @@ int TWI_slave_wait_for_stop() {
 		return 0x0F;
 	}
 	
-	TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWEA);
+	TWI_slave_ACK();
 	
 	return 0;
 }

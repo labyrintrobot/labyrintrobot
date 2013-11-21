@@ -6,6 +6,7 @@
  */ 
 
 #include <asf.h>
+#include <util/twi.h>
 #include "twi_master.h"
 #include "twi_common_private.h"
 
@@ -24,6 +25,20 @@ int TWI_master_send_start(void);
 void TWI_master_send_stop(void);
 int TWI_master_send_address(TWI_MODULE_ADDRESS to_address, bool write);
 int TWI_master_send_data(uint8_t data);
+
+/************************************************************************/
+/* Initializes TWI. Sets the bitrate and enables TWI.                   */
+/* bitrate: the bitrate in kHz                                          */
+/************************************************************************/
+int TWI_master_initialize(TWI_BITRATE bitrate) {
+	
+	int err = TWI_common_initialize(bitrate);
+	if (err) return err;
+	
+	TWCR = (1<<TWEN); // Enable TWI
+	
+	return 0;
+}
 
 int TWI_master_receive_data(uint8_t* data, bool nack) {
 	TWI_common_wait_for_TWINT();
@@ -46,6 +61,9 @@ int TWI_master_receive_data(uint8_t* data, bool nack) {
 /* Returns 0 if successful                                              */
 /************************************************************************/
 int TWI_master_send_start() {
+	
+	while((1<<TWSTO) & TWCR); // Wait for stop to finish
+	
 	TWCR = (1<<TWINT) | (1<<TWSTA) | (1<<TWEN); // Send START condition
 	TWI_common_wait_for_TWINT();
 	
@@ -57,8 +75,6 @@ int TWI_master_send_start() {
 
 void TWI_master_send_stop() {
 	TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWSTO);
-	
-	while((1<<TWSTO) & TWCR);
 }
 
 /************************************************************************/
@@ -144,14 +160,6 @@ int TWI_master_receive_message(TWI_MODULE_ADDRESS from_address, uint8_t* header,
 	return 0;
 }
 
-int TWI_master_reset() {
-	int err;
-	int i;
-	for (i = 0; i < 3; i++) {
-		err = TWI_master_send_start();
-		if (err) return err;
-		TWI_master_send_stop();
-	}
-	
-	return 0;
+void TWI_master_reset() {
+	TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWSTO) | (1<<TWEA);
 }

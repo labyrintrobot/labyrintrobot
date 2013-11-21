@@ -8,6 +8,9 @@
 #define TWI_COMMON_PRIVATE_H_
 
 #include <stdbool.h>
+#include "twi_common.h"
+
+int TWI_common_initialize(TWI_BITRATE bitrate);
 
 void TWI_common_disable_interrupt(void);
 

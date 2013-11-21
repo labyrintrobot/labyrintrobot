@@ -67,12 +67,20 @@ int main (void)
 	
 	//enable_irqs();
 	
-	TWI_common_initialize(TWI_COMMUNICATION_MODULE_ADDRESS, false, 5, true);
+	TWI_master_initialize(TWI_BITRATE_5_KHZ);
 	
 	_delay_ms(200);
 	
 	int err = TWI_master_send_message(TWI_CONTROL_MODULE_ADDRESS, 0b11001100, 0b10101010);
-	PORTB = err;
+	if (err) {
+		PORTB = err;
+		while(1);
+	}
+	err = TWI_master_send_message(TWI_CONTROL_MODULE_ADDRESS, 0b11111110, 0b10101010);
+	if (err) {
+		PORTB = err;
+		while(1);
+	}
 	if (err) {
 		
 	} else {

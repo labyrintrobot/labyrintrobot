@@ -43,19 +43,6 @@ int TWI_common_initialize(TWI_BITRATE bitrate) {
 	return 0;
 }
 
-void TWI_common_disable_interrupt() {
-	interrupt_enabled = TWCR & 0x01;
-	TWCR &= 0xFE;
-} 
-
-void TWI_common_enable_interrupt() {
-	if (interrupt_enabled) {
-		TWCR |= 0x01;
-	} else {
-		TWCR &= 0xFE;
-	}
-}
-
 void TWI_common_wait_for_TWINT() {
 	while (!(TWCR & (1<<TWINT)));
 }

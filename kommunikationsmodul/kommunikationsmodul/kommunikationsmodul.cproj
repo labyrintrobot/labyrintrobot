@@ -223,6 +223,14 @@
       <SubType>compile</SubType>
       <Link>twi_slave.h</Link>
     </Compile>
+    <Compile Include="..\..\commonlib\USART.c">
+      <SubType>compile</SubType>
+      <Link>USART.c</Link>
+    </Compile>
+    <Compile Include="..\..\commonlib\USART.h">
+      <SubType>compile</SubType>
+      <Link>USART.h</Link>
+    </Compile>
     <Compile Include="src\main.c">
       <SubType>compile</SubType>
     </Compile>

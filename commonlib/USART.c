@@ -5,6 +5,7 @@
  *  Author: kribo852
  */ 
 
+#include "USART.h"
 
 void USART_init(unsigned int baud){
 	/*set baud rate*/
@@ -29,7 +30,7 @@ void USART_transmit(unsigned char header , unsigned char data){
 	UDR0=data;
 }
 
-int USART_receive(unsigned char header , unsigned char data){
+int USART_receive(unsigned char *header , unsigned char *data){
 	
 	/*wait for header*/
 	while(!((UCSR0A)&(1<RXC0)));
@@ -39,7 +40,7 @@ int USART_receive(unsigned char header , unsigned char data){
 		return 1;
 	}
 	
-	header=UDR0;
+	*header=UDR0;
 	
 	/*wait for data*/
 	while(!((UCSR0A)&(1<RXC0)));
@@ -49,7 +50,7 @@ int USART_receive(unsigned char header , unsigned char data){
 		return 1;
 	}
 	
-	data=UDR0;
+	*data=UDR0;
 	
-	
+	return 0;
 }

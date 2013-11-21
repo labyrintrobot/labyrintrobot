@@ -66,13 +66,13 @@ int main (void)
 		enable_irqs();
 		while (1) {
 			while (!sensor_module_interrupt);
-			uint8_t* header;
-			uint8_t* data;
-			int err = TWI_master_receive_message(TWI_CONTROL_MODULE_ADDRESS, header, data);
+			uint8_t header;
+			uint8_t data;
+			int err = TWI_master_receive_message(TWI_CONTROL_MODULE_ADDRESS, &header, &data);
 			if (err) {
 				PORTB = err;
 			} else {
-				PORTA = *header;
+				PORTA = header;
 			}
 			while(1);
 		}

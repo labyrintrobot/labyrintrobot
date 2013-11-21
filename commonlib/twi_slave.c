@@ -6,57 +6,36 @@
  */ 
 
 #include <asf.h>
-#include <util/twi.h>
 #include "twi_slave.h"
 #include "twi_common_private.h"
 
-void TWI_slave_ACK(void);
-void TWI_slave_NACK(void);
 int TWI_slave_receive_address(bool* write);
 int TWI_slave_receive_data(uint8_t* data);
-void TWI_slave_enable_interrupt(void);
 int TWI_slave_send_data(uint8_t data, bool nack);
 int TWI_slave_wait_for_stop(void);
 
-/************************************************************************/
-/* Sets the TWI clock speed and slave address. Enables TWI. Enables     */
-/* TWI interrupts when master initiates communication.                  */
-/* my_address: the TWI address of this  module                          */
-/* bitrate: the bitrate in kHz                                          */
-/************************************************************************/
-int TWI_slave_initialize(TWI_BITRATE bitrate, TWI_MODULE_ADDRESS my_address) {
-		
-	int err = TWI_common_initialize(bitrate);
-	if (err) return err;
-	
-	TWAR = my_address & 0xFE;
-	TWAMR = 0x00; // No filtering
-	
-	TWI_slave_enable_interrupt();
-	
-	return 0;
-}
-
-void TWI_slave_ACK() {
-	TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWEA);
-}
-
-void TWI_slave_NACK() {
-	TWCR = (1<<TWINT) | (1<<TWEN);
-}
+enum TWI_STATUS {
+	TWI_SLAR_ACK_STATUS = 0xA8,
+	TWI_DATA_WRITE_ACK_STATUS = 0xB8,
+	TWI_LAST_DATA_WRITE_ACK_STATUS = 0xC8,
+	TWI_SLAW_ACK_STATUS = 0x60,
+	TWI_DATA_REC_ACK_STATUS = 0x80,
+	TWI_DATA_REC_NACK_STATUS = 0x88,
+	TWI_REP_START_STOP_STATUS = 0xA0
+	};
 
 int TWI_slave_receive_address(bool* write) {
 	
 	TWI_common_wait_for_TWINT();
 	
-	bool invalid_slaw = TWI_common_invalid_status(TW_SR_SLA_ACK);
-	bool invalid_slar = TWI_common_invalid_status(TW_ST_SLA_ACK);
+	bool invalid_slaw = TWI_common_invalid_status(TWI_SLAW_ACK_STATUS);
+	bool invalid_slar = TWI_common_invalid_status(TWI_SLAR_ACK_STATUS);
 	if (invalid_slaw && invalid_slar) {
 		return 0x0A;
 	}
 	*write = ! invalid_slaw;
 	
-	TWI_slave_ACK();
+	TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWEA);
 	
 	return 0;
 }
@@ -64,36 +43,32 @@ int TWI_slave_receive_address(bool* write) {
 int TWI_slave_receive_data(uint8_t* data) {
 	TWI_common_wait_for_TWINT();
 	
-	if (TWI_common_invalid_status(TW_SR_DATA_ACK)) {
+	if (TWI_common_invalid_status(TWI_DATA_REC_ACK_STATUS)) {
 		return 0x0C;
 	}
 	*data = TWDR;
 	
-	TWI_slave_ACK();
+	TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWEA);
 	
 	return 0;
-}
-
-void TWI_slave_enable_interrupt() {
-	TWCR |= (1<<TWIE);
 }
 
 int TWI_slave_send_data(uint8_t data, bool nack) {
 	TWDR = data; // Write data to register
 	if (nack) {
-		TWI_slave_NACK();
+		TWCR = (1<<TWINT) | (1<<TWEN); // Send out data
 	} else {
-		TWI_slave_ACK();
+		TWCR = (1<<TWINT) | (1<<TWEN) | (1 << TWEA); // Send out data
 	}
 	
 	TWI_common_wait_for_TWINT();
 	
 	if (nack) {
-		if (TWI_common_invalid_status(TW_ST_LAST_DATA)) {
+		if (TWI_common_invalid_status(TWI_LAST_DATA_WRITE_ACK_STATUS)) {
 			return 0x0D;
 		}
 	} else {
-		if (TWI_common_invalid_status(TW_ST_DATA_ACK)) {
+		if (TWI_common_invalid_status(TWI_DATA_WRITE_ACK_STATUS)) {
 			return 0x0E;
 		}
 	}
@@ -104,11 +79,11 @@ int TWI_slave_send_data(uint8_t data, bool nack) {
 int TWI_slave_wait_for_stop() {
 	TWI_common_wait_for_TWINT();
 	
-	if (TWI_common_invalid_status(TW_SR_STOP)) {
+	if (TWI_common_invalid_status(TWI_REP_START_STOP_STATUS)) {
 		return 0x0F;
 	}
 	
-	TWI_slave_ACK();
+	TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWEA);
 	
 	return 0;
 }
@@ -126,6 +101,7 @@ the interrupt to the communication module                               */
 /************************************************************************/
 int TWI_slave_send_message(uint8_t header, uint8_t data, void (*start_sending_irq_fn)(void), void (*stop_sending_irq_fn)(void)) {
 	
+	//TWI_common_disable_interrupt();
 	start_sending_irq_fn();
 
 	bool write;
@@ -146,8 +122,7 @@ int TWI_slave_send_message(uint8_t header, uint8_t data, void (*start_sending_ir
 	err = TWI_slave_wait_for_stop();
 	if (err) return err;
 	
-	TWI_slave_enable_interrupt();
-	
+	//TWI_common_enable_interrupt();
 	return 0;
 }
 
@@ -159,6 +134,8 @@ TWI                                                                     */
 /* returns nonzero if error                                             */
 /************************************************************************/
 int TWI_slave_receive_message(uint8_t* header, uint8_t* data) {
+	
+	//TWI_common_disable_interrupt();
 	
 	bool write;
 	int err = TWI_slave_receive_address(&write);
@@ -177,7 +154,7 @@ int TWI_slave_receive_message(uint8_t* header, uint8_t* data) {
 	err = TWI_slave_wait_for_stop();
 	if (err) return err;
 	
-	TWI_slave_enable_interrupt();
+	//TWI_common_enable_interrupt();
 	
 	return 0;
 }

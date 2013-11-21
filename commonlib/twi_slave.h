@@ -9,8 +9,6 @@
 
 #include "twi_common.h"
 
-int TWI_slave_initialize(TWI_BITRATE bitrate, TWI_MODULE_ADDRESS my_address);
-
 int TWI_slave_send_message(uint8_t header, uint8_t data, void (*start_sending_irq_fn)(void), void (*stop_sending_irq_fn)(void));
 
 int TWI_slave_receive_message(uint8_t* header, uint8_t* data);

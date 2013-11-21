@@ -7,6 +7,8 @@
 
 void enable_irqs(void);
 
+void execute_message(uint8_t header, uint8_t data);
+
 volatile int interrupt_error = 0;
 volatile bool sensor_module_interrupt = false;
 volatile bool control_module_interrupt = false;
@@ -46,6 +48,11 @@ void enable_irqs() {
 	sei(); //enable interrupts
 }
 
+void execute_message(uint8_t header, uint8_t data) {
+	// TODO
+	PORTB = data;
+}
+
 int main (void)
 {
 	board_init();
@@ -53,45 +60,60 @@ int main (void)
 	// Errors on PORT A
 	// Messages on PORT B
 	
-	DDRB = 0xFF;
+	DDRB = 0xFF; // Err
 	PORTB = 0;
-	DDRA = 0xFF;
+	DDRA = 0xFF; // Data
 	PORTA = 0;
 	
+	//enable_irqs();
+	
+	TWI_common_initialize(TWI_COMMUNICATION_MODULE_ADDRESS, false, 5, true);
+	
 	const bool receive = false;
-	
-	TWI_master_initialize(TWI_BITRATE_5_KHZ);
-	
 	if (receive) {
-		enable_irqs();
-		while (1) {
-			while (!sensor_module_interrupt);
-			uint8_t header;
-			uint8_t data;
-			int err = TWI_master_receive_message(TWI_CONTROL_MODULE_ADDRESS, &header, &data);
-			if (err) {
-				PORTB = err;
-			} else {
-				PORTA = header;
-			}
-			while(1);
-		}
 	} else {
 		_delay_ms(200);
-		
+			
 		int err = TWI_master_send_message(TWI_CONTROL_MODULE_ADDRESS, 0b11001100, 0b10101010);
-		if (err) {
-			PORTB = err;
-			while(1);
-		}
-		err = TWI_master_send_message(TWI_CONTROL_MODULE_ADDRESS, 0b11111110, 0b10101010);
-		if (err) {
-			PORTB = err;
-			while(1);
-		}
-		if (!err) {
-			PORTA = 0b11100011;
-		}
+		PORTB = err;
+		err = TWI_master_send_message(TWI_CONTROL_MODULE_ADDRESS, 0b11001100, 0b10101010);
+		PORTB = err;
 		while(1);
 	}
+	
+	//main loop 
+	//while(1) {
+		//
+		//if (interrupt_error) {
+			//PORTA = 0b10101010;
+			//while (1);
+		//}
+		//
+		//if (sensor_module_interrupt) {
+			//uint8_t header;
+			//uint8_t data;
+			//err = TWI_master_receive_message(TWI_SENSOR_MODULE_ADDRESS, &header, &data);
+			//if (err) {
+				//PORTA = err;
+				//while (1);
+			//}
+			//
+			//execute_message(header, data);
+			//
+			//sensor_module_interrupt = false;
+		//}
+		//if (control_module_interrupt) {
+			//uint8_t header;
+			//uint8_t data;
+			//err = TWI_master_receive_message(TWI_CONTROL_MODULE_ADDRESS, &header, &data);
+			//if (err) {
+				//PORTA = err;
+				//while (1);
+			//}
+			//
+			//execute_message(header, data);
+			//
+			//control_module_interrupt = false;
+		//}
+	//}
 }

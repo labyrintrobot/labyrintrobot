@@ -44,57 +44,27 @@ uint8_t sensor_data;
 
 int main (void)
 {
+	PORTB = 0xFF;
+	PORTA = 0xFF;
+	PORTA = 0;
+	PORTB = 0;
+	
 	board_init();
 	TWI_common_initialize(TWI_CONTROL_MODULE_ADDRESS, false, 5, false);
-	pwm_start_L();
-	pwm_start_R();
-	pwm_start_G();
-	uint8_t button, switch_;
-	signed e;
-	//PORTB = 0xC0; ? vad gör denna?
 	
-	//ADCsetup(); // A/D, test
-	//sei(); // Allow interrupts A/D, test
-	uint8_t header;
-	uint8_t data; 
-	TWI_slave_receive_message(&header, &data);
-	 
-	
-	while(1)
-	{
-		button = PINA & 0x02; // read PortA, pin 1
-		switch_ = PINA & 0x01; // read PortA, pin 0
+	const bool master_receive = false;
+	if (master_receive) {
 		
-		while(switch_ != 0) // man
-		{	
-			TWI_slave_receive_message(&header, &data);
-			if(header == 0x00)
-			{
-				manual_action(data);
-			}
-		switch_ = (PINA & 0x01);
-		}
-		
-		while(switch_ == 0) //auto
-		{
-			if(button != 0) //startar auto
-			{
-				find_start();
-				find_goal();
-				return_to_start();
-					
-				/*
-				find start
-				find goal
-				grab target
-				return to start
-				stop
-				*/
-			}
-			switch_ = PINA & 0x01;
-		}
-		
+	} else {
+		uint8_t header;
+		uint8_t data;
+		int err = TWI_slave_receive_message(&header, &data);
+		PORTB = err;
+		err = TWI_slave_receive_message(&header, &data);
+		PORTB = err;
+		while(1);
 	}
+	
 	// Insert application code here, after the board has been initialized.
 }
 

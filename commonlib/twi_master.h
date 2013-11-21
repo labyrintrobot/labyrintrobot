@@ -10,12 +10,10 @@
 
 #include "twi_common.h"
 
-int TWI_master_initialize(TWI_BITRATE bitrate);
-
 int TWI_master_send_message(TWI_MODULE_ADDRESS to_address, uint8_t header, uint8_t data);
 
 int TWI_master_receive_message(TWI_MODULE_ADDRESS from_address, uint8_t* header, uint8_t* data);
 
-void TWI_master_reset(void);
+int TWI_master_reset(void);
 
 #endif /* TWI_MASTER_H_ */

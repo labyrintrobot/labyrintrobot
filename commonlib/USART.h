@@ -4,7 +4,7 @@
 #include <asf.h>
 #include <avr/io.h>
 
-void USART_init(unsigned int baud);
+int USART_init(uint32_t baud);
 
 void USART_transmit(unsigned char header , unsigned char data);
 

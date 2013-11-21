@@ -7,7 +7,9 @@
 
 #include "USART.h"
 
-void USART_init(unsigned int baud){
+
+
+void USART_initialize(unsigned int baud){
 	/*set baud rate*/
 	UBRR0H=(unsigned char)(baud>>8);
 	UBRR0L=(unsigned char)(baud);
@@ -16,7 +18,27 @@ void USART_init(unsigned int baud){
 	UCSR0B=(1<<RXEN0)|(1<<TXEN0);
 	
 	/*set frame format to 8 data bits (3<<UCSZ00) and 1 stopbit (0<<USBS0) and one even parity bit (1<<UPM01)*/
-	 UCSR0C=(3<<UCSZ00)|(1<<UPM01);
+	UCSR0C=(3<<UCSZ00)|(1<<UPM01);
+}
+
+int USART_init(uint32_t baud){
+	
+	if(baud==115200){
+		USART_initialize(7);
+		return 0;	
+	}
+	
+	if(baud==57600){
+		USART_initialize(15);
+		return 0;
+	}
+	
+	if(baud==14400){
+		USART_initialize(63);
+		return 0;
+	}
+	
+	return 1;
 }
 
 void USART_transmit(unsigned char header , unsigned char data){

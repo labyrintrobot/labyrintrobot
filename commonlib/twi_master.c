@@ -6,6 +6,7 @@
  */ 
 
 #include <asf.h>
+#include <util/twi.h>
 #include "twi_master.h"
 #include "twi_common_private.h"
 
@@ -25,20 +26,79 @@ void TWI_master_send_stop(void);
 int TWI_master_send_address(TWI_MODULE_ADDRESS to_address, bool write);
 int TWI_master_send_data(uint8_t data);
 
-int TWI_master_receive_data(uint8_t* data, bool nack) {
+/************************************************************************/
+/* address: The least significant bit is ignored                        */
+/************************************************************************/
+int TWI_master_send_address(TWI_MODULE_ADDRESS to_address, bool write) {
+	
+	if (write) {
+		to_address &= 0x0FE; // Set LSB to 0 = write
+		} else {
+		to_address |= 0x01; // Set LSB to 1 = read
+	}
+	
+	if (to_address == 0) {
+		return 0x05;
+	}
+	
+	TWDR = to_address; // Write address to register
+	TWCR = (1<<TWINT) | (1<<TWEN); // Send out address
+	
+		
+	//TWDR=0b11111111;
+	
 	TWI_common_wait_for_TWINT();
 	
+	if (write) {
+		if (TWI_common_invalid_status(TWI_SLAW_ACK_STATUS)) {
+			return 0x06;
+		}
+	} else {
+		if (TWI_common_invalid_status(TWI_SLAR_ACK_STATUS)) {
+			return 0x07;
+		}
+	}
+	return 0;
+}
+
+int TWI_master_receive_data(uint8_t* data, bool nack) {
+	
+// 	if (nack) {
+// 		TWCR = (1<<TWINT) | (1<<TWEN);
+// 	} else {
+// 		TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWEA);
+// 	}
+	
+
+// 	if (nack) {
+// 		if (TWI_common_invalid_status(TWI_DATA_REC_NACK_STATUS)) {
+// 			return 0x02;
+// 		}
+// 	} else {
+// 		if (TWI_common_invalid_status(TWI_DATA_REC_ACK_STATUS)) {
+// 			return 0x03;
+// 		}
+// 	}
+	
+	if (nack) {
+		 	TWCR = (1<<TWINT) | (1<<TWEN);
+	 } else {
+		 	TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWEA);
+	 }
+			 
+	TWI_common_wait_for_TWINT();
+	
+	*data = TWDR;
 	if (nack) {
 		if (TWI_common_invalid_status(TWI_DATA_REC_NACK_STATUS)) {
-			return 0x02;
+			return 0x03;
 		}
 	} else {
 		if (TWI_common_invalid_status(TWI_DATA_REC_ACK_STATUS)) {
-			return 0x03;
+			return 0x04;
 		}
 	}
 	
-	*data = TWDR;
 	return 0;
 }
 
@@ -60,39 +120,6 @@ int TWI_master_send_start() {
 
 void TWI_master_send_stop() {
 	TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWSTO);
-}
-
-/************************************************************************/
-/* address: The least significant bit is ignored                        */
-/************************************************************************/
-int TWI_master_send_address(TWI_MODULE_ADDRESS to_address, bool write) {
-	
-	if (write) {
-		to_address &= 0x0FE; // Set LSB to 0 = write
-	} else {
-		to_address |= 0x01; // Set LSB to 1 = read
-	}
-	
-	if (to_address == 0) {
-		return 0x05;
-	}
-	
-	TWDR = to_address; // Write address to register
-	TWCR = (1<<TWINT) | (1<<TWEN); // Send out address
-	
-	TWI_common_wait_for_TWINT();
-	
-	if (write) {
-		if (TWI_common_invalid_status(TWI_SLAW_ACK_STATUS)) {
-			//return TWSR & (0xF8);
-			return 0x06;
-		}
-	} else {
-		if (TWI_common_invalid_status(TWI_SLAR_ACK_STATUS)) {
-			return 0x07;
-		}
-	}
-	return 0;
 }
 
 int TWI_master_send_data(uint8_t data) {

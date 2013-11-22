@@ -33,7 +33,7 @@ int TWI_master_send_address(TWI_MODULE_ADDRESS to_address, bool write) {
 	
 	if (write) {
 		to_address &= 0x0FE; // Set LSB to 0 = write
-		} else {
+	} else {
 		to_address |= 0x01; // Set LSB to 1 = read
 	}
 	
@@ -43,9 +43,6 @@ int TWI_master_send_address(TWI_MODULE_ADDRESS to_address, bool write) {
 	
 	TWDR = to_address; // Write address to register
 	TWCR = (1<<TWINT) | (1<<TWEN); // Send out address
-	
-		
-	//TWDR=0b11111111;
 	
 	TWI_common_wait_for_TWINT();
 	
@@ -81,10 +78,10 @@ int TWI_master_receive_data(uint8_t* data, bool nack) {
 // 	}
 	
 	if (nack) {
-		 	TWCR = (1<<TWINT) | (1<<TWEN);
-	 } else {
-		 	TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWEA);
-	 }
+		TWCR = (1<<TWINT) | (1<<TWEN);
+	} else {
+		TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWEA);
+	}
 			 
 	TWI_common_wait_for_TWINT();
 	

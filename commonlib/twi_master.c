@@ -20,11 +20,27 @@ enum STATUS {
 	TWI_DATA_REC_NACK_STATUS = 0x58
 	};
 
-int TWI_master_receive_data(uint8_t* data, bool nack);
 int TWI_master_send_start(void);
-void TWI_master_send_stop(void);
 int TWI_master_send_address(TWI_MODULE_ADDRESS to_address, bool write);
 int TWI_master_send_data(uint8_t data);
+int TWI_master_receive_data(uint8_t* data, bool nack);
+void TWI_master_send_stop(void);
+
+/************************************************************************/
+/* Returns 0 if successful                                              */
+/************************************************************************/
+int TWI_master_send_start() {
+	PORTB = 0b10100001;
+	while((1<<TWSTO) & TWCR); // Wait for stop to finish
+	
+	TWCR = (1<<TWINT) | (1<<TWSTA) | (1<<TWEN); // Send START condition
+	TWI_common_wait_for_TWINT();
+	
+	if (TWI_common_invalid_status(TWI_START_STATUS)) {
+		return 0x07;
+	}
+	return 0;
+}
 
 /************************************************************************/
 /* address: The least significant bit is ignored                        */
@@ -38,7 +54,7 @@ int TWI_master_send_address(TWI_MODULE_ADDRESS to_address, bool write) {
 	}
 	
 	if (to_address == 0) {
-		return 0x05;
+		return 0x01;
 	}
 	
 	TWDR = to_address; // Write address to register
@@ -48,34 +64,29 @@ int TWI_master_send_address(TWI_MODULE_ADDRESS to_address, bool write) {
 	
 	if (write) {
 		if (TWI_common_invalid_status(TWI_SLAW_ACK_STATUS)) {
-			return 0x06;
+			return 0x02;
 		}
 	} else {
 		if (TWI_common_invalid_status(TWI_SLAR_ACK_STATUS)) {
-			return 0x07;
+			return 0x03;
 		}
 	}
 	return 0;
 }
 
-int TWI_master_receive_data(uint8_t* data, bool nack) {
+int TWI_master_send_data(uint8_t data) {
+	TWDR = data; // Write data to register
+	TWCR = (1<<TWINT) | (1<<TWEN);
 	
-// 	if (nack) {
-// 		TWCR = (1<<TWINT) | (1<<TWEN);
-// 	} else {
-// 		TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWEA);
-// 	}
+	TWI_common_wait_for_TWINT();
 	
+	if (TWI_common_invalid_status(TWI_DATA_WRITE_ACK_STATUS)) {
+		return 0x04;
+	}
+	return 0;
+}
 
-// 	if (nack) {
-// 		if (TWI_common_invalid_status(TWI_DATA_REC_NACK_STATUS)) {
-// 			return 0x02;
-// 		}
-// 	} else {
-// 		if (TWI_common_invalid_status(TWI_DATA_REC_ACK_STATUS)) {
-// 			return 0x03;
-// 		}
-// 	}
+int TWI_master_receive_data(uint8_t* data, bool nack) {
 	
 	if (nack) {
 		TWCR = (1<<TWINT) | (1<<TWEN);
@@ -88,47 +99,19 @@ int TWI_master_receive_data(uint8_t* data, bool nack) {
 	*data = TWDR;
 	if (nack) {
 		if (TWI_common_invalid_status(TWI_DATA_REC_NACK_STATUS)) {
-			return 0x03;
+			return 0x05;
 		}
 	} else {
 		if (TWI_common_invalid_status(TWI_DATA_REC_ACK_STATUS)) {
-			return 0x04;
+			return 0x06;
 		}
 	}
 	
-	return 0;
-}
-
-/************************************************************************/
-/* Returns 0 if successful                                              */
-/************************************************************************/
-int TWI_master_send_start() {
-	
-	while((1<<TWSTO) & TWCR); // Wait for stop to finish
-	
-	TWCR = (1<<TWINT) | (1<<TWSTA) | (1<<TWEN); // Send START condition
-	TWI_common_wait_for_TWINT();
-	
-	if (TWI_common_invalid_status(TWI_START_STATUS)) {
-		return 0x04;
-	}
 	return 0;
 }
 
 void TWI_master_send_stop() {
 	TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWSTO);
-}
-
-int TWI_master_send_data(uint8_t data) {
-	TWDR = data; // Write data to register
-	TWCR = (1<<TWINT) | (1<<TWEN);
-	
-	TWI_common_wait_for_TWINT();
-	
-	if (TWI_common_invalid_status(TWI_DATA_WRITE_ACK_STATUS)) {
-		return 0x09;
-	}
-	return 0;
 }
 
 int TWI_master_send_message(TWI_MODULE_ADDRESS to_address, uint8_t header, uint8_t data) {
@@ -170,6 +153,7 @@ int TWI_master_receive_message(TWI_MODULE_ADDRESS from_address, uint8_t* header,
 }
 
 int TWI_master_reset() {
+	// TODO
 	int err;
 	int i;
 	for (i = 0; i < 3; i++) {

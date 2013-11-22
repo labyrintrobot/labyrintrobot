@@ -13,7 +13,7 @@
 int TWI_slave_receive_address(bool* write);
 int TWI_slave_receive_data(uint8_t* data);
 int TWI_slave_send_data(uint8_t data, bool nack);
-void TWI_slave_wait_for_stop(void);
+int TWI_slave_wait_for_stop(bool write);
 
 enum TWI_STATUS {
 	TWI_SLAR_ACK_STATUS = 0xA8,
@@ -36,12 +36,14 @@ int TWI_slave_receive_address(bool* write) {
 	}
 	*write = ! invalid_slaw;
 	
+	if (*write) {
+		TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWEA);
+	}
+	
 	return 0;
 }
 
 int TWI_slave_receive_data(uint8_t* data) {
-	
-	TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWEA);
 	
 	TWI_common_wait_for_TWINT();
 	
@@ -49,6 +51,8 @@ int TWI_slave_receive_data(uint8_t* data) {
 		return 0x0B;
 	}
 	*data = TWDR;
+	
+	TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWEA);
 	
 	return 0;
 }
@@ -73,8 +77,26 @@ int TWI_slave_send_data(uint8_t data, bool nack) {
 	return 0;
 }
 
-void TWI_slave_wait_for_stop() {
-	TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWEA);
+int TWI_slave_wait_for_stop(bool write) {
+	if (write) {
+		TWI_common_wait_for_TWINT();
+		
+		if (TWI_common_invalid_status(TWI_REP_START_STOP_STATUS)) {
+			return 0x0C;
+		}
+		
+		TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWEA);
+	} else {
+		TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWEA);
+				
+		TWI_common_wait_for_TWINT();
+				
+		if (TWI_common_invalid_status(TWI_REP_START_STOP_STATUS)) {
+			return 0x0C;
+		}
+	}
+	
+	return 0;
 }
 
 /************************************************************************/
@@ -98,7 +120,7 @@ int TWI_slave_send_message(uint8_t header, uint8_t data, void (*start_sending_ir
 	if (err) return err;
 	
 	if (write) {
-		return 0x0F;
+		return 0x0E;
 	}
 	
 	err = TWI_slave_send_data(header, false);
@@ -107,7 +129,8 @@ int TWI_slave_send_message(uint8_t header, uint8_t data, void (*start_sending_ir
 	err = TWI_slave_send_data(data, true);
 	if (err) return err;
 	
-	TWI_slave_wait_for_stop();
+	err = TWI_slave_wait_for_stop(false);
+	if (err) return err;
 	
 	return 0;
 }
@@ -126,7 +149,7 @@ int TWI_slave_receive_message(uint8_t* header, uint8_t* data) {
 	if (err) return err;
 		
 	if (! write) {
-		return 0x10;
+		return 0x0F;
 	}
 	
 	err = TWI_slave_receive_data(header);
@@ -135,7 +158,8 @@ int TWI_slave_receive_message(uint8_t* header, uint8_t* data) {
 	err = TWI_slave_receive_data(data);
 	if (err) return err;
 	
-	TWI_slave_wait_for_stop();
+	err = TWI_slave_wait_for_stop(true);
+	if (err) return err;
 	
 	return 0;
 }

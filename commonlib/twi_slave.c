@@ -82,19 +82,10 @@ int TWI_slave_wait_for_stop(bool write) {
 		TWI_common_wait_for_TWINT();
 		
 		if (TWI_common_invalid_status(TWI_REP_START_STOP_STATUS)) {
-			return 0x0C;
-		}
-		
-		TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWEA);
-	} else {
-		TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWEA);
-				
-		TWI_common_wait_for_TWINT();
-				
-		if (TWI_common_invalid_status(TWI_REP_START_STOP_STATUS)) {
-			return 0x0C;
+			return 0x0E;
 		}
 	}
+	TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWEA);
 	
 	return 0;
 }

@@ -4,7 +4,7 @@
 
 int unmarked_intersection_choice(int left, int forward, int right);
 int marked_intersection_choice(int tape, int left, int forward, int right);
-void forward_regulated(void);
+void forward_regulated(signed e);
 bool intersection_detected(int left, int right);
 void find_start(void);
 void find_goal(void);
@@ -22,6 +22,7 @@ uint8_t left_distance, right_distance, forward_left_distance, forward_right_dist
 uint8_t tape;
 int direction_array[50];
 int i = 0;
+signed e;
 
 
 int unmarked_intersection_choice(int left, int forward, int right)
@@ -63,14 +64,14 @@ int marked_intersection_choice(int tape, int left, int forward, int right)
 
 
 
-void forward_regulated()
+void forward_regulated(signed e)
 {
-	signed e;
-	e =right_distance - left_distance;
+	//signed e;
+	//e =right_distance - left_distance;
 	PORTB = 0x03;
 	signed u, Kp, Kd;
-	Kp = 2;
-	Kd = 0.1; //KD=0.01/deltaT=0.1
+	Kp = 1;
+	Kd = 10; //KD=0.01/deltaT=0.1
 	u = Kp*e + Kd*(e - e_last); //KD-regulator
 	//u=Kp*e; //P-regulator
 	e_last = e;
@@ -210,7 +211,7 @@ void find_goal()
 	{
 		while(!intersection_detected(left_distance,right_distance)) // Korridor
 		{
-			forward_regulated();
+			forward_regulated(e);
 		}
 		
 		// Kommit till en korsning eller sväng
@@ -266,7 +267,7 @@ void return_to_start()
 	{
 		while(!intersection_detected(left_distance, right_distance))
 		{
-			forward_regulated();
+			forward_regulated(e);
 		}
 		forward();
 		_delay_ms(200); //Kör in en bit i korsningen
@@ -275,7 +276,7 @@ void return_to_start()
 	}
 	while(!start_detected())
 	{
-		forward_regulated();
+		forward_regulated(e);
 	}
 	stop();
 }

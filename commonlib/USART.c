@@ -7,7 +7,7 @@
 
 #include "USART.h"
 
-
+void USART_initialize(unsigned int baud);
 
 void USART_initialize(unsigned int baud){
 	/*set baud rate*/

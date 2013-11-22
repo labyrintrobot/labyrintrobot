@@ -4,10 +4,9 @@
 #include <avr/interrupt.h>
 #include <util/delay.h>
 #include "twi_master.h"
+#include "USART.h"
 
 void enable_irqs(void);
-
-void execute_message(uint8_t header, uint8_t data);
 
 volatile int interrupt_error = 0;
 volatile bool sensor_module_interrupt = false;
@@ -48,10 +47,8 @@ void enable_irqs() {
 	sei(); //enable interrupts
 }
 
-void execute_message(uint8_t header, uint8_t data) {
-	// TODO
-	PORTB = data;
-}
+void a(void);
+void a() {}
 
 int main (void)
 {
@@ -67,53 +64,48 @@ int main (void)
 	
 	//enable_irqs();
 	
+	USART_init(14400);
 	TWI_common_initialize(TWI_COMMUNICATION_MODULE_ADDRESS, false, 5, true);
 	
-	const bool receive = false;
-	if (receive) {
-	} else {
-		_delay_ms(200);
-			
-		int err = TWI_master_send_message(TWI_CONTROL_MODULE_ADDRESS, 0b11001100, 0b10101010);
-		PORTB = err;
-		err = TWI_master_send_message(TWI_CONTROL_MODULE_ADDRESS, 0b11001100, 0b10101010);
-		PORTB = err;
+	const int test_mode = 0;
+	
+	if (test_mode == 0) {
+		USART_transmit(0b1111101, 0b1111110);
+	}
+	if (test_mode == 1) {
+		uint8_t header;
+		uint8_t data;
+		int err = TWI_master_receive_message(TWI_CONTROL_MODULE_ADDRESS, &header, &data);
+		if (err) {
+			PORTA = TWSR;
+			PORTB = err;
+			while(1);
+		}
+		err = TWI_master_receive_message(TWI_CONTROL_MODULE_ADDRESS, &header, &data);
+		if (err) {
+			PORTA = TWSR;
+			PORTB = err;
+			while(1);
+		}
+		PORTB = header;
 		while(1);
 	}
-	
-	//main loop 
-	//while(1) {
-		//
-		//if (interrupt_error) {
-			//PORTA = 0b10101010;
-			//while (1);
-		//}
-		//
-		//if (sensor_module_interrupt) {
-			//uint8_t header;
-			//uint8_t data;
-			//err = TWI_master_receive_message(TWI_SENSOR_MODULE_ADDRESS, &header, &data);
-			//if (err) {
-				//PORTA = err;
-				//while (1);
-			//}
-			//
-			//execute_message(header, data);
-			//
-			//sensor_module_interrupt = false;
-		//}
-		//if (control_module_interrupt) {
-			//uint8_t header;
-			//uint8_t data;
-			//err = TWI_master_receive_message(TWI_CONTROL_MODULE_ADDRESS, &header, &data);
-			//if (err) {
-				//PORTA = err;
-				//while (1);
-			//}
-			//
-			//execute_message(header, data);
-			//
-			//control_module_interrupt = false;
-		//}
-	//}
+	if (test_mode == 2) {
+		_delay_ms(200);
+		
+		int err = TWI_master_send_message(TWI_CONTROL_MODULE_ADDRESS, 0b11001100, 0b10101010);
+		if (err) {
+			PORTA = TWSR;
+			PORTB = err;
+			while(1);
+		}
+		err = TWI_master_send_message(TWI_CONTROL_MODULE_ADDRESS, 0b11001100, 0b10101010);
+		if (err) {
+			PORTA = TWSR;
+			PORTB = err;
+			while(1);
+		}
+		PORTB = 0b01010101;
+		while(1);
+	}
 }

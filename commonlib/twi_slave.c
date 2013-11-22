@@ -13,7 +13,7 @@
 int TWI_slave_receive_address(bool* write);
 int TWI_slave_receive_data(uint8_t* data);
 int TWI_slave_send_data(uint8_t data, bool nack);
-int TWI_slave_wait_for_stop(void);
+void TWI_slave_wait_for_stop(void);
 
 enum TWI_STATUS {
 	TWI_SLAR_ACK_STATUS = 0xA8,
@@ -73,21 +73,8 @@ int TWI_slave_send_data(uint8_t data, bool nack) {
 	return 0;
 }
 
-int TWI_slave_wait_for_stop() {
-	
-	PORTB = 100;
-	
+void TWI_slave_wait_for_stop() {
 	TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWEA);
-	
-	TWI_common_wait_for_TWINT();
-	
-	PORTB = 102;
-	
-	if (TWI_common_invalid_status(TWI_REP_START_STOP_STATUS)) {
-		return 0x0E;
-	}
-	
-	return 0;
 }
 
 /************************************************************************/
@@ -120,8 +107,7 @@ int TWI_slave_send_message(uint8_t header, uint8_t data, void (*start_sending_ir
 	err = TWI_slave_send_data(data, true);
 	if (err) return err;
 	
-	err = TWI_slave_wait_for_stop();
-	if (err) return err;
+	TWI_slave_wait_for_stop();
 	
 	return 0;
 }
@@ -149,8 +135,7 @@ int TWI_slave_receive_message(uint8_t* header, uint8_t* data) {
 	err = TWI_slave_receive_data(data);
 	if (err) return err;
 	
-	err = TWI_slave_wait_for_stop();
-	if (err) return err;
+	TWI_slave_wait_for_stop();
 	
 	return 0;
 }

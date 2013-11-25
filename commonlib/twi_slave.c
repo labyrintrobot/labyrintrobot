@@ -31,16 +31,15 @@ bool slave_addressed = false;
 /* Initializes the slave. Enables TWI, TWI interrupts and starts 
 listening for the address. Also sets the TWI bitrate.                   */
 /* my_address: the address of this module                               */
-/* bitrate: the TWI bitrate                                             */
 /* Returns nonzero if error                                             */
 /************************************************************************/
-int TWI_slave_initialize(TWI_MODULE_ADDRESS my_address, int bitrate) {
+int TWI_slave_initialize(TWI_MODULE_ADDRESS my_address) {
 	
 	if (slave_initialized) {
 		return 0x02;
 	}
 	
-	int err = TWI_common_initialize(my_address, bitrate);
+	int err = TWI_common_initialize(my_address);
 	if (err) return err;
 	
 	// Enable TWI, TWI address listening and interrupts

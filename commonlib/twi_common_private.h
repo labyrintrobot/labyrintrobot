@@ -10,7 +10,7 @@
 #include <stdbool.h>
 #include "twi_common.h"
 
-int TWI_common_initialize(TWI_MODULE_ADDRESS my_address, int bitrate);
+int TWI_common_initialize(TWI_MODULE_ADDRESS my_address);
 
 void TWI_common_disable_interrupt(void);
 

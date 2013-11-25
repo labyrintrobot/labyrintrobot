@@ -28,13 +28,13 @@ void TWI_master_send_stop(void);
 
 bool master_initialized = false;
 
-int TWI_master_initialize(TWI_MODULE_ADDRESS my_address, int bitrate) {
+int TWI_master_initialize(TWI_MODULE_ADDRESS my_address) {
 	
 	if (master_initialized) {
 		return 0x02;
 	}
 	
-	int err = TWI_common_initialize(my_address, bitrate);
+	int err = TWI_common_initialize(my_address);
 	if (err) return err;
 	
 	TWCR = (1<<TWEN);

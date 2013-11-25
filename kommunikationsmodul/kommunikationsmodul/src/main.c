@@ -62,7 +62,7 @@ int main (void)
 	
 	//enable_irqs();
 	//USART_init(14400);
-	int err = TWI_master_initialize(TWI_COMMUNICATION_MODULE_ADDRESS, 5);
+	int err = TWI_master_initialize(TWI_COMMUNICATION_MODULE_ADDRESS);
 	if (err) {
 		PORTB = err;
 		while (1);

@@ -26,11 +26,20 @@ int TWI_master_send_data(uint8_t data);
 int TWI_master_receive_data(uint8_t* data, bool nack);
 void TWI_master_send_stop(void);
 
+volatile bool master_initialized = false;
+
 int TWI_master_initialize(TWI_MODULE_ADDRESS my_address, int bitrate) {
+	
+	if (master_initialized) {
+		return 0x02;
+	}
+	
 	int err = TWI_common_initialize(my_address, bitrate);
 	if (err) return err;
 	
 	TWCR = (1<<TWEN);
+	
+	master_initialized = true;
 	
 	return 0;
 }
@@ -124,6 +133,10 @@ void TWI_master_send_stop() {
 
 int TWI_master_send_message(TWI_MODULE_ADDRESS to_address, uint8_t header, uint8_t data) {
 	
+	if (! master_initialized) {
+		return 0x07;
+	}
+	
 	int err = TWI_master_send_start();
 	if (err) return err;
 	
@@ -142,6 +155,10 @@ int TWI_master_send_message(TWI_MODULE_ADDRESS to_address, uint8_t header, uint8
 }
 
 int TWI_master_receive_message(TWI_MODULE_ADDRESS from_address, uint8_t* header, uint8_t* data) {
+	
+	if (! master_initialized) {
+		return 0x08;
+	}
 	
 	int err = TWI_master_send_start();
 	if (err) return err;

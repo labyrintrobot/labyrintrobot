@@ -13,7 +13,7 @@ int TWI_slave_test() {
 	uint8_t header = 0;
 	uint8_t data = 0;
 	int i;
-	for (i = 0; i < TWI_TESTS; i++) {
+	for (i = 0; i < TWI_TESTS * 2; i++) {
 		bool should_receive;
 		int err = TWI_slave_wait_for_address(&should_receive);
 		if (err) return err;

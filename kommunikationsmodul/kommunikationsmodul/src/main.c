@@ -61,15 +61,18 @@ int main (void)
 	PORTA = 0;
 	
 	//enable_irqs();
-	
 	//USART_init(14400);
-	TWI_master_initialize(TWI_COMMUNICATION_MODULE_ADDRESS, 5);
-	
-	//_delay_ms(200);
-	int err = TWI_master_test_both();
+	int err = TWI_master_initialize(TWI_COMMUNICATION_MODULE_ADDRESS, 5);
 	if (err) {
 		PORTB = err;
+		while (1);
+	}
+	
+	//_delay_ms(200);
+	err = TWI_master_test_both();
+	if (err) {
+		PORTB = 0;
 	} else {
-		PORTB = 0b11001100;
+		PORTB = 0b00110011;
 	}
 }

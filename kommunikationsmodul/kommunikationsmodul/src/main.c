@@ -4,7 +4,7 @@
 #include <avr/interrupt.h>
 #include <util/delay.h>
 #include "twi_master.h"
-#include "twi_test.h"
+#include "twi_master_test.h"
 #include "USART.h"
 
 void enable_irqs(void);

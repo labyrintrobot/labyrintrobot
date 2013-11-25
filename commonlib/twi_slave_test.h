@@ -1,7 +1,7 @@
 /*
  * twi_slave_test.h
  *
- *  Author: Emil Berg, Kristoffer Borg
+ *  Author: Emil Berg
  */
 
 #ifndef TWI_SLAVE_TEST_H_

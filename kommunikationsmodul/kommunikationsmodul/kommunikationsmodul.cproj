@@ -215,6 +215,14 @@
       <SubType>compile</SubType>
       <Link>twi_master.h</Link>
     </Compile>
+    <Compile Include="..\..\commonlib\twi_master_test.c">
+      <SubType>compile</SubType>
+      <Link>twi_master_test.c</Link>
+    </Compile>
+    <Compile Include="..\..\commonlib\twi_master_test.h">
+      <SubType>compile</SubType>
+      <Link>twi_master_test.h</Link>
+    </Compile>
     <Compile Include="..\..\commonlib\twi_slave.c">
       <SubType>compile</SubType>
       <Link>twi_slave.c</Link>
@@ -222,6 +230,18 @@
     <Compile Include="..\..\commonlib\twi_slave.h">
       <SubType>compile</SubType>
       <Link>twi_slave.h</Link>
+    </Compile>
+    <Compile Include="..\..\commonlib\twi_slave_test.c">
+      <SubType>compile</SubType>
+      <Link>twi_slave_test.c</Link>
+    </Compile>
+    <Compile Include="..\..\commonlib\twi_slave_test.h">
+      <SubType>compile</SubType>
+      <Link>twi_slave_test.h</Link>
+    </Compile>
+    <Compile Include="..\..\commonlib\twi_test_common.h">
+      <SubType>compile</SubType>
+      <Link>twi_test_common.h</Link>
     </Compile>
     <Compile Include="..\..\commonlib\USART.c">
       <SubType>compile</SubType>
@@ -235,12 +255,6 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\ASF\mega\boards\stk600\rcx_x\init.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\twi_test.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\twi_test.h">
       <SubType>compile</SubType>
     </Compile>
     <None Include="src\asf.h">

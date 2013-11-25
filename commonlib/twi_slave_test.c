@@ -1,15 +1,19 @@
+/*
+ * twi_slave_test.c
+ *
+ *  Author: Emil Berg
+ */
 
 #include <stdint.h>
 #include "twi_slave_test.h"
 #include "twi_slave.h"
-
-const int TESTS = 50;
+#include "twi_test_common.h"
 
 void f(void);
 
 int TWI_slave_test_send() {
 	int i;
-	for (i = 0; i < TESTS; i++) {
+	for (i = 0; i < TWI_TESTS; i++) {
 		int err = TWI_slave_send_message(i, i + 1, f, f);
 		if (err) {
 			return err;
@@ -21,14 +25,14 @@ int TWI_slave_test_send() {
 
 int TWI_slave_test_receive() {
 	int i;
-	for (i = 0; i < TESTS; i++) {
+	for (i = 0; i < TWI_TESTS; i++) {
 		uint8_t header;
 		uint8_t data;
 		int err = TWI_slave_receive_message(&header, &data);
 		if (err) {
 			return err;
 		}
-		if (header != i && data != i + 1) {
+		if (header != i || data != i + 1) {
 			return -1;
 		}
 	}
@@ -38,7 +42,7 @@ int TWI_slave_test_receive() {
 
 int TWI_slave_test_both() {
 	int i;
-	for (i = 0; i < TESTS; i++) {
+	for (i = 0; i < TWI_TESTS; i++) {
 		uint8_t header;
 		uint8_t data;
 		int err = TWI_slave_receive_message(&header, &data);

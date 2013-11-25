@@ -1,13 +1,13 @@
 ﻿/*
- * twi_test.h
+ * twi_master_test.h
  *
  * Created: 11/25/2013 10:17:01 AM
- *  Author: emibe709
+ *  Author: Emil Berg
  */ 
 
 
-#ifndef TWI_TEST_H_
-#define TWI_TEST_H_
+#ifndef TWI_MASTER_TEST_H_
+#define TWI_MASTER_TEST_H_
 
 int TWI_test_send(void);
 
@@ -15,4 +15,4 @@ int TWI_test_receive(void);
 
 int TWI_test_both(void);
 
-#endif /* TWI_TEST_H_ */
+#endif /* TWI_MASTER_TEST_H_ */

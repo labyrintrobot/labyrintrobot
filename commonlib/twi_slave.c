@@ -24,8 +24,8 @@ enum TWI_STATUS {
 	TWI_REP_START_STOP_STATUS = 0xA0
 	};
 	
-volatile bool slave_initialized = false;
-volatile bool slave_addressed = false;
+bool slave_initialized = false;
+bool slave_addressed = false;
 
 /************************************************************************/
 /* Initializes the slave. Enables TWI, TWI interrupts and starts 
@@ -127,7 +127,7 @@ int TWI_slave_wait_for_stop(bool write) {
 			return 0x07;
 		}
 	}
-	TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWEA); // TODO
+	TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWEA) | (1<<TWIE);
 	
 	slave_addressed = false;
 	

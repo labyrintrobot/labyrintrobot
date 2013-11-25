@@ -26,7 +26,7 @@ int TWI_master_send_data(uint8_t data);
 int TWI_master_receive_data(uint8_t* data, bool nack);
 void TWI_master_send_stop(void);
 
-volatile bool master_initialized = false;
+bool master_initialized = false;
 
 int TWI_master_initialize(TWI_MODULE_ADDRESS my_address, int bitrate) {
 	
@@ -178,7 +178,7 @@ int TWI_master_receive_message(TWI_MODULE_ADDRESS from_address, uint8_t* header,
 }
 
 int TWI_master_reset() {
-	// TODO
+	// TODO: Rewrite
 	int err;
 	int i;
 	for (i = 0; i < 3; i++) {

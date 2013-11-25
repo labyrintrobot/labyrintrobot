@@ -26,7 +26,14 @@ enum TWI_STATUS {
 	
 volatile bool slave_initialized = false;
 volatile bool slave_addressed = false;
-	
+
+/************************************************************************/
+/* Initializes the slave. Enables TWI, TWI interrupts and starts 
+listening for the address. Also sets the TWI bitrate.                   */
+/* my_address: the address of this module                               */
+/* bitrate: the TWI bitrate                                             */
+/* Returns nonzero if error                                             */
+/************************************************************************/
 int TWI_slave_initialize(TWI_MODULE_ADDRESS my_address, int bitrate) {
 	
 	if (slave_initialized) {
@@ -44,7 +51,14 @@ int TWI_slave_initialize(TWI_MODULE_ADDRESS my_address, int bitrate) {
 	return 0;
 }
 
-int TWI_slave_wait_for_address(bool* should_receive) {
+/************************************************************************/
+/* Blocks until the slave is addressed by the TWI master                */
+/* Note: TWI_slave_initialize must be called before this function.      */
+/* should_receive_out: true if the next step should be to receive a 
+message. Undefined if error.                                            */
+/* Returns nonzero if error                                             */
+/************************************************************************/
+int TWI_slave_wait_for_address(bool* should_receive_out) {
 	
 	if (!slave_initialized) {
 		return 0x01;
@@ -60,9 +74,9 @@ int TWI_slave_wait_for_address(bool* should_receive) {
 	if (invalid_slaw && invalid_slar) {
 		return 0x03;
 	}
-	*should_receive = ! invalid_slaw;
+	*should_receive_out = ! invalid_slaw;
 	
-	if (*should_receive) {
+	if (*should_receive_out) {
 		TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWEA);
 	}
 	
@@ -71,14 +85,14 @@ int TWI_slave_wait_for_address(bool* should_receive) {
 	return 0;
 }
 
-int TWI_slave_receive_data(uint8_t* data) {
+int TWI_slave_receive_data(uint8_t* data_out) {
 	
 	TWI_common_wait_for_TWINT();
 	
 	if (TWI_common_invalid_status(TWI_DATA_REC_ACK_STATUS)) {
 		return 0x04;
 	}
-	*data = TWDR;
+	*data_out = TWDR;
 	
 	TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWEA);
 	
@@ -121,15 +135,12 @@ int TWI_slave_wait_for_stop(bool write) {
 }
 
 /************************************************************************/
-/* Sends a message to the communication module via TWI. First, it
-issues an interrupt to the communication module.                        */
-/* header: the message header                                           */
-/* data: the message data                                               */
-/* start_sending_irq_fun: a pointer to a function that starts sending 
-the interrupt to the communication module                               */
-/* stop_sending_irq_fn: a pointer to a function that stops sending
-the interrupt to the communication module                               */
-/* returns nonzero if error                                             */
+/* Blocks until a message was sent to the TWI master                    */
+/* Note: TWI_slave_initialize and TWI_slave_wait_for_address must be
+called before this function.                                            */
+/* header: the message header that is sent.                             */
+/* data: the message data that is sent                                  */
+/* Returns nonzero if error                                             */
 /************************************************************************/
 int TWI_slave_send_message(uint8_t header, uint8_t data) {
 	
@@ -150,22 +161,23 @@ int TWI_slave_send_message(uint8_t header, uint8_t data) {
 }
 
 /************************************************************************/
-/* Blocks until a message is received from the communication module via 
-TWI                                                                     */
-/* header[out]: the message header that was received                    */
-/* data[out]: the message data                                          */
-/* returns nonzero if error                                             */
+/* Blocks until a message is received from the TWI master               */
+/* Note: TWI_slave_initialize and TWI_slave_wait_for_address must be
+called before this function.                                            */
+/* header_out: the message header that is received.                     */
+/* data_out: the message data that was received                         */
+/* Returns nonzero if error                                             */
 /************************************************************************/
-int TWI_slave_receive_message(uint8_t* header, uint8_t* data) {
+int TWI_slave_receive_message(uint8_t* header_out, uint8_t* data_out) {
 	
 	if (!slave_addressed) {
 		return 0x09;
 	}
 	
-	int err = TWI_slave_receive_data(header);
+	int err = TWI_slave_receive_data(header_out);
 	if (err) return err;
 	
-	err = TWI_slave_receive_data(data);
+	err = TWI_slave_receive_data(data_out);
 	if (err) return err;
 	
 	err = TWI_slave_wait_for_stop(true);

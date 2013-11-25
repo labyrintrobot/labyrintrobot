@@ -7,14 +7,6 @@
 #include <asf.h>
 #include "twi_common_private.h"
 
-/************************************************************************/
-/* Initializes TWI.                                                     */
-/* my_address: the address of this module                               */
-/* enable_interrupts: true if interrupts should be enabled when a
-message is received                                                     */
-/* bitrate: the bitrate in kHz                                          */
-/* returns nonzero if error                                             */
-/************************************************************************/
 int TWI_common_initialize(TWI_MODULE_ADDRESS my_address, int bitrate) {
 	
 	if (bitrate == 5) {

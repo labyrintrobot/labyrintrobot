@@ -10,7 +10,6 @@
 #include "twi_slave.h"
 #include "twi_common_private.h"
 
-int TWI_slave_initialize(TWI_MODULE_ADDRESS my_address, int bitrate);
 int TWI_slave_receive_address(bool* write);
 int TWI_slave_receive_data(uint8_t* data);
 int TWI_slave_send_data(uint8_t data, bool nack);

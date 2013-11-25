@@ -9,6 +9,8 @@
 
 #include "twi_common.h"
 
+int TWI_slave_initialize(TWI_MODULE_ADDRESS my_address, int bitrate);
+
 int TWI_slave_send_message(uint8_t header, uint8_t data);
 
 int TWI_slave_receive_message(uint8_t* header, uint8_t* data);

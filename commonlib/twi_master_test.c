@@ -10,7 +10,7 @@
 #include "twi_master.h"
 #include "twi_test_common.h"
 
-int TWI_test_send() {
+int TWI_master_test_send() {
 	int i;
 	for (i = 0; i < TWI_TESTS; i++) {
 		int err = TWI_master_send_message(TWI_CONTROL_MODULE_ADDRESS, i, i + 1);
@@ -23,7 +23,7 @@ int TWI_test_send() {
 	return 0;
 }
 
-int TWI_test_receive() {
+int TWI_master_test_receive() {
 	int i;
 	for (i = 0; i < TWI_TESTS; i++) {
 		uint8_t header;
@@ -41,7 +41,7 @@ int TWI_test_receive() {
 	return 0;
 }
 
-int TWI_test_both() {
+int TWI_master_test_both() {
 	int i;
 	for (i = 0; i < TWI_TESTS; i++) {
 		int err = TWI_master_send_message(TWI_CONTROL_MODULE_ADDRESS, i, i + 1);

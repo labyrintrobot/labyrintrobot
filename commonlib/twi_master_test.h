@@ -9,10 +9,10 @@
 #ifndef TWI_MASTER_TEST_H_
 #define TWI_MASTER_TEST_H_
 
-int TWI_test_send(void);
+int TWI_master_test_send(void);
 
-int TWI_test_receive(void);
+int TWI_master_test_receive(void);
 
-int TWI_test_both(void);
+int TWI_master_test_both(void);
 
 #endif /* TWI_MASTER_TEST_H_ */

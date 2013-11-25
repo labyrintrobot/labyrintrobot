@@ -31,7 +31,7 @@ int TWI_slave_test_receive() {
 			return err;
 		}
 		if (header != i || data != i + 1) {
-			return -1;
+			return 0b11100111;
 		}
 	}
 	

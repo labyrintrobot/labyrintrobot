@@ -34,7 +34,7 @@ int TWI_master_test_receive() {
 			return err;
 		}
 		if (header != i || header != i + 1) {
-			return -1;
+			return 0b11100111;
 		}
 	}
 	
@@ -57,7 +57,7 @@ int TWI_master_test_both() {
 			return err;
 		}
 		if (header != i || header != i + 1) {
-			return -1;
+			return 0b11100111;
 		}
 	}
 	

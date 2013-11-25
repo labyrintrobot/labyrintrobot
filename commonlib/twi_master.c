@@ -39,7 +39,6 @@ int TWI_master_initialize(TWI_MODULE_ADDRESS my_address, int bitrate) {
 /* Returns 0 if successful                                              */
 /************************************************************************/
 int TWI_master_send_start() {
-	PORTB = 0b10100001;
 	while((1<<TWSTO) & TWCR); // Wait for stop to finish
 	
 	TWCR = (1<<TWINT) | (1<<TWSTA) | (1<<TWEN); // Send START condition

@@ -48,9 +48,6 @@ void enable_irqs() {
 	sei(); //enable interrupts
 }
 
-void a(void);
-void a() {}
-
 int main (void)
 {
 	board_init();
@@ -68,17 +65,6 @@ int main (void)
 	//USART_init(14400);
 	TWI_master_initialize(TWI_COMMUNICATION_MODULE_ADDRESS, 5);
 	
-	const int test_mode = 1;
-	
-	if (test_mode == 0) {
-		USART_transmit(0b1111101, 0b1111110);
-	} else if (test_mode == 1) {
-		_delay_ms(200);
-		PORTA = TWI_test_send();
-	} else if (test_mode == 2) {
-		PORTA = TWI_test_receive();
-	} else if (test_mode == 3) {
-		_delay_ms(200);
-		PORTA = TWI_test_both();
-	}
+	_delay_ms(200);
+	PORTB = TWI_master_test_send();
 }

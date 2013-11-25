@@ -96,7 +96,7 @@ int TWI_slave_wait_for_stop(bool write) {
 			return 0x0E;
 		}
 	}
-	TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWEA);
+	TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWEA) << (1<<TWIE);
 	
 	return 0;
 }
@@ -112,13 +112,10 @@ the interrupt to the communication module                               */
 the interrupt to the communication module                               */
 /* returns nonzero if error                                             */
 /************************************************************************/
-int TWI_slave_send_message(uint8_t header, uint8_t data, void (*start_sending_irq_fn)(void), void (*stop_sending_irq_fn)(void)) {
-	
-	start_sending_irq_fn();
+int TWI_slave_send_message(uint8_t header, uint8_t data) {
 
 	bool write;
 	int err = TWI_slave_receive_address(&write);
-	stop_sending_irq_fn();
 	if (err) return err;
 	
 	if (write) {

@@ -9,12 +9,10 @@
 #include "twi_slave.h"
 #include "twi_test_common.h"
 
-void f(void);
-
 int TWI_slave_test_send() {
 	int i;
 	for (i = 0; i < TWI_TESTS; i++) {
-		int err = TWI_slave_send_message(i, i + 1, f, f);
+		int err = TWI_slave_send_message(i, i + 1);
 		if (err) {
 			return err;
 		}
@@ -50,7 +48,7 @@ int TWI_slave_test_both() {
 			return err;
 		}
 		
-		err = TWI_slave_send_message(header, data, f, f);
+		err = TWI_slave_send_message(header, data);
 		if (err) {
 			return err;
 		}

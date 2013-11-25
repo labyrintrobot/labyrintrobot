@@ -56,9 +56,9 @@ int main (void)
 	// Messages on PORT B
 	
 	DDRB = 0xFF; // Err
-	PORTB = 0b10101010;
+	PORTB = 0;
 	DDRA = 0xFF; // Data
-	PORTA = 0b10101010;
+	PORTA = 0;
 	
 	//enable_irqs();
 	
@@ -66,5 +66,10 @@ int main (void)
 	TWI_master_initialize(TWI_COMMUNICATION_MODULE_ADDRESS, 5);
 	
 	_delay_ms(200);
-	PORTB = TWI_master_test_send();
+	int err = TWI_master_test_send();
+	if (err) {
+		PORTB = err;
+	} else {
+		PORTB = 0b11001100;
+	}
 }

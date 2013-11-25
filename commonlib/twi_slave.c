@@ -95,7 +95,7 @@ int TWI_slave_wait_for_stop(bool write) {
 			return 0x0E;
 		}
 	}
-	TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWEA) << (1<<TWIE);
+	TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWEA); // TODO
 	
 	return 0;
 }
@@ -118,7 +118,7 @@ int TWI_slave_send_message(uint8_t header, uint8_t data) {
 	if (err) return err;
 	
 	if (write) {
-		return 0x0E;
+		return 0x0F;
 	}
 	
 	err = TWI_slave_send_data(header, false);
@@ -147,7 +147,7 @@ int TWI_slave_receive_message(uint8_t* header, uint8_t* data) {
 	if (err) return err;
 		
 	if (! write) {
-		return 0x0F;
+		return 0x10;
 	}
 	
 	err = TWI_slave_receive_data(header);

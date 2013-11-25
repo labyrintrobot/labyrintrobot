@@ -72,7 +72,7 @@ int TWI_master_send_address(TWI_MODULE_ADDRESS to_address, bool write) {
 	
 	if (write) {
 		if (TWI_common_invalid_status(TWI_SLAW_ACK_STATUS)) {
-			return 0x02;
+			return TWSR;
 		}
 	} else {
 		if (TWI_common_invalid_status(TWI_SLAR_ACK_STATUS)) {

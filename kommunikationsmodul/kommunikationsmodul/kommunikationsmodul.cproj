@@ -241,6 +241,12 @@
     <Compile Include="src\ASF\mega\boards\stk600\rcx_x\init.c">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\twi_test.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\twi_test.h">
+      <SubType>compile</SubType>
+    </Compile>
     <None Include="src\asf.h">
       <SubType>compile</SubType>
     </None>

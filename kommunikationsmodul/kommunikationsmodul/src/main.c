@@ -4,6 +4,7 @@
 #include <avr/interrupt.h>
 #include <util/delay.h>
 #include "twi_master.h"
+#include "twi_test.h"
 #include "USART.h"
 
 void enable_irqs(void);
@@ -58,54 +59,26 @@ int main (void)
 	// Messages on PORT B
 	
 	DDRB = 0xFF; // Err
-	PORTB = 0;
+	PORTB = 0b10101010;
 	DDRA = 0xFF; // Data
-	PORTA = 0;
+	PORTA = 0b10101010;
 	
 	//enable_irqs();
 	
-	USART_init(14400);
+	//USART_init(14400);
 	TWI_common_initialize(TWI_COMMUNICATION_MODULE_ADDRESS, false, 5, true);
 	
-	const int test_mode = 0;
+	const int test_mode = 1;
 	
 	if (test_mode == 0) {
 		USART_transmit(0b1111101, 0b1111110);
-	}
-	if (test_mode == 1) {
-		uint8_t header;
-		uint8_t data;
-		int err = TWI_master_receive_message(TWI_CONTROL_MODULE_ADDRESS, &header, &data);
-		if (err) {
-			PORTA = TWSR;
-			PORTB = err;
-			while(1);
-		}
-		err = TWI_master_receive_message(TWI_CONTROL_MODULE_ADDRESS, &header, &data);
-		if (err) {
-			PORTA = TWSR;
-			PORTB = err;
-			while(1);
-		}
-		PORTB = header;
-		while(1);
-	}
-	if (test_mode == 2) {
+	} else if (test_mode == 1) {
 		_delay_ms(200);
-		
-		int err = TWI_master_send_message(TWI_CONTROL_MODULE_ADDRESS, 0b11001100, 0b10101010);
-		if (err) {
-			PORTA = TWSR;
-			PORTB = err;
-			while(1);
-		}
-		err = TWI_master_send_message(TWI_CONTROL_MODULE_ADDRESS, 0b11001100, 0b10101010);
-		if (err) {
-			PORTA = TWSR;
-			PORTB = err;
-			while(1);
-		}
-		PORTB = 0b01010101;
-		while(1);
+		PORTA = TWI_test_send();
+	} else if (test_mode == 2) {
+		PORTA = TWI_test_receive();
+	} else if (test_mode == 3) {
+		_delay_ms(200);
+		PORTA = TWI_test_both();
 	}
 }

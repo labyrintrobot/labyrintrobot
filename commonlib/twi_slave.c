@@ -54,7 +54,8 @@ int TWI_slave_initialize(TWI_MODULE_ADDRESS my_address) {
 /* Blocks until the slave is addressed by the TWI master                */
 /* Note: TWI_slave_initialize must be called before this function.      */
 /* should_receive_out: true if the next step should be to receive a 
-message. Undefined if error.                                            */
+message. Undefined if error. This clock stretches until 
+TWI_slave_receive_message() or TWI_slave_send_message()                 */
 /* Returns nonzero if error                                             */
 /************************************************************************/
 int TWI_slave_wait_for_address(bool* should_receive_out) {
@@ -135,8 +136,8 @@ int TWI_slave_wait_for_stop(bool write) {
 
 /************************************************************************/
 /* Blocks until a message was sent to the TWI master                    */
-/* Note: TWI_slave_initialize and TWI_slave_wait_for_address must be
-called before this function.                                            */
+/* Note: TWI_slave_initialize() and TWI_slave_wait_for_address() must 
+be called before this function.                                         */
 /* header: the message header that is sent.                             */
 /* data: the message data that is sent                                  */
 /* Returns nonzero if error                                             */

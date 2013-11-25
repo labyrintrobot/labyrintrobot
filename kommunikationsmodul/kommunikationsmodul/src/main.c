@@ -65,8 +65,8 @@ int main (void)
 	//USART_init(14400);
 	TWI_master_initialize(TWI_COMMUNICATION_MODULE_ADDRESS, 5);
 	
-	_delay_ms(200);
-	int err = TWI_master_test_send();
+	//_delay_ms(200);
+	int err = TWI_master_test_both();
 	if (err) {
 		PORTB = err;
 	} else {

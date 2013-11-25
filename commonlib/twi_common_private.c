@@ -20,17 +20,17 @@ int TWI_common_initialize(TWI_MODULE_ADDRESS my_address, int bitrate) {
 	if (bitrate == 5) {
 		TWBR = 87; // Clockspeed
 		TWSR |= 2; // Scale
-		} else if (bitrate == 50) {
+	} else if (bitrate == 50) {
 		TWBR = 33;
 		TWSR &= 0b11111101;
 		TWSR |= 1;
-		} else if (bitrate == 200) {
+	} else if (bitrate == 200) {
 		TWBR = 54;
 		TWSR &= 0b11111100;
-		} else if (bitrate == 400) {
+	} else if (bitrate == 400) {
 		TWBR = 24;
 		TWSR &= 0b11111100;
-		} else {
+	} else {
 		return 0x01;
 	}
 	

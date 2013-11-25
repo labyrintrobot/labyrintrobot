@@ -7,10 +7,6 @@
 #ifndef TWI_SLAVE_TEST_H_
 #define TWI_SLAVE_TEST_H_
 
-int TWI_slave_test_send(void);
-
-int TWI_slave_test_receive(void);
-
-int TWI_slave_test_both(void);
+int TWI_slave_test(void);
 
 #endif /* TWI_SLAVE_TEST_H_ */

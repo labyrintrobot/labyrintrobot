@@ -9,50 +9,23 @@
 #include "twi_slave.h"
 #include "twi_test_common.h"
 
-int TWI_slave_test_send() {
+int TWI_slave_test() {
+	uint8_t header = 0;
+	uint8_t data = 0;
 	int i;
 	for (i = 0; i < TWI_TESTS; i++) {
-		int err = TWI_slave_send_message(i, i + 1);
-		if (err) {
-			return err;
+		bool should_receive;
+		int err = TWI_slave_wait_for_address(&should_receive);
+		if (err) return err;
+		
+		if (err) return err;
+		if (should_receive) {
+			err = TWI_slave_receive_message(&header, &data);
+		} else {
+			err = TWI_slave_send_message(header, data);
 		}
+		if (err) return err;
 	}
 	
-	return 0;
-}
-
-int TWI_slave_test_receive() {
-	int i;
-	for (i = 0; i < TWI_TESTS; i++) {
-		uint8_t header;
-		uint8_t data;
-		int err = TWI_slave_receive_message(&header, &data);
-		if (err) {
-			return err;
-		}
-		/*if (header != i || data != i + 1) {
-			return 0b11100111;
-		}*/
-	}
-	
-	return 0;
-}
-
-int TWI_slave_test_both() {
-	int i;
-	for (i = 0; i < TWI_TESTS; i++) {
-		uint8_t header;
-		uint8_t data;
-		int err = TWI_slave_receive_message(&header, &data);
-		if (err) {
-			return err;
-		}
-		
-		err = TWI_slave_send_message(header, data);
-		if (err) {
-			return err;
-		}
-	}
-		
 	return 0;
 }

@@ -7,9 +7,12 @@
 #ifndef TWI_SLAVE_H_
 #define TWI_SLAVE_H_
 
+#include <stdbool.h>
 #include "twi_common.h"
 
 int TWI_slave_initialize(TWI_MODULE_ADDRESS my_address, int bitrate);
+
+int TWI_slave_wait_for_address(bool* should_receive);
 
 int TWI_slave_send_message(uint8_t header, uint8_t data);
 

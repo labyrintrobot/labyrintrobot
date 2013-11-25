@@ -10,7 +10,6 @@
 #include "twi_slave.h"
 #include "twi_common_private.h"
 
-int TWI_slave_receive_address(bool* write);
 int TWI_slave_receive_data(uint8_t* data);
 int TWI_slave_send_data(uint8_t data, bool nack);
 int TWI_slave_wait_for_stop(bool write);
@@ -35,7 +34,7 @@ int TWI_slave_initialize(TWI_MODULE_ADDRESS my_address, int bitrate) {
 	return 0;
 }
 
-int TWI_slave_receive_address(bool* write) {
+int TWI_slave_wait_for_address(bool* should_receive) {
 	
 	TWI_common_wait_for_TWINT();
 	
@@ -44,9 +43,9 @@ int TWI_slave_receive_address(bool* write) {
 	if (invalid_slaw && invalid_slar) {
 		return 0x0A;
 	}
-	*write = ! invalid_slaw;
+	*should_receive = ! invalid_slaw;
 	
-	if (*write) {
+	if (*should_receive) {
 		TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWEA);
 	}
 	
@@ -112,16 +111,8 @@ the interrupt to the communication module                               */
 /* returns nonzero if error                                             */
 /************************************************************************/
 int TWI_slave_send_message(uint8_t header, uint8_t data) {
-
-	bool write;
-	int err = TWI_slave_receive_address(&write);
-	if (err) return err;
 	
-	if (write) {
-		return 0x0F;
-	}
-	
-	err = TWI_slave_send_data(header, false);
+	int err = TWI_slave_send_data(header, false);
 	if (err) return err;
 	
 	err = TWI_slave_send_data(data, true);
@@ -142,15 +133,7 @@ TWI                                                                     */
 /************************************************************************/
 int TWI_slave_receive_message(uint8_t* header, uint8_t* data) {
 	
-	bool write;
-	int err = TWI_slave_receive_address(&write);
-	if (err) return err;
-		
-	if (! write) {
-		return 0x10;
-	}
-	
-	err = TWI_slave_receive_data(header);
+	int err = TWI_slave_receive_data(header);
 	if (err) return err;
 	
 	err = TWI_slave_receive_data(data);

@@ -33,9 +33,6 @@ int TWI_master_test_receive() {
 			PORTA = TWSR;
 			return err;
 		}
-		/*if (header != i || data != i + 1) {
-			return 0b11100111;
-		}*/
 	}
 	
 	return 0;

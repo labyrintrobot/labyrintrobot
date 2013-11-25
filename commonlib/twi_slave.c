@@ -10,6 +10,7 @@
 #include "twi_slave.h"
 #include "twi_common_private.h"
 
+int TWI_slave_initialize(TWI_MODULE_ADDRESS my_address, int bitrate);
 int TWI_slave_receive_address(bool* write);
 int TWI_slave_receive_data(uint8_t* data);
 int TWI_slave_send_data(uint8_t data, bool nack);
@@ -24,6 +25,16 @@ enum TWI_STATUS {
 	TWI_DATA_REC_NACK_STATUS = 0x88,
 	TWI_REP_START_STOP_STATUS = 0xA0
 	};
+	
+int TWI_slave_initialize(TWI_MODULE_ADDRESS my_address, int bitrate) {
+	int err = TWI_common_initialize(my_address, bitrate);
+	if (err) return err;
+	
+	// Enable TWI, TWI address listening and interrupts
+	TWCR = (1<<TWEN) | (1<<TWEA) | (1<<TWIE);
+	
+	return 0;
+}
 
 int TWI_slave_receive_address(bool* write) {
 	

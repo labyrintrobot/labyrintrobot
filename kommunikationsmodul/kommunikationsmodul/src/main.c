@@ -66,7 +66,7 @@ int main (void)
 	//enable_irqs();
 	
 	//USART_init(14400);
-	TWI_common_initialize(TWI_COMMUNICATION_MODULE_ADDRESS, false, 5, true);
+	TWI_master_initialize(TWI_COMMUNICATION_MODULE_ADDRESS, 5);
 	
 	const int test_mode = 1;
 	

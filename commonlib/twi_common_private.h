@@ -8,6 +8,9 @@
 #define TWI_COMMON_PRIVATE_H_
 
 #include <stdbool.h>
+#include "twi_common.h"
+
+int TWI_common_initialize(TWI_MODULE_ADDRESS my_address, int bitrate);
 
 void TWI_common_disable_interrupt(void);
 

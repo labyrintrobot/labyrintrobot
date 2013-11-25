@@ -26,6 +26,15 @@ int TWI_master_send_data(uint8_t data);
 int TWI_master_receive_data(uint8_t* data, bool nack);
 void TWI_master_send_stop(void);
 
+int TWI_master_initialize(TWI_MODULE_ADDRESS my_address, int bitrate) {
+	int err = TWI_common_initialize(my_address, bitrate);
+	if (err) return err;
+	
+	TWCR = (1<<TWEN);
+	
+	return 0;
+}
+
 /************************************************************************/
 /* Returns 0 if successful                                              */
 /************************************************************************/

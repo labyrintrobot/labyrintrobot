@@ -1,44 +1,37 @@
 package application;
 
-import application.BluetoothDiscoveryListener.IBluetoothDeviceDiscovered;
+import javax.bluetooth.ServiceRecord;
+
+import application.BluetoothDiscoveryListener.IServicesDiscoveredCallback;
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.ListView;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 
 public class BluetoothStage extends Application {
 	
+	private ServiceRecord service;
 	private final BluetoothDiscoveryListener bluetoothDiscoveryListener;
-	private final ListView<String> deviceList;
 	private final Button startButton;
 	private final ProgressIndicator progressIndicator;
 
 	public BluetoothStage() {
-		bluetoothDiscoveryListener = new BluetoothDiscoveryListener(new IBluetoothDeviceDiscovered() {
-			
+		bluetoothDiscoveryListener = new BluetoothDiscoveryListener("FireFly-A696", new IServicesDiscoveredCallback() {
+
 			@Override
-			public void deviceDiscovered(final String name) {
-				Platform.runLater(new Runnable() {
-					
-					@Override
-					public void run() {
-						deviceList.getItems().add(name);
-					}
-				});
+			public void servicesDiscovered(ServiceRecord service) {
+				BluetoothStage.this.service = service;
+				startButton.setDisable(false);
 			}
 		});
 		bluetoothDiscoveryListener.findDevices();
-		deviceList = new ListView<String>();
 		startButton = new Button("Start");
 		progressIndicator = new ProgressIndicator();
 	}
@@ -50,7 +43,6 @@ public class BluetoothStage extends Application {
 			primaryStage.setTitle("Labyrintrobot");
 
 			BorderPane root = new BorderPane();
-			root.setCenter(deviceList);
 			HBox southBox = new HBox();
 			southBox.getChildren().addAll(startButton, progressIndicator);
 			root.setBottom(southBox);
@@ -81,19 +73,9 @@ public class BluetoothStage extends Application {
 			
 			startButton.setDisable(true);
 			
-			deviceList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
-
-			    @Override
-			    public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-			    	startButton.setDisable(newValue == null);
-			    }
-			});
-			
 			startButton.setOnAction(new EventHandler<ActionEvent>() {
 				@Override public void handle(ActionEvent e) {
-					String bluetoothServerUrl = deviceList.getSelectionModel().getSelectedItem();
-					
-					Stage stage = new PresentationStage(bluetoothServerUrl);
+					Stage stage = new PresentationStage(BluetoothStage.this.service);
 		            stage.show();
 		            primaryStage.hide();
 				}

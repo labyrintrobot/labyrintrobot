@@ -3,11 +3,13 @@ package application;
 import java.io.IOException;
 import java.util.Random;
 
+import javax.bluetooth.ServiceRecord;
+
 import javafx.application.Platform;
 
 public class BluetoothAdapter {
 	
-	private static final boolean DEBUG = true;
+	private static final boolean DEBUG = false;
 	
 	private boolean running = true;
 	
@@ -22,23 +24,22 @@ public class BluetoothAdapter {
 		this.bluetoothCommunicator = new BluetoothCommunicator();
 	}
 	
-	public void setup(String serverUrl) throws IOException {
-		this.bluetoothCommunicator.setup(serverUrl);
+	public void setup(ServiceRecord bluetoothService) throws IOException {
+		this.bluetoothCommunicator.setup(bluetoothService);
 	}
 	
 	public interface IMessageReceiver {
-		public void receiveMessage(byte header, int data);
+		public void receiveMessage(int header, int data);
 	}
 	
-	public void sendMessage(byte header, int data) throws IOException {
-		byte[] b = new byte[2];
+	public void sendMessage(int header, int data) throws IOException {
+		int[] b = new int[2];
 		b[0] = header;
-		b[1] = (byte) data;
+		b[1] = data;
 		this.bluetoothCommunicator.sendMessageToDevice(b);
 	}
 	
 	public void receiveMessages() throws IOException {
-		// TODO
 		while (running) {
 			if (DEBUG) {
 				try {
@@ -63,7 +64,15 @@ public class BluetoothAdapter {
 					}
 				});
 			} else {
+				final int[] ret = this.bluetoothCommunicator.receiveMessage(2);
 				
+				Platform.runLater(new Runnable() {
+					
+					@Override
+					public void run() {
+						receiver.receiveMessage(ret[0], ret[1]);
+					}
+				});
 			}
 		}
 		this.bluetoothCommunicator.teardown();

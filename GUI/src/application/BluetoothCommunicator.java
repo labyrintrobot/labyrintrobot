@@ -3,46 +3,38 @@ package application;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
 
+import javax.bluetooth.ServiceRecord;
 import javax.microedition.io.Connector;
-import javax.obex.ClientSession;
-import javax.obex.HeaderSet;
-import javax.obex.Operation;
-import javax.obex.ResponseCodes;
+import javax.microedition.io.StreamConnection;
 
 public class BluetoothCommunicator {
 
 	private boolean isSetup = false;
 	
-	private ClientSession clientSession;
-	private Operation putOperation;
+	private StreamConnection conn;
 	private OutputStream os;
 	private InputStream is;
 
-	public void setup(String serverURL) throws IOException {
+	public void setup(ServiceRecord bluetoothService) throws IOException {
 		
 		if (isSetup) {
 			throw new IllegalStateException("Already set up");
 		}
 		isSetup = true;
 		
-		System.out.println("Connecting to " + serverURL);
+		String url = bluetoothService.getConnectionURL(ServiceRecord.AUTHENTICATE_NOENCRYPT, false);
 
-		clientSession = (ClientSession) Connector.open(serverURL);
-		HeaderSet hsConnectReply = clientSession.connect(null);
-		if (hsConnectReply.getResponseCode() != ResponseCodes.OBEX_HTTP_OK) {
-			System.out.println("Failed to connect");
-			return;
+		try {
+			conn = (StreamConnection) Connector.open(url);
+			os = conn.openOutputStream();
+			is = conn.openDataInputStream();
+
+		} catch (Exception e) {
+			System.out.println("Failed to connect to " + url);
+			e.printStackTrace();
 		}
-
-		HeaderSet hsOperation = clientSession.createHeaderSet();
-		hsOperation.setHeader(HeaderSet.NAME, "Hello.txt");
-		hsOperation.setHeader(HeaderSet.TYPE, "text");
-
-		// Create PUT Operation
-		putOperation = clientSession.put(hsOperation);
-		os = putOperation.openOutputStream();
-		is = putOperation.openInputStream();
 	}
 
 	public void teardown() throws IOException {
@@ -54,30 +46,61 @@ public class BluetoothCommunicator {
 		
 		os.close();
 		is.close();
-
-		putOperation.close();
-
-		clientSession.disconnect(null);
-
-		clientSession.close();
+		
+		conn.close();
 	}
 
-	public byte[] receiveMessage(int length) throws IOException {
+	public int[] receiveMessage(int length) throws IOException {
 		if (! isSetup) {
 			throw new IllegalStateException("Has not been set up");
 		}
 		
-		byte[] ret = new byte[length];
-		is.read(ret);
+		int[] ret = new int[length];
+		for (int i = 0; i < length; i++) {
+			ret[i] = is.read();
+		}
+		System.out.println("Received: " + Arrays.toString(ret));
+		
 		return ret;
 	}
 
-	public void sendMessageToDevice(byte[] message) throws IOException {
+	public void sendMessageToDevice(int[] message) throws IOException {
 		if (! isSetup) {
 			throw new IllegalStateException("Has not been set up");
 		}
 		
-		// Send some text to server
-		os.write(message);
+		System.out.println("Sent: " + Arrays.toString(message));
+		for (int i = 0; i < message.length; i++) {
+			os.write(message[i]);
+		}
 	}
+	
+	/*public void broadcastCommand(String str) {
+		String url = this.service.getConnectionURL(ServiceRecord.AUTHENTICATE_NOENCRYPT, false);
+
+		StreamConnection conn = null;
+
+		try {
+			System.out.println("Sending command to " + url);
+
+			conn = (StreamConnection) Connector.open(url);
+			DataInputStream din = conn.openDataInputStream();
+
+			byte[] b = new byte[2];
+			for (int i = 0; i < 20; i++) {
+				int s = din.read(b);
+				System.out.println(b[0]);
+				System.out.println(b[1]);
+			}
+
+			din.close();
+			conn.close();
+
+			System.out.println("Sent. Connection Closed.");
+
+		} catch (Exception e) {
+			System.out.println("Failed to connect to " + url);
+			e.printStackTrace();
+		}
+	}*/
 }

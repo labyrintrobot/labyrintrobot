@@ -60,9 +60,21 @@ int main (void)
 	DDRA = 0xFF; // Data
 	PORTA = 0;
 	
+	int err = USART_init(115200);
+	if (err) {
+		PORTB = err;
+	} else {
+		while (1) {
+			_delay_ms(200);
+			USART_transmit('a', 'b');
+		}
+	}
+
+	while(1);
+	
 	//enable_irqs();
 	//USART_init(14400);
-	int err = TWI_master_initialize(TWI_COMMUNICATION_MODULE_ADDRESS);
+	/*int err = TWI_master_initialize(TWI_COMMUNICATION_MODULE_ADDRESS);
 	if (err) {
 		PORTB = err;
 		while (1);
@@ -74,5 +86,5 @@ int main (void)
 		PORTB = 0;
 	} else {
 		PORTB = 0b00110011;
-	}
+	}*/
 }

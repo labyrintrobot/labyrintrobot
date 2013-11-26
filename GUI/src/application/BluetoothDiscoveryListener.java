@@ -132,6 +132,8 @@ public class BluetoothDiscoveryListener implements DiscoveryListener {
 			}
 		}
 	}*/
+	
+	// http://www.almightybuserror.com/2011/09/06/android-to-pc-bluetooth-communication.html
 
 	public interface IBluetoothDeviceDiscovered {
 		public void deviceDiscovered(String name);
@@ -214,9 +216,11 @@ public class BluetoothDiscoveryListener implements DiscoveryListener {
 				conn = (StreamConnection) Connector.open(url);
 				DataInputStream din = conn.openDataInputStream();
 				
+				byte[] b = new byte[2];
 				for (int i = 0; i < 20; i++) {
-					System.out.println(din.read());
-					System.out.println(din.read());
+					int s = din.read(b);
+					System.out.println(b[0]);
+					System.out.println(b[1]);
 				}
 
 				din.close();

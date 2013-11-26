@@ -22,6 +22,7 @@ void start_sending(void);
 void stop_sending(void);
 void manual_action(uint8_t control_command);
 signed int e_last = 0;
+uint8_t keep_turning = 0;
 
 void pwm_start_L()
 {
@@ -75,19 +76,30 @@ void forward_right()
 
 void rotate_left90()
 {
+	PORTB = 0x08;
+	_delay_ms(1);
 	PORTB = 0x01;
-	OCR1BL = 0xA0;
-	OCR1AL = 0xA0;
-	_delay_ms(560);
+	keep_turning = 1;
+
+	while(keep_turning == 1)
+	{
+		OCR1BL = 0xA0;
+		OCR1AL = 0xA0;
+	}
 	stop();
 }
 
 void rotate_right90()
 {
+	PORTB = 0x08;
+	_delay_ms(1);
 	PORTB = 0x02;
-	OCR1BL = 0xA0;
-	OCR1AL = 0xA0;
-	_delay_ms(560);
+	keep_turning = 1;
+	while(keep_turning == 1)
+	{
+		OCR1BL = 0xA0;
+		OCR1AL = 0xA0;
+	}
 	stop();
 }
 

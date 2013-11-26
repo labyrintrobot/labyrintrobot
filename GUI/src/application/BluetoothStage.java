@@ -29,6 +29,13 @@ public class BluetoothStage extends Application {
 			public void servicesDiscovered(ServiceRecord service) {
 				BluetoothStage.this.service = service;
 				startButton.setDisable(false);
+				Platform.runLater(new Runnable() {
+					
+					@Override
+					public void run() {
+						progressIndicator.setProgress(2.0);
+					}
+				});
 			}
 		});
 		bluetoothDiscoveryListener.findDevices();
@@ -53,23 +60,6 @@ public class BluetoothStage extends Application {
 			Scene scene = new Scene(root, 320, 320);
 			primaryStage.setScene(scene);
 			primaryStage.show();
-			
-			Runnable btRunnable = new Runnable() {
-				
-				@Override
-				public void run() {
-					//bluetoothDiscoveryListener.start();
-					Platform.runLater(new Runnable() {
-						
-						@Override
-						public void run() {
-							progressIndicator.setProgress(2.0); // Finished
-						}
-					});
-				}
-			};
-			Thread btThread = new Thread(btRunnable);
-			btThread.start();
 			
 			startButton.setDisable(true);
 			

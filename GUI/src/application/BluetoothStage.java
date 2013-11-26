@@ -37,6 +37,7 @@ public class BluetoothStage extends Application {
 				});
 			}
 		});
+		bluetoothDiscoveryListener.findDevices();
 		deviceList = new ListView<String>();
 		startButton = new Button("Start");
 		progressIndicator = new ProgressIndicator();
@@ -65,7 +66,7 @@ public class BluetoothStage extends Application {
 				
 				@Override
 				public void run() {
-					bluetoothDiscoveryListener.start();
+					//bluetoothDiscoveryListener.start();
 					Platform.runLater(new Runnable() {
 						
 						@Override

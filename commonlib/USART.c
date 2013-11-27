@@ -52,12 +52,12 @@ void USART_transmit(unsigned char header , unsigned char data){
 int USART_receive(unsigned char *header , unsigned char *data){
 	
 	/*wait for header*/
-	while(!((UCSR0A)&(1<RXC0)));
+	while(!((UCSR0A)&(1<<RXC0)));
 	
 	*header=UDR0;
 	
 	/*wait for data*/
-	while(!((UCSR0A)&(1<RXC0)));
+	while(!((UCSR0A)&(1<<RXC0)));
 	
 	*data=UDR0;
 	

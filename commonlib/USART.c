@@ -15,12 +15,10 @@ void USART_initialize(unsigned int baud){
 	UBRR0L=(unsigned char)(baud);
 	
 	/*enable receiver transmitter*/
-	UCSR0B=(1<<RXEN0)|(1<<TXEN0);
+	UCSR0B=(1<<RXEN0)|(1<<TXEN0)|(1<<RXCIE0);
 	
 	/*set frame format to 8 data bits (3<<UCSZ00) and 1 stopbit (0<<USBS0) and no parity*/
 	UCSR0C=(3<<UCSZ00) | (1<<UMSEL00);
-	
-	UCSR0B|=(1<<RXCIE0);//enable USART interrupts
 }
 
 int USART_init(uint32_t baud){
@@ -38,7 +36,7 @@ int USART_init(uint32_t baud){
 	return 0;
 }
 
-void USART_transmit(unsigned char header , unsigned char data){
+void USART_transmit(uint8_t header, uint8_t data){
 	/*wait for empty transmit-buffer*/
 	while((!((UCSR0A)&(1<<UDRE0)))  );
 	/*put header into transmit-buffer*/
@@ -49,7 +47,7 @@ void USART_transmit(unsigned char header , unsigned char data){
 	UDR0=data;
 }
 
-int USART_receive(unsigned char *header , unsigned char *data){
+int USART_receive(uint8_t *header, uint8_t *data){
 	
 	/*wait for header*/
 	while(!((UCSR0A)&(1<<RXC0)));

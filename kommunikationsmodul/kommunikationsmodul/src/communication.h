@@ -9,9 +9,6 @@
 #ifndef COMMUNICATION_H_
 #define COMMUNICATION_H_
 
-
-void enable_irqs(void);
-
 void mainfunction(void);
 
 

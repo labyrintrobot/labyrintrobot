@@ -44,7 +44,6 @@ public class BluetoothCommunicator {
 		
 		os.close();
 		is.close();
-		
 		conn.close();
 	}
 

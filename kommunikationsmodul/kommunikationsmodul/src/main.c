@@ -6,6 +6,7 @@
 #include "twi_master.h"
 #include "twi_master_test.h"
 #include "USART.h"
+#include "communication.h"
 
 int main (void)
 {
@@ -17,19 +18,10 @@ int main (void)
 	DDRB = 0xFF; // Err
 	PORTB = 0;
 	DDRA = 0xFF; // Data
-	PORTA = 0;
 	
-	int err = USART_init(115200);
-	if (err) {
-		PORTB = err;
-	} else {
-		while (1) {
-			_delay_ms(200);
-			USART_transmit('a', 'b');
-		}
-	}
-
-	while(1);
+	USART_init(115200);
+	TWI_master_initialize(TWI_COMMUNICATION_MODULE_ADDRESS);
+	mainfunction();
 	
 	//enable_irqs();
 	//USART_init(14400);

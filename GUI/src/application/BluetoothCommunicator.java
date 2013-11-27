@@ -1,11 +1,11 @@
 package application;
 
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
 
-import javax.bluetooth.ServiceRecord;
 import javax.microedition.io.Connector;
 import javax.microedition.io.StreamConnection;
 
@@ -14,25 +14,23 @@ public class BluetoothCommunicator {
 	private boolean isSetup = false;
 	
 	private StreamConnection conn;
-	private OutputStream os;
+	private DataOutputStream os;
 	private InputStream is;
 
-	public void setup(ServiceRecord bluetoothService) throws IOException {
+	public void setup(String bluetoothUrl) throws IOException {
 		
 		if (isSetup) {
 			throw new IllegalStateException("Already set up");
 		}
 		isSetup = true;
-		
-		String url = bluetoothService.getConnectionURL(ServiceRecord.AUTHENTICATE_NOENCRYPT, false);
 
 		try {
-			conn = (StreamConnection) Connector.open(url);
-			os = conn.openOutputStream();
+			conn = (StreamConnection) Connector.open(bluetoothUrl);
+			os = new DataOutputStream(conn.openOutputStream());
 			is = conn.openDataInputStream();
 
 		} catch (Exception e) {
-			System.out.println("Failed to connect to " + url);
+			System.out.println("Failed to connect to " + bluetoothUrl);
 			e.printStackTrace();
 		}
 	}
@@ -73,6 +71,7 @@ public class BluetoothCommunicator {
 		for (int i = 0; i < message.length; i++) {
 			os.write(message[i]);
 		}
+		os.flush();
 	}
 	
 	/*public void broadcastCommand(String str) {

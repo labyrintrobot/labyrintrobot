@@ -18,7 +18,7 @@ public class BluetoothDiscoveryListener implements DiscoveryListener {
 	
 	private final String deviceStr;
 	private RemoteDevice device = null;
-	private ServiceRecord service = null;
+	private String bluetoothUrl = null;
 	private final IServicesDiscoveredCallback callback;
 
 	public BluetoothDiscoveryListener(String deviceStr, IServicesDiscoveredCallback callback) {
@@ -27,7 +27,7 @@ public class BluetoothDiscoveryListener implements DiscoveryListener {
 	}
 	
 	public interface IServicesDiscoveredCallback {
-		public void servicesDiscovered(ServiceRecord service);
+		public void servicesDiscovered(String bluetoothUrl);
 	}
 
 	public void findDevices() {
@@ -78,14 +78,15 @@ public class BluetoothDiscoveryListener implements DiscoveryListener {
 		if (arg1.length == 0) {
 			throw new IllegalStateException();
 		}
-		this.service = arg1[0];
+		ServiceRecord service = arg1[0];
+		this.bluetoothUrl = service.getConnectionURL(ServiceRecord.AUTHENTICATE_NOENCRYPT, false);
 	}
 
 	@Override
 	public void serviceSearchCompleted(int arg0, int arg1) {
 		debug("Service search completed.");
 		
-		this.callback.servicesDiscovered(this.service);
+		this.callback.servicesDiscovered(this.bluetoothUrl);
 	}
 	
 	private void debug(String str) {

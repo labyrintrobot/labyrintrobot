@@ -1,33 +1,29 @@
 package application;
 
-import javax.bluetooth.ServiceRecord;
-
-import application.BluetoothDiscoveryListener.IServicesDiscoveredCallback;
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
-import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.stage.Stage;
 
 public class BluetoothStage extends Application {
 	
-	private ServiceRecord service;
-	private final BluetoothDiscoveryListener bluetoothDiscoveryListener;
+	//private String bluetoothUrl;
+	//private final BluetoothDiscoveryListener bluetoothDiscoveryListener;
 	private final Button startButton;
 	private final ProgressIndicator progressIndicator;
 
 	public BluetoothStage() {
-		bluetoothDiscoveryListener = new BluetoothDiscoveryListener("FireFly-A696", new IServicesDiscoveredCallback() {
+		/*bluetoothDiscoveryListener = new BluetoothDiscoveryListener("FireFly-A696", new IServicesDiscoveredCallback() {
 
 			@Override
-			public void servicesDiscovered(ServiceRecord service) {
-				BluetoothStage.this.service = service;
+			public void servicesDiscovered(String bluetoothUrl) {
+				BluetoothStage.this.bluetoothUrl = bluetoothUrl;
 				startButton.setDisable(false);
 				Platform.runLater(new Runnable() {
 					
@@ -38,7 +34,7 @@ public class BluetoothStage extends Application {
 				});
 			}
 		});
-		bluetoothDiscoveryListener.findDevices();
+		bluetoothDiscoveryListener.findDevices();*/
 		startButton = new Button("Start");
 		progressIndicator = new ProgressIndicator();
 	}
@@ -51,21 +47,20 @@ public class BluetoothStage extends Application {
 
 			BorderPane root = new BorderPane();
 			HBox southBox = new HBox();
-			southBox.getChildren().addAll(startButton, progressIndicator);
+			southBox.getChildren().addAll(startButton/*, progressIndicator*/);
 			root.setBottom(southBox);
 			southBox.setAlignment(Pos.BOTTOM_CENTER);
-			
-			progressIndicator.setProgress(-1);
 			
 			Scene scene = new Scene(root, 320, 320);
 			primaryStage.setScene(scene);
 			primaryStage.show();
 			
-			startButton.setDisable(true);
+			//startButton.setDisable(true);
 			
 			startButton.setOnAction(new EventHandler<ActionEvent>() {
 				@Override public void handle(ActionEvent e) {
-					Stage stage = new PresentationStage(BluetoothStage.this.service);
+					//Stage stage = new PresentationStage(bluetoothUrl);
+					Stage stage = new PresentationStage("btspp://00066603A696:1;authenticate=true;encrypt=false;master=false");
 		            stage.show();
 		            primaryStage.hide();
 				}

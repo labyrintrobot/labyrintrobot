@@ -3,8 +3,6 @@ package application;
 import java.io.IOException;
 import java.util.Random;
 
-import javax.bluetooth.ServiceRecord;
-
 import javafx.application.Platform;
 
 public class BluetoothAdapter {
@@ -24,8 +22,8 @@ public class BluetoothAdapter {
 		this.bluetoothCommunicator = new BluetoothCommunicator();
 	}
 	
-	public void setup(ServiceRecord bluetoothService) throws IOException {
-		this.bluetoothCommunicator.setup(bluetoothService);
+	public void setup(String bluetoothUrl) throws IOException {
+		this.bluetoothCommunicator.setup(bluetoothUrl);
 	}
 	
 	public interface IMessageReceiver {

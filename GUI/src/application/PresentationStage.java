@@ -2,8 +2,6 @@ package application;
 
 import java.io.IOException;
 
-import javax.bluetooth.ServiceRecord;
-
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
@@ -38,7 +36,7 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
 
 	private boolean paused = false;
 
-	public PresentationStage(ServiceRecord bluetoothService) {
+	public PresentationStage(String bluetoothUrl) {
 
 		bluetoothAdapter = new BluetoothAdapter(this);
 
@@ -60,7 +58,7 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
 		errorLog.setEditable(false);
 
 		try {
-			bluetoothAdapter.setup(bluetoothService);
+			bluetoothAdapter.setup(bluetoothUrl);
 			
 			this.setTitle("Labyrintrobot");
 			final Button pauseButton = new Button();

@@ -7,8 +7,8 @@ void pwm_start_L(void);
 void pwm_start_R(void);
 void pwm_start_G(void);
 
-void forward(void);
-void backward(void);
+void forward(int speed);
+void backward(int speed);
 void rotate_left(void);
 void rotate_right(void);
 void rotate_left90(void);
@@ -45,18 +45,18 @@ void pwm_start_G()
 	TCCR3B = 3;
 }
 
-void forward()
+void forward(int speed)
 {
 	PORTB = 0x03;
-	OCR1BL = 0xA0;
-	OCR1AL = 0xA0;
+	OCR1BL = speed;
+	OCR1AL = speed;
 }
 
-void backward()
+void backward(int speed)
 {
 	PORTB = 0x00;
-	OCR1BL = 0xA0;
-	OCR1AL = 0xA0;
+	OCR1BL = speed;
+	OCR1AL = speed;
 }
 
 void forward_left()
@@ -145,12 +145,13 @@ void stop_sending()
 
 void manual_action(uint8_t control_command)
 {
-	switch (control_command){ //Kommandon från laptopen
+	switch (control_command) //Kommandon från laptopen
+	{
 	case 0x00:
-		forward();
+		forward(0xA0);
 		break;
 	case 0x01:
-		backward();
+		backward(0xA0);
 		break;
 	case 0x02:
 		forward_right();

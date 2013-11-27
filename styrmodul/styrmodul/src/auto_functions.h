@@ -112,7 +112,7 @@ void find_start()
 {
 	while(!start_detected())
 	{ 
-	forward();	
+	forward(0xA0);	
 	}
 }
 
@@ -149,18 +149,18 @@ void turn(int direction)
 	switch(direction){
 		case 0x00:
 			rotate_left90();
-			forward();
+			forward(0xA0);
 			_delay_ms(200); //Kör ut ur korsningen
 			stop();
 			break;
 		case 0x01:
-			forward();
+			forward(0xA0);
 			_delay_ms(200); //Kör ut ur korsningen
 			stop();
 			break;
 		case 0x02:
 			rotate_right90();
-			forward();
+			forward(0xA0);
 			_delay_ms(200); //Kör ut ur korsningen
 			stop();
 			break;
@@ -172,18 +172,18 @@ void turn_back(int direction)
 	switch(direction){
 		case 0x00:
 		rotate_right90();
-		forward();
+		forward(0xA0);
 		_delay_ms(200); //Kör ut ur korsningen
 		stop();
 		break;
 		case 0x01:
-		forward();
+		forward(0xA0);
 		_delay_ms(200); //Kör ut ur korsningen
 		stop();
 		break;
 		case 0x02:
 		rotate_left90();
-		forward();
+		forward(0xA0);
 		_delay_ms(200); //Kör ut ur korsningen
 		stop();
 		break;
@@ -194,7 +194,7 @@ void get_target()
 {
 	//kör sakta fram till föremålet
 	grip_on();
-	backward();
+	backward(0xA0);
 	_delay_ms(200);
 	stop();
 	rotate_right90();
@@ -215,7 +215,7 @@ void find_goal()
 		}
 		
 		// Kommit till en korsning eller sväng
-		forward();
+		forward(0xA0);
 		_delay_ms(200); //Kör in en bit i korsningen
 		stop(); //Stanna
 		
@@ -269,7 +269,7 @@ void return_to_start()
 		{
 			forward_regulated(e);
 		}
-		forward();
+		forward(0xA0);
 		_delay_ms(200); //Kör in en bit i korsningen
 		stop(); //Stanna
 		turn_back(direction_array[x]);

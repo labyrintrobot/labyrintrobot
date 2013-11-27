@@ -56,7 +56,10 @@ void board_init(void)
 	DDRB = 0x4B; // PORTB, PB0,PB1,PB3,PB6 output
 	DDRC = 0x00; // PORTC input
 	DDRD = 0x31; // PortD, pin PD0,PD4,PD5 output
-	
+	PORTA = 0x00;
+	PORTB = 0x00;
+	PORTC = 0x00;
+	PORTD = 0x00;
 	EIMSK = 0x04; // Tar emot avbrott
 	EICRA = 0x30; // Avbrott stigande flank 
 	

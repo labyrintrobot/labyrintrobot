@@ -35,10 +35,12 @@
 
 #include <man_functions.h>
 #include <auto_functions.h>
+#include <communication.h>
 #include "twi_slave.h"
 #include "sensor_tabel.h"
 #include "Interpolate.h"
 #include "ADC_setup.h"
+
 
 enum sensor_t sensor1 = S21;
 enum sensor_t sensor2 = S24;
@@ -59,7 +61,7 @@ int main (void)
 	board_init();
 	//ADCsetup();
 
-	TWI_common_initialize(TWI_CONTROL_MODULE_ADDRESS, false, 5, false);
+	//TWI_common_initialize(TWI_CONTROL_MODULE_ADDRESS, false, 5, false);
 	pwm_start_L();
 	pwm_start_R();
 	pwm_start_G();
@@ -73,12 +75,17 @@ int main (void)
 	//TWI_slave_receive_message(&header, &data);
 	 
 	sei();
+	_delay_ms(2000);
+	//_delay_ms(2500);
 	while(1)
 	{
 		PORTB = 0x00;
 		_delay_ms(1000);
 		//ADCSRA |= (1<<ADSC); // Start a ADC conversion
 		rotate_left90();
+		PORTB = 0x00;
+		_delay_ms(1000);
+		rotate_right90();
 		
 		//button = PINA & 0x02; // read PortA, pin 1
 		//switch_ = PINA & 0x01; // read PortA, pin 0

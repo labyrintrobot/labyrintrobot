@@ -19,6 +19,8 @@ void USART_initialize(unsigned int baud){
 	
 	/*set frame format to 8 data bits (3<<UCSZ00) and 1 stopbit (0<<USBS0) and no parity*/
 	UCSR0C=(3<<UCSZ00) | (1<<UMSEL00);
+	
+	UCSR0B|=(1<<RXCIE0);//enable USART interrupts
 }
 
 int USART_init(uint32_t baud){
@@ -52,20 +54,10 @@ int USART_receive(unsigned char *header , unsigned char *data){
 	/*wait for header*/
 	while(!((UCSR0A)&(1<RXC0)));
 	
-	if(UCSR0A & (1<<UPE0)){
-		/*return parity error*/
-		return 1;
-	}
-	
 	*header=UDR0;
 	
 	/*wait for data*/
 	while(!((UCSR0A)&(1<RXC0)));
-	
-	if(UCSR0A & (1<<UPE0)){
-		/*return parity error*/
-		return 1;
-	}
 	
 	*data=UDR0;
 	

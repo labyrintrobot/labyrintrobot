@@ -19,28 +19,39 @@ volatile uint8_t  fireflyheader , fireflydata; // for messages received from the
 
 volatile uint8_t fireflyreceiveddata=0;
 
+typedef struct _queue_element{
+	
+	uint8_t header;
+	uint8_t data;
+	
+	queue_element *next;
+	
+} queue_element;
+
 
 //interrupt init
 //Remember to set firefly interrupt flag
 void enable_irqs() {
+	sei(); //enable interrupts by setting I-bit in SREG
+	
 	EICRA |= (1 << ISC00) | (1 << ISC01); // Interrupts on rising edge
 	EIMSK |= (1 << INT0) | (1 << INT1); // Enable INT0 and INT1
 	EIFR |= (1 << INTF0) | (1 << INTF1);
 	
-	
-	UCSR0B|=(1<<RXCIE0);//enable USART interrupts
-	
-	sei(); //enable interrupts by setting I-bit in SREG
 }
 
 //Firefly interrupt routine
 
 ISR(USART0_RX_vect){
+	uint8_t cSREG;
+	cSREG = SREG;
 	
 	//should interrupt on USART0 received a byte,dunno what to do otherwise
 	USART_receive(&fireflyheader , &fireflydata);
 	
 	fireflyreceiveddata=1;
+	
+	SREG = cSREG; // restore
 }
 
 
@@ -77,6 +88,12 @@ void mainfunction(){
 	
 	enable_irqs();
 	
+	queue_element *firstelement;
+	queue_element *lastelement;
+	
+	firstelement=0;
+	lastelement=0;
+	
 	while(1){
 		
 		if(receiveddata){
@@ -92,6 +109,7 @@ void mainfunction(){
 				//sensor module is sending, relay to styr module and firefly
 				
 				TWI_master_send_message(TWI_CONTROL_MODULE_ADDRESS , header , data);
+				
 				USART_transmit(header , data);
 			}
 			
@@ -109,6 +127,13 @@ void mainfunction(){
 				
 			}
 			
+			if(header==11){
+				//firefly is sending ping, relay back
+				
+				USART_transmit(header , data);
+				
+			}
+			
 			
 			receiveddata=false;
 		}
@@ -119,7 +144,7 @@ void mainfunction(){
 			//get data from sensor module
 			TWI_master_receive_message(TWI_SENSOR_MODULE_ADDRESS, &header, &data);
 			
-			receiveddata=true;
+			receiveddata=1;
 			sensor_module_interrupt=0;
 		}
 		else if(control_module_interrupt){
@@ -127,7 +152,7 @@ void mainfunction(){
 			//get data from styr module
 			TWI_master_receive_message(TWI_CONTROL_MODULE_ADDRESS, &header, &data);
 			
-			receiveddata=true;
+			receiveddata=1;
 			control_module_interrupt=0;
 		}
 		else if(fireflyreceiveddata){
@@ -136,7 +161,7 @@ void mainfunction(){
 			
 			header=fireflyheader;
 			data=fireflyheader;
-			fireflyreceiveddata=false;
+			fireflyreceiveddata=0;
 			
 			sei();//shutdown interrupts
 			

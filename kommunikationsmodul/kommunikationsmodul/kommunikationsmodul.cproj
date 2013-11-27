@@ -254,6 +254,12 @@
     <Compile Include="communication.c">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="communication.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="queue.c">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\main.c">
       <SubType>compile</SubType>
     </Compile>

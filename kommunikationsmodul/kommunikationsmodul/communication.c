@@ -10,6 +10,7 @@
 #include <util/delay.h>
 #include "twi_master.h"
 #include "USART.h"
+#include "communication.h"
 
 //global variables
 volatile uint8_t control_module_interrupt=0;
@@ -18,16 +19,6 @@ volatile uint8_t sensor_module_interrupt=0;
 volatile uint8_t  fireflyheader , fireflydata; // for messages received from the firefly by the interrupt.
 
 volatile uint8_t fireflyreceiveddata=0;
-
-typedef struct _queue_element{
-	
-	uint8_t header;
-	uint8_t data;
-	
-	queue_element *next;
-	
-} queue_element;
-
 
 //interrupt init
 //Remember to set firefly interrupt flag
@@ -88,11 +79,6 @@ void mainfunction(){
 	
 	enable_irqs();
 	
-	queue_element *firstelement;
-	queue_element *lastelement;
-	
-	firstelement=0;
-	lastelement=0;
 	
 	while(1){
 		

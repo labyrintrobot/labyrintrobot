@@ -20,22 +20,21 @@ void turn_back(int direction);
 uint8_t left_distance, right_distance, forward_left_distance, forward_right_distance,
 		forward_center_distance, tape_value;
 uint8_t tape;
-int direction_array[50];
-int i = 0;
-//signed e;
+int		direction_array[50];
+int		i = 0;
 
 
-int unmarked_intersection_choice(int left, int forward, int right)
+int unmarked_intersection_choice(int left, int forward_, int right_)
 {
 	if(left > 150)
 	{
 		return turn_left;
 	}
-	else if(forward > 150)
+	else if(forward_ > 150)
 	{
 		return go_forward;
 	}
-	else
+	else // right_
 	{
 		return turn_right;	
 	}
@@ -144,44 +143,47 @@ bool goal_detected(int tape_value)
 	}
 }
 
+
+
 void turn(int direction)
 {
 	switch(direction){
-		case 0x00:
+		case 0x00: //turn_left
 			rotate_left90();
 			forward(0xA0);
 			_delay_ms(200); //Kör ut ur korsningen
 			stop();
 			break;
-		case 0x01:
+		case 0x01: //go_forward
 			forward(0xA0);
 			_delay_ms(200); //Kör ut ur korsningen
 			stop();
 			break;
-		case 0x02:
+		case 0x02: //turn_right
 			rotate_right90();
 			forward(0xA0);
 			_delay_ms(200); //Kör ut ur korsningen
 			stop();
 			break;
 	}
+	
 }
 
 void turn_back(int direction)
 {
 	switch(direction){
-		case 0x00:
+		case 0x00: //turn_left
 		rotate_right90();
 		forward(0xA0);
 		_delay_ms(200); //Kör ut ur korsningen
 		stop();
 		break;
-		case 0x01:
+		case 0x01: //go_forward
 		forward(0xA0);
 		_delay_ms(200); //Kör ut ur korsningen
 		stop();
 		break;
-		case 0x02:
+		case 0x02: //turn_right
 		rotate_left90();
 		forward(0xA0);
 		_delay_ms(200); //Kör ut ur korsningen

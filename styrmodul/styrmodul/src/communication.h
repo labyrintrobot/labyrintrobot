@@ -6,6 +6,11 @@
  */ 
 
 
+#include "twi_slave.h"
+
+
+int err;
+
 enum header_t
 {
 	styrkommando = 0x00,
@@ -20,12 +25,30 @@ enum header_t
 	tejpmarkering = 0x0B
 };
 
+
+void start_sending()	// TWI avbrott
+{
+	PORTD = 0x01;
+}
+void stop_sending()		// TWI avbrott
+{
+	PORTD = 0x00;
+}
+
+
+void send(uint8_t h, uint8_t d)
+{
+	header_s = h;
+	data_s = d;
+	start_sending();
+}
+
 ISR(TWI_vect)
 {
 	bool receive;
-	int err = TWI_slave_wait_for_address(&receive);
+	err = TWI_slave_wait_for_address(&receive);
 	if (receive) {
-		err = TWI_slave_receive_message(&header, &data);
+		err = TWI_slave_receive_message(&header_r, &data_r);
 		
 		/*switch(header)
 		{
@@ -63,18 +86,18 @@ ISR(TWI_vect)
 	} 
 	else 
 	{
-		PORTD = 0x00; // sluta skicka interrupt
-		err = TWI_slave_send_message(header, data);
+		stop_sending(); // sluta skicka interrupt
+		err = TWI_slave_send_message(header_s, data_s);
+		
 	}
 	
-	//if(err)
-	//{
-		//hbdfsn feeeel
-	//}
+
 }
 
+/*
 void fun() {
 	header = d;
 	data = d;
 	// Skicka interrupt
 }
+*/

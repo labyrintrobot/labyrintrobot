@@ -22,7 +22,8 @@ void start_sending(void);
 void stop_sending(void);
 void manual_action(uint8_t control_command);
 signed int e_last = 0;
-uint8_t keep_turning = 0;
+
+volatile uint8_t keep_turning = 0;
 
 void pwm_start_L() // Starta PWM för höger hjulpar
 {
@@ -50,6 +51,10 @@ void forward(int speed)
 	PORTB = 0x03;
 	OCR1BL = speed;
 	OCR1AL = speed;
+	if(switch_ == 0)
+	{
+		send(0x01, 0x00);
+	}
 }
 
 void backward(int speed)
@@ -57,6 +62,10 @@ void backward(int speed)
 	PORTB = 0x00;
 	OCR1BL = speed;
 	OCR1AL = speed;
+	if(switch_ == 0)
+	{
+		send(0x01, 0x01);
+	}	
 }
 
 void forward_left()
@@ -80,7 +89,12 @@ void rotate_left90()
 	_delay_ms(1);		// vänta
 	PORTB = 0x01;		// sluta skicka avbrott, ställ in hjulens rotationsriktning
 	keep_turning = 1;	// aktivera roteringen
-
+	
+	if(switch_ == 0)
+	{
+		send(0x01, 0x05);
+	}
+	
 	while(keep_turning == 1)	// rotera tills avbrott 
 	{
 		OCR1BL = 0xA0;			// hastighet vänster sida
@@ -96,6 +110,11 @@ void rotate_right90()
 	PORTB = 0x02;		// sluta skicka avbrott, ställ in hjulens rotationsriktning
 	keep_turning = 1;	// aktivera roteringen
 	
+	if(switch_ == 0)
+	{
+		send(0x01, 0x04);
+	}
+		
 	while(keep_turning == 1)	// rotera tills avbrott
 	{
 		OCR1BL = 0xA0;			// hastighet vänster sida
@@ -123,6 +142,11 @@ void stop()
 	PORTB = 0x00;	// hjulens rotationsriktning (stilla)
 	OCR1BL = 0x00;	// vänster sida
 	OCR1AL = 0x00;	// höger sida
+	
+	if(switch_ == 0)
+	{
+		send(0x01, 0x06);
+	}
 }
 
 void grip_on()
@@ -135,18 +159,11 @@ void grip_off()
 }
 
 
-void start_sending()	// TWI avbrott
-{
-	PORTD = 0x01; 
-}
-void stop_sending()		// TWI avbrott
-{
-	PORTD = 0x00;
-}
 
-void manual_action(uint8_t control_command) //Kolla senaste kontrollkommandot från kommunikationsmodulen och utför kommandot
+
+void manual_action(uint8_t control_command_) //Kolla senaste kontrollkommandot från kommunikationsmodulen och utför kommandot
 {
-	switch (control_command) //Kommandon från laptopen
+	switch (control_command_) //Kommandon från laptopen
 	{
 	case 0x00:
 		forward(0xA0);

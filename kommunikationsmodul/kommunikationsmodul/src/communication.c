@@ -39,6 +39,8 @@ void enable_irqs() {
 ISR(USART0_RX_vect){
 	//should interrupt on USART0 received a byte,dunno what to do otherwise
 	USART_receive(&fireflyheader , &fireflydata);
+	PORTB=31;
+	USART_transmit(fireflyheader , fireflydata);
 	
 	fireflyreceiveddata=true;
 }
@@ -79,20 +81,20 @@ void mainfunction(){
 	
 	while(1){
 		
-		if(receiveddata){
+		/*if(receiveddata){
 			
 			//send to right instance depending on header
 			if (header==0x00){
 				//firefly is sending styr commands, relay to styr module
 				// TODO
-				//TWI_master_send_message(TWI_CONTROL_MODULE_ADDRESS , header , data);
+				TWI_master_send_message(TWI_CONTROL_MODULE_ADDRESS , header , data);
 				
 			} else if (header == 0x01){
 				//styr module is sending, relay to firefly
 				USART_transmit(header , data);
 			} else if (header == 0x02){
 				//firefly is sending a calibration command, relay to sensor module
-				TWI_master_send_message(TWI_SENSOR_MODULE_ADDRESS , header , data);
+				//TWI_master_send_message(TWI_SENSOR_MODULE_ADDRESS , header , data);
 							
 			} else if (header >= 0x03 && header <= 0x0B){
 				//sensor module is sending, relay to styr module and firefly
@@ -120,7 +122,7 @@ void mainfunction(){
 		if (sensor_module_interrupt){
 			
 			//get data from sensor module
-			TWI_master_receive_message(TWI_SENSOR_MODULE_ADDRESS, &header, &data);
+			//TWI_master_receive_message(TWI_SENSOR_MODULE_ADDRESS, &header, &data);
 			
 			receiveddata = true;
 			sensor_module_interrupt=false;
@@ -142,6 +144,6 @@ void mainfunction(){
 			sei();//shutdown interrupts
 			
 			receiveddata = true;
-		}
+		}*/
 	}
 }

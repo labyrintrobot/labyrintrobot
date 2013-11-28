@@ -24,6 +24,13 @@ int main (void)
 	
 	mainfunction();
 	
+	while(1){
+		TWI_master_send_message(TWI_CONTROL_MODULE_ADDRESS , 0 , 0);
+		_delay_ms(250);
+		TWI_master_send_message(TWI_CONTROL_MODULE_ADDRESS , 0 , 6);
+		_delay_ms(250);
+	}
+	
 	//enable_irqs();
 	//USART_init(14400);
 	/*int err = TWI_master_initialize(TWI_COMMUNICATION_MODULE_ADDRESS);

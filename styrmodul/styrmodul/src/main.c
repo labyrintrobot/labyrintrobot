@@ -29,27 +29,21 @@
 #include <inttypes.h>
 #include <stdio.h>
 //#include <avr/signal.h>
-#define F_CPU 1.5280E6
+#define F_CPU 14.745E6
 #include <util/delay.h>
 #include <avr/interrupt.h>
 
+uint8_t control_command, left_short_s, right_short_s, left_long_s, right_long_s, forward_left_s, forward_right_s, forward_center_s, tape; //Sensordata 
+signed e; //reglerfelet
+#include <communication.h>
 #include <man_functions.h>
 #include <auto_functions.h>
-#include <communication.h>
+
 #include "twi_slave.h"
-#include "sensor_tabel.h"
-#include "Interpolate.h"
-#include "ADC_setup.h"
+uint8_t header = 0;
+uint8_t data = 0;
 
-
-enum sensor_t sensor1 = S21;
-enum sensor_t sensor2 = S24;
-enum sensor_t current = S21;
-uint8_t sensor_data1;
-uint8_t sensor_data2;
-
-
-ISR(INT2_vect) //A/D test
+ISR(INT2_vect) //Avbrott från sensormodulen: sluta rotera
 {
 	keep_turning = 0;
 	
@@ -59,29 +53,33 @@ ISR(INT2_vect) //A/D test
 int main (void)
 {
 	board_init();
-	//ADCsetup();
 
 	//TWI_common_initialize(TWI_CONTROL_MODULE_ADDRESS, false, 5, false);
 	pwm_start_L();
 	pwm_start_R();
 	pwm_start_G();
 	uint8_t button, switch_;
-	//PORTB = 0xC0; ? vad gör denna?
-	
-	//ADCsetup(); // A/D, test
-	//sei(); // Allow interrupts A/D, test
 	uint8_t header;
 	uint8_t data; 
-	//TWI_slave_receive_message(&header, &data);
 	 
 	sei();
+	
+	//Testa sändning
+	
+	
+	
+	while(1) // test av _delay_ms()
+	{
+		_delay_ms(50);
+		PORTB = 0x00;
+		_delay_ms(50);
+		PORTB = 0xFF;
+	}
 	_delay_ms(2000);
-	//_delay_ms(2500);
 	while(1)
 	{
 		PORTB = 0x00;
 		_delay_ms(1000);
-		//ADCSRA |= (1<<ADSC); // Start a ADC conversion
 		rotate_left90();
 		PORTB = 0x00;
 		_delay_ms(1000);

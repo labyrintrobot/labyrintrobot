@@ -4,8 +4,7 @@
  * Created: 11/27/2013 4:29:52 PM
  *  Authors: kimpe131, vikno623
  */ 
-uint8_t control_command, left_short, right_short, left_long, right_long, forward_left, forward_right,
-forward_center, tape, e;
+
 
 enum header_t
 {
@@ -36,25 +35,25 @@ ISR(TWI_vect)
 			control_command = data;
 			break;
 		case left_short_sensor:
-			left_short = data;
+			left_short_s = data;
 			break;
 		case left_long_sensor:
-			left_long = data;
+			left_long_s = data;
 			break;
 		case forward_left_sensor:
-			forward_left = data;
+			forward_left_s = data;
 			break;
 		case forward_center_sensor:
-			forward_center = data;
+			forward_center_s = data;
 			break;
 		case forward_right_sensor:
-			forward_right = data;
+			forward_right_s = data;
 			break;
 		case right_long_sensor:
-			right_long = data;
+			right_long_s = data;
 			break;
 		case right_short_sensor:
-			right_short = data;
+			right_short_s = data;
 			break;
 		case reglerfel:
 			e = data;
@@ -66,12 +65,18 @@ ISR(TWI_vect)
 	} 
 	else 
 	{
-		PORTD = 0x00; // sluta skicka interrupt
+	//	PORTD = 0x00; // sluta skicka interrupt
 		err = TWI_slave_send_message(header, data);
 	}
 	
-	if(err)
-	{
+	//if(err)
+	//{
 		//hbdfsn feeeel
-	}
+	//}
+}
+
+void fun() {
+	header = d;
+	data = d;
+	// Skicka interrupt
 }

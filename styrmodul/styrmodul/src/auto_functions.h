@@ -22,7 +22,7 @@ uint8_t left_distance, right_distance, forward_left_distance, forward_right_dist
 uint8_t tape;
 int direction_array[50];
 int i = 0;
-signed e;
+//signed e;
 
 
 int unmarked_intersection_choice(int left, int forward, int right)

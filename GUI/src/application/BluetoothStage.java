@@ -1,43 +1,40 @@
 package application;
 
-import application.BluetoothDiscoveryListener.IBluetoothDeviceDiscovered;
 import javafx.application.Application;
-import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
-import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.ListView;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.stage.Stage;
 
 public class BluetoothStage extends Application {
 	
-	private final BluetoothDiscoveryListener bluetoothDiscoveryListener;
-	private final ListView<String> deviceList;
+	//private String bluetoothUrl;
+	//private final BluetoothDiscoveryListener bluetoothDiscoveryListener;
 	private final Button startButton;
 	private final ProgressIndicator progressIndicator;
 
 	public BluetoothStage() {
-		bluetoothDiscoveryListener = new BluetoothDiscoveryListener(new IBluetoothDeviceDiscovered() {
-			
+		/*bluetoothDiscoveryListener = new BluetoothDiscoveryListener("FireFly-A696", new IServicesDiscoveredCallback() {
+
 			@Override
-			public void deviceDiscovered(final String name) {
+			public void servicesDiscovered(String bluetoothUrl) {
+				BluetoothStage.this.bluetoothUrl = bluetoothUrl;
+				startButton.setDisable(false);
 				Platform.runLater(new Runnable() {
 					
 					@Override
 					public void run() {
-						deviceList.getItems().add(name);
+						progressIndicator.setProgress(2.0);
 					}
 				});
 			}
 		});
-		deviceList = new ListView<String>();
+		bluetoothDiscoveryListener.findDevices();*/
 		startButton = new Button("Start");
 		progressIndicator = new ProgressIndicator();
 	}
@@ -49,50 +46,21 @@ public class BluetoothStage extends Application {
 			primaryStage.setTitle("Labyrintrobot");
 
 			BorderPane root = new BorderPane();
-			root.setCenter(deviceList);
 			HBox southBox = new HBox();
-			southBox.getChildren().addAll(startButton, progressIndicator);
+			southBox.getChildren().addAll(startButton/*, progressIndicator*/);
 			root.setBottom(southBox);
 			southBox.setAlignment(Pos.BOTTOM_CENTER);
-			
-			progressIndicator.setProgress(-1);
 			
 			Scene scene = new Scene(root, 320, 320);
 			primaryStage.setScene(scene);
 			primaryStage.show();
 			
-			Runnable btRunnable = new Runnable() {
-				
-				@Override
-				public void run() {
-					bluetoothDiscoveryListener.start();
-					Platform.runLater(new Runnable() {
-						
-						@Override
-						public void run() {
-							progressIndicator.setProgress(2.0); // Finished
-						}
-					});
-				}
-			};
-			Thread btThread = new Thread(btRunnable);
-			btThread.start();
-			
-			startButton.setDisable(true);
-			
-			deviceList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
-
-			    @Override
-			    public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-			    	startButton.setDisable(newValue == null);
-			    }
-			});
+			//startButton.setDisable(true);
 			
 			startButton.setOnAction(new EventHandler<ActionEvent>() {
 				@Override public void handle(ActionEvent e) {
-					String bluetoothServerUrl = deviceList.getSelectionModel().getSelectedItem();
-					
-					Stage stage = new PresentationStage(bluetoothServerUrl);
+					//Stage stage = new PresentationStage(bluetoothUrl);
+					Stage stage = new PresentationStage("btspp://00066603A696:1;authenticate=true;encrypt=false;master=false");
 		            stage.show();
 		            primaryStage.hide();
 				}

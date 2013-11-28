@@ -10,6 +10,8 @@
 
 #include "twi_common.h"
 
+int TWI_master_initialize(TWI_MODULE_ADDRESS my_address);
+
 int TWI_master_send_message(TWI_MODULE_ADDRESS to_address, uint8_t header, uint8_t data);
 
 int TWI_master_receive_message(TWI_MODULE_ADDRESS from_address, uint8_t* header, uint8_t* data);

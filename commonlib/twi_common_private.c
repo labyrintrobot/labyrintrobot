@@ -7,19 +7,35 @@
 #include <asf.h>
 #include "twi_common_private.h"
 
-bool interrupt_enabled = false;
-
-void TWI_common_disable_interrupt() {
-	interrupt_enabled = TWCR & 0x01;
-	TWCR &= 0xFE;
-} 
-
-void TWI_common_enable_interrupt() {
-	if (interrupt_enabled) {
-		TWCR |= 0x01;
+int TWI_common_initialize(TWI_MODULE_ADDRESS my_address) {
+	
+	const int bitrate = 50;
+	
+	if (bitrate == 5) {
+		TWBR = 87; // Clockspeed
+		TWSR |= 2; // Scale
+	} else if (bitrate == 50) {
+		TWBR = 33;
+		TWSR &= 0b11111101;
+		TWSR |= 1;
+	} else if (bitrate == 100) {
+		TWBR = 62;
+		TWSR &= 0b11111100;
+	} else if (bitrate == 200) {
+		TWBR = 27;
+		TWSR &= 0b11111100;
+	} else if (bitrate == 400) {
+		TWBR = 12;
+		TWSR &= 0b11111100;
 	} else {
-		TWCR &= 0xFE;
+		return 0x01;
 	}
+	
+	TWAR = my_address & 0xFE;
+	TWAMR = 0x00; // No filtering
+	TWDR = 0xFF; // Clean TWDR
+	
+	return 0;
 }
 
 void TWI_common_wait_for_TWINT() {

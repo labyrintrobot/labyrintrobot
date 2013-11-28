@@ -51,13 +51,18 @@
 
 void board_init(void)
 {
-	DDRA = 0xFF;
-	DDRB = 0xFF;
-	//DDRA = 0xF0; // PortA input 
 	
-	//DDRB = 0xFF; // PORTB, output, A/D test
-	//DDRB = 0x43; // PORTB, pin 0,1,6 output
-	//DDRD = 0x31; // PortD, pin 0,4,5 output
-	//TCCR1A = 0xA1;
-	//TCCR3A = 0xA1;
+	DDRA = 0x00; // PORTA input
+	DDRB = 0x4B; // PORTB, PB0,PB1,PB3,PB6 output
+	DDRC = 0x00; // PORTC input
+	DDRD = 0x31; // PortD, pin PD0,PD4,PD5 output
+	PORTA = 0x00;
+	PORTB = 0x00;
+	PORTC = 0x00;
+	PORTD = 0x00;
+	EIMSK = 0x04; // Tar emot avbrott
+	EICRA = 0x30; // Avbrott stigande flank 
+	
+	TCCR1A = 0xA1; // PWM
+	TCCR3A = 0xA1; // PWM
 }

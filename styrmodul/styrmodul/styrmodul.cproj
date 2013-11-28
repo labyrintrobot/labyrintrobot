@@ -158,7 +158,7 @@
         <avrgcc.compiler.optimization.OtherFlags>-fdata-sections</avrgcc.compiler.optimization.OtherFlags>
         <avrgcc.compiler.optimization.DebugLevel>Maximum (-g3)</avrgcc.compiler.optimization.DebugLevel>
         <avrgcc.compiler.warnings.AllWarnings>True</avrgcc.compiler.warnings.AllWarnings>
-        <avrgcc.compiler.miscellaneous.OtherFlags>-std=gnu99 -fno-strict-aliasing -Wstrict-prototypes -Wmissing-prototypes -Werror-implicit-function-declaration -Wpointer-arith -mrelax</avrgcc.compiler.miscellaneous.OtherFlags>
+        <avrgcc.compiler.miscellaneous.OtherFlags>-std=gnu99 -fno-strict-aliasing -Wstrict-prototypes -Wmissing-prototypes -Werror-implicit-function-declaration -Wpointer-arith -mrelax -Wall -Wextra -Wshadow</avrgcc.compiler.miscellaneous.OtherFlags>
         <avrgcc.linker.miscellaneous.LinkerFlags>-Wl,--relax</avrgcc.linker.miscellaneous.LinkerFlags>
         <avrgcc.assembler.general.AssemblerFlags>-mrelax -DBOARD=STK600_MEGA</avrgcc.assembler.general.AssemblerFlags>
         <avrgcc.assembler.general.IncludePaths>
@@ -181,10 +181,6 @@
     <GenerateEepFile>True</GenerateEepFile>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\..\commonlib\twi_common.c">
-      <SubType>compile</SubType>
-      <Link>twi_common.c</Link>
-    </Compile>
     <Compile Include="..\..\commonlib\twi_common.h">
       <SubType>compile</SubType>
       <Link>twi_common.h</Link>
@@ -204,6 +200,32 @@
     <Compile Include="..\..\commonlib\twi_slave.h">
       <SubType>compile</SubType>
       <Link>twi_slave.h</Link>
+    </Compile>
+    <Compile Include="..\..\commonlib\twi_slave_test.c">
+      <SubType>compile</SubType>
+      <Link>twi_slave_test.c</Link>
+    </Compile>
+    <Compile Include="..\..\commonlib\twi_slave_test.h">
+      <SubType>compile</SubType>
+      <Link>twi_slave_test.h</Link>
+    </Compile>
+    <Compile Include="IncFile1.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\config\ADC_setup.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\config\Interpolate.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\config\Interpolate.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\config\sensor_tabel.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\config\sensor_tabel.h">
+      <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\main.c">
       <SubType>compile</SubType>

@@ -36,7 +36,7 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
 
 	private boolean paused = false;
 
-	public PresentationStage(String bluetoothServerUrl) {
+	public PresentationStage(String bluetoothUrl) {
 
 		bluetoothAdapter = new BluetoothAdapter(this);
 
@@ -58,7 +58,7 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
 		errorLog.setEditable(false);
 
 		try {
-			bluetoothAdapter.setup(bluetoothServerUrl);
+			bluetoothAdapter.setup(bluetoothUrl);
 			
 			this.setTitle("Labyrintrobot");
 			final Button pauseButton = new Button();
@@ -224,7 +224,7 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
 	}
 
 	@Override
-	public void receiveMessage(byte header, int data) {
+	public void receiveMessage(int header, int data) {
 		switch (header) {
 
 		case 0x01:
@@ -259,7 +259,7 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
 				break;
 
 			default:
-				log(errorLog, "Illegal data received for header " + header + ": " + Integer.toHexString(data));
+				log(errorLog, "Illegal data received for header " + header + ": 0x" + Integer.toHexString(data));
 				break;
 			}
 			break;
@@ -289,7 +289,7 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
 				int hamDist = hammingDistance(0, data);
 				tapeChart.update(hamDist, !paused);
 			} else {				
-				log(errorLog, "Invalid tape sensor data: " + Integer.toHexString(data));
+				log(errorLog, "Invalid tape sensor data: 0x" + Integer.toHexString(data));
 			}
 			break;
 
@@ -298,7 +298,7 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
 			break;
 
 		case 0x0A:
-			log(errorLog, "Error code " + Integer.toHexString(data));
+			log(errorLog, "Error code 0x" + Integer.toHexString(data));
 			break;
 
 		case 0x0B:
@@ -310,12 +310,12 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
 					e.printStackTrace();
 				}
 			} else {
-				log(errorLog, "Invalid ping data: " + Integer.toHexString(data));
+				log(errorLog, "Invalid ping data: 0x" + Integer.toHexString(data));
 			}
 			break;
 
 		default:
-			log(errorLog, "Invalid header: " + Integer.toHexString(data));
+			log(errorLog, "Invalid header: 0x" + Integer.toHexString(data));
 			break;
 		}
 	}

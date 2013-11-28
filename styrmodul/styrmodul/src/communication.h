@@ -25,11 +25,9 @@ ISR(TWI_vect)
 	bool receive;
 	int err = TWI_slave_wait_for_address(&receive);
 	if (receive) {
-		uint8_t header;
-		uint8_t data;
 		err = TWI_slave_receive_message(&header, &data);
 		
-		switch(header)
+		/*switch(header)
 		{
 		case styrkommando:
 			control_command = data;
@@ -61,11 +59,11 @@ ISR(TWI_vect)
 		case tejpmarkering:
 			tape = data;
 			break;
-		}
+		}*/
 	} 
 	else 
 	{
-	//	PORTD = 0x00; // sluta skicka interrupt
+		PORTD = 0x00; // sluta skicka interrupt
 		err = TWI_slave_send_message(header, data);
 	}
 	

@@ -76,69 +76,70 @@ void forward_right()
 
 void rotate_left90()
 {
-	PORTB = 0x08; //skicka avbrott till sensormodulen
-	_delay_ms(1); // vänta
-	PORTB = 0x01; // sluta skicka avbrott, ställ in hjulens rotationsriktning
-	keep_turning = 1; // aktivera roteringen
+	PORTB = 0x08;		// skicka avbrott till sensormodulen
+	_delay_ms(1);		// vänta
+	PORTB = 0x01;		// sluta skicka avbrott, ställ in hjulens rotationsriktning
+	keep_turning = 1;	// aktivera roteringen
 
-	while(keep_turning == 1) // rotera tills avbrott 
+	while(keep_turning == 1)	// rotera tills avbrott 
 	{
-		OCR1BL = 0xA0;		// hastighet vänster sida
-		OCR1AL = 0xA0;		// hastighet höger sida
+		OCR1BL = 0xA0;			// hastighet vänster sida
+		OCR1AL = 0xA0;			// hastighet höger sida
 	}
 	stop();
 }
 
 void rotate_right90()
 {
-	PORTB = 0x08;
-	_delay_ms(1);
-	PORTB = 0x02;
-	keep_turning = 1;
-	while(keep_turning == 1)
+	PORTB = 0x08;		// skicka avbrott till sensormodulen
+	_delay_ms(1);		// vänta
+	PORTB = 0x02;		// sluta skicka avbrott, ställ in hjulens rotationsriktning
+	keep_turning = 1;	// aktivera roteringen
+	
+	while(keep_turning == 1)	// rotera tills avbrott
 	{
-		OCR1BL = 0xA0;
-		OCR1AL = 0xA0;
+		OCR1BL = 0xA0;			// hastighet vänster sida
+		OCR1AL = 0xA0;			// hastighet höger sida
 	}
 	stop();
 }
 
 void rotate_left()
 {
-	PORTB = 0x01;
-	OCR1BL = 0xA0;
-	OCR1AL = 0xA0;
+	PORTB = 0x01;	// hjulens rotationsriktning
+	OCR1BL = 0xA0;	// vänster sida
+	OCR1AL = 0xA0;	// höger sida
 }
 
 void rotate_right()
 {
-	PORTB = 0x02;
-	OCR1BL = 0xA0;
-	OCR1AL = 0xA0;
+	PORTB = 0x02;	// hjulens rotationsriktning
+	OCR1BL = 0xA0;	// vänster sida
+	OCR1AL = 0xA0;	// höger sida
 }
 
 void stop()
 {
-	PORTB = 0x00;
-	OCR1BL = 0x00;
-	OCR1AL = 0x00;
+	PORTB = 0x00;	// hjulens rotationsriktning (stilla)
+	OCR1BL = 0x00;	// vänster sida
+	OCR1AL = 0x00;	// höger sida
 }
 
 void grip_on()
 {
-	OCR3AL = 0x10; // 0x12 ca 1.25ms, 0x11 1.2ms 0x07 0.5 ms
+	OCR3AL = 0x10; // 0x12 ca 1.25ms, 0x11 1.2ms, 0x07 0.5ms
 }
 void grip_off()
 {
-	OCR3AL = 0x1B; // 0x1B ca 1.9ms, 0x1D 2 ms 0x23 2.5 ms
+	OCR3AL = 0x1B; // 0x1B ca 1.9ms, 0x1D 2ms, 0x23 2.5ms
 }
 
 
-void start_sending()
+void start_sending()	// TWI avbrott
 {
 	PORTD = 0x01; 
 }
-void stop_sending()
+void stop_sending()		// TWI avbrott
 {
 	PORTD = 0x00;
 }

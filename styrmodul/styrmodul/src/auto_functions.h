@@ -20,9 +20,8 @@ void turn_back(int direction);
 uint8_t left_distance, right_distance, forward_left_distance, forward_right_distance,
 		forward_center_distance, tape_value;
 uint8_t tape;
-int direction_array[50];
-int i = 0;
-//signed e;
+int		direction_array[50];
+int		i = 0;
 
 
 int unmarked_intersection_choice(int left, int forward, int right)

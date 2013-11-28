@@ -35,13 +35,14 @@
 
 uint8_t control_command, left_short_s, right_short_s, left_long_s, right_long_s, forward_left_s, forward_right_s, forward_center_s, tape; //Sensordata 
 signed e; //reglerfelet
+uint8_t header = 0;
+uint8_t data = 0;
 #include <communication.h>
 #include <man_functions.h>
 #include <auto_functions.h>
 
 #include "twi_slave.h"
-uint8_t header = 0;
-uint8_t data = 0;
+
 
 ISR(INT2_vect) //Avbrott från sensormodulen: sluta rotera
 {
@@ -59,8 +60,8 @@ int main (void)
 	pwm_start_R();
 	pwm_start_G();
 	uint8_t button, switch_;
-	uint8_t header;
-	uint8_t data; 
+	//uint8_t header;
+	//uint8_t data; 
 	 
 	sei();
 	

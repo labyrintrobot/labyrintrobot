@@ -1,21 +1,51 @@
+/*
+ * queue.c
+ *
+ *  Author: Emil Berg, Kristoffer Borg
+ */ 
+
 #include <inttypes.h>
+#include <stdlib.h>
+#include "queue.h"
 
+void queue_init(queue* q) {
+	q->first = 0;
+	q->last = 0;
+}
 
-
-typedef struct _queue_element{
+void queue_add(queue* q, uint8_t header, uint8_t data) {
+	queue_element* e = malloc(sizeof(queue_element));
+	e->data = data;
+	e->header = header;
+	e->next = 0;
 	
-	uint8_t header;
-	uint8_t data;
+	if (q->last == 0) {
+		q->first = e;
+		q->last = e;
+	} else {
+		q->last->next = e;
+	}
 	
-	struct _queue_element *next;
-	
-} queue_element;
+	q->last = e;
+}
 
-
-
-typedef struct _queue{
+void queue_remove(queue* q, uint8_t* header, uint8_t* data) {
 	
-	queue_element *first;
-	queue_element *last;
+	queue_element* e = q->first;
 	
-} queue;
+	if (e == 0) {
+		*header = 0;
+		*data = 0;
+	} else {
+		q->first = q->first->next;
+		
+		*header = e->header;
+		*data = e->data;
+		
+		free(e);
+	}
+}
+
+bool queue_is_empty(queue* q) {
+	return (q->first == 0);
+}

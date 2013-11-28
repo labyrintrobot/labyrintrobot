@@ -21,6 +21,7 @@ int main (void)
 	
 	USART_init(115200);
 	TWI_master_initialize(TWI_COMMUNICATION_MODULE_ADDRESS);
+	
 	mainfunction();
 	
 	//enable_irqs();

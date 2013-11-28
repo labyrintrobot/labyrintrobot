@@ -18,11 +18,14 @@ int TWI_common_initialize(TWI_MODULE_ADDRESS my_address) {
 		TWBR = 33;
 		TWSR &= 0b11111101;
 		TWSR |= 1;
+	} else if (bitrate == 100) {
+		TWBR = 62;
+		TWSR &= 0b11111100;
 	} else if (bitrate == 200) {
-		TWBR = 54;
+		TWBR = 27;
 		TWSR &= 0b11111100;
 	} else if (bitrate == 400) {
-		TWBR = 24;
+		TWBR = 12;
 		TWSR &= 0b11111100;
 	} else {
 		return 0x01;

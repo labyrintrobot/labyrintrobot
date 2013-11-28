@@ -35,10 +35,12 @@
 
 #include <man_functions.h>
 #include <auto_functions.h>
+#include <communication.h>
 #include "twi_slave.h"
 #include "sensor_tabel.h"
 #include "Interpolate.h"
 #include "ADC_setup.h"
+
 
 enum sensor_t sensor1 = S21;
 enum sensor_t sensor2 = S24;
@@ -47,13 +49,19 @@ uint8_t sensor_data1;
 uint8_t sensor_data2;
 
 
+ISR(INT2_vect) //A/D test
+{
+	keep_turning = 0;
+	
+}
+
 
 int main (void)
 {
 	board_init();
-	ADCsetup();
-	sei();
-	TWI_common_initialize(TWI_CONTROL_MODULE_ADDRESS, false, 5, false);
+	//ADCsetup();
+
+	//TWI_common_initialize(TWI_CONTROL_MODULE_ADDRESS, false, 5, false);
 	pwm_start_L();
 	pwm_start_R();
 	pwm_start_G();
@@ -64,17 +72,23 @@ int main (void)
 	//sei(); // Allow interrupts A/D, test
 	uint8_t header;
 	uint8_t data; 
-	TWI_slave_receive_message(&header, &data);
+	//TWI_slave_receive_message(&header, &data);
 	 
-	
+	sei();
+	_delay_ms(2000);
+	//_delay_ms(2500);
 	while(1)
 	{
-		_delay_ms(100);
-		ADCSRA |= (1<<ADSC); // Start a ADC conversion
+		PORTB = 0x00;
+		_delay_ms(1000);
+		//ADCSRA |= (1<<ADSC); // Start a ADC conversion
+		rotate_left90();
+		PORTB = 0x00;
+		_delay_ms(1000);
+		rotate_right90();
 		
-		
-		button = PINA & 0x02; // read PortA, pin 1
-		switch_ = PINA & 0x01; // read PortA, pin 0
+		//button = PINA & 0x02; // read PortA, pin 1
+		//switch_ = PINA & 0x01; // read PortA, pin 0
 		/*
 		while(switch_ != 0) // man
 		{	
@@ -109,21 +123,3 @@ int main (void)
 	// Insert application code here, after the board has been initialized.
 }
 
-ISR(ADC_vect) //A/D test
-{
-	if(current = sensor1)
-	{
-		sensor_data1 = sensorTabel(ADCH,sensor1);
-		current = sensor2;
-		ADMUX = 0xE3;
-		ADCSRA |= (1<<ADSC); // Start a ADC conversion
-	}
-	else if(current = sensor2)
-	{
-		sensor_data2 = sensorTabel(ADCH,sensor2);
-		current = sensor1;
-		ADMUX = 0xE2;
-		e = sensor_data1 - sensor_data2;
-		forward_regulated(e);
-	}
-}

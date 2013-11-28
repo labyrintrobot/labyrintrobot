@@ -7,8 +7,8 @@ void pwm_start_L(void);
 void pwm_start_R(void);
 void pwm_start_G(void);
 
-void forward(void);
-void backward(void);
+void forward(int speed);
+void backward(int speed);
 void rotate_left(void);
 void rotate_right(void);
 void rotate_left90(void);
@@ -24,45 +24,45 @@ void manual_action(uint8_t control_command);
 signed int e_last = 0;
 uint8_t keep_turning = 0;
 
-void pwm_start_L()
+void pwm_start_L() // Starta PWM för höger hjulpar
 {
-	OCR1AL = PULSE_WIDTH_L;
-	OCR1AH = 0;
-	TCCR1B = 1;
+	OCR1AL = PULSE_WIDTH_L; // Pulsbredd 0, motorerna står stilla
+	OCR1AH = 0;				// Jämför med 0 och pulsbredd
+	TCCR1B = 1;				// ingen förskalning på timern
 }
 
-void pwm_start_R()
+void pwm_start_R() // Starta PWM för vänster hjulpar
 {
-	OCR1BL = PULSE_WIDTH_R;
-	OCR1BH = 0;
-	TCCR1B = 1;
+	OCR1BL = PULSE_WIDTH_R; // Pulsbredd 0, motorerna står stilla
+	OCR1BH = 0;             // Jämför med 0 och pulsbredd
+	TCCR1B = 1;				// ingen förskalning på timern
 }
 
-void pwm_start_G()
+void pwm_start_G() // Starta PWM för griparm
 {
-	OCR3AL = PULSE_WIDTH_G;
-	OCR3AH = 0;
-	TCCR3B = 3;
+	OCR3AL = PULSE_WIDTH_G; //Ställ griparmen i öppet läge
+	OCR3AH = 0;	// Jämför med 0 och pulsbredd
+	TCCR3B = 3; // skala ner timern till 1/8
 }
 
-void forward()
+void forward(int speed)
 {
 	PORTB = 0x03;
-	OCR1BL = 0xA0;
-	OCR1AL = 0xA0;
+	OCR1BL = speed;
+	OCR1AL = speed;
 }
 
-void backward()
+void backward(int speed)
 {
 	PORTB = 0x00;
-	OCR1BL = 0xA0;
-	OCR1AL = 0xA0;
+	OCR1BL = speed;
+	OCR1AL = speed;
 }
 
 void forward_left()
 {
 	PORTB = 0x03;
-	OCR1BL = 0xA0; //right side
+	OCR1BL = 0xA0; // right side
 	OCR1AL = 0x30; // left side
 }
 
@@ -76,15 +76,15 @@ void forward_right()
 
 void rotate_left90()
 {
-	PORTB = 0x08;
-	_delay_ms(1);
-	PORTB = 0x01;
-	keep_turning = 1;
+	PORTB = 0x08; //skicka avbrott till sensormodulen
+	_delay_ms(1); // vänta
+	PORTB = 0x01; // sluta skicka avbrott, ställ in hjulens rotationsriktning
+	keep_turning = 1; // aktivera roteringen
 
-	while(keep_turning == 1)
+	while(keep_turning == 1) // rotera tills avbrott 
 	{
-		OCR1BL = 0xA0;
-		OCR1AL = 0xA0;
+		OCR1BL = 0xA0;		// hastighet vänster sida
+		OCR1AL = 0xA0;		// hastighet höger sida
 	}
 	stop();
 }
@@ -143,14 +143,15 @@ void stop_sending()
 	PORTD = 0x00;
 }
 
-void manual_action(uint8_t control_command)
+void manual_action(uint8_t control_command) //Kolla senaste kontrollkommandot från kommunikationsmodulen och utför kommandot
 {
-	switch (control_command){ //Kommandon från laptopen
+	switch (control_command) //Kommandon från laptopen
+	{
 	case 0x00:
-		forward();
+		forward(0xA0);
 		break;
 	case 0x01:
-		backward();
+		backward(0xA0);
 		break;
 	case 0x02:
 		forward_right();

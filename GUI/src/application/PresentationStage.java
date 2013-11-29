@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
@@ -138,44 +140,37 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
 			@Override
 			public void callback(ChartSelectorPad.SelectedToggleButton stb) {
 		        
-		        List<TimeValuePair> data;
 		        String title = "schlorg";
-
-				switch (stb) {
-				case DISTANCE_LEFT_SHORT:
-					data = distanceLeftShortList;
-					break;
-				case DISTANCE_LEFT_LONG:
-					data = distanceLeftLongList;
-					break;
-				case DISTANCE_FORWARD_CENTER:
-					data = distanceForwardCenterList;
-					break;
-				case DISTANCE_FORWARD_LEFT:
-					data = distanceForwardLeftList;
-					break;
-				case DISTANCE_FORWARD_RIGHT:
-					data = distanceForwardRightList;
-					break;
-				case DISTANCE_RIGHT_LONG:
-					data = distanceRightLongList;
-					break;
-				case DISTANCE_RIGHT_SHORT:
-					data = distanceRightShortList;
-					break;
-				case TAPE:
-					data = tapeList;
-					break;
-				case CONTROL_ERROR:
-					data = controlErrorList;
-					break;
-				default:
-					// Should not happen
-					data = null;
-					break;
-				}
 				
-				setLineChartData(data, title);
+				setLineChartData(getFromSel(stb), title);
+			}
+		});
+		
+		minSlider.valueProperty().addListener(new ChangeListener<Number>() {
+
+			@Override
+			public void changed(ObservableValue<? extends Number> arg0,
+					Number arg1, Number arg2) {
+				
+				minSlider.setValue(Math.min(minSlider.getValue(), maxSlider.getValue()));
+				
+				if (paused) {
+					setLineChartData(getFromSel(chartSelectorPad.getSelected()), "schlorbar");
+				}
+			}
+		});
+		
+		maxSlider.valueProperty().addListener(new ChangeListener<Number>() {
+
+			@Override
+			public void changed(ObservableValue<? extends Number> arg0,
+					Number arg1, Number arg2) {
+				
+				maxSlider.setValue(Math.max(minSlider.getValue(), maxSlider.getValue()));
+				
+				if (paused) {
+					setLineChartData(getFromSel(chartSelectorPad.getSelected()), "schlorbar");
+				}
 			}
 		});
 
@@ -318,6 +313,32 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
 
 		} catch(Exception e) {
 			e.printStackTrace();
+		}
+	}
+	
+	private List<TimeValuePair> getFromSel(ChartSelectorPad.SelectedToggleButton stb) {
+		switch (stb) {
+		case DISTANCE_LEFT_SHORT:
+			return distanceLeftShortList;
+		case DISTANCE_LEFT_LONG:
+			return distanceLeftLongList;
+		case DISTANCE_FORWARD_CENTER:
+			return distanceForwardCenterList;
+		case DISTANCE_FORWARD_LEFT:
+			return distanceForwardLeftList;
+		case DISTANCE_FORWARD_RIGHT:
+			return distanceForwardRightList;
+		case DISTANCE_RIGHT_LONG:
+			return distanceRightLongList;
+		case DISTANCE_RIGHT_SHORT:
+			return distanceRightShortList;
+		case TAPE:
+			return tapeList;
+		case CONTROL_ERROR:
+			return controlErrorList;
+		default:
+			// Should not happen
+			return null;
 		}
 	}
 

@@ -8,6 +8,10 @@
 
 #include "twi_slave.h"
 
+void start_sending(void);
+void stop_sending(void);
+void send(uint8_t h, uint8_t d);
+
 
 int err;
 
@@ -21,8 +25,8 @@ enum header_t
 	forward_right_sensor = 0x07,
 	right_long_sensor = 0x08,
 	right_short_sensor = 0x09,
-	reglerfel = 0x0A,
-	tejpmarkering = 0x0B
+	regulation_error = 0x0A,
+	tape_mark = 0x0B
 };
 
 
@@ -50,39 +54,39 @@ ISR(TWI_vect)
 	if (receive) {
 		err = TWI_slave_receive_message(&header_r, &data_r);
 		
-		/*switch(header)
+		switch(header_r)
 		{
 		case styrkommando:
-			control_command = data;
+			control_command = data_r;
 			break;
 		case left_short_sensor:
-			left_short_s = data;
+			left_short_s = data_r;
 			break;
 		case left_long_sensor:
-			left_long_s = data;
+			left_long_s = data_r;
 			break;
 		case forward_left_sensor:
-			forward_left_s = data;
+			forward_left_s = data_r;
 			break;
 		case forward_center_sensor:
-			forward_center_s = data;
+			forward_center_s = data_r;
 			break;
 		case forward_right_sensor:
-			forward_right_s = data;
+			forward_right_s = data_r;
 			break;
 		case right_long_sensor:
-			right_long_s = data;
+			right_long_s = data_r;
 			break;
 		case right_short_sensor:
-			right_short_s = data;
+			right_short_s = data_r;
 			break;
-		case reglerfel:
-			e = data;
+		case regulation_error:
+			e = data_r;
 			break;
-		case tejpmarkering:
-			tape = data;
+		case tape_mark:
+			tape_value = data_r;
 			break;
-		}*/
+		}
 	} 
 	else 
 	{
@@ -94,10 +98,3 @@ ISR(TWI_vect)
 
 }
 
-/*
-void fun() {
-	header = d;
-	data = d;
-	// Skicka interrupt
-}
-*/

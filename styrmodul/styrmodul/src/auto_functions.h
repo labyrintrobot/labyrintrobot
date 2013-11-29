@@ -2,13 +2,14 @@
 #define go_forward 0x01;
 #define turn_right 0x02;
 
-int unmarked_intersection_choice(int left, int forward, int right);
-int marked_intersection_choice(int tape, int left, int forward, int right);
+int unmarked_intersection_choice(int left_, int forward_);
+int marked_intersection_choice(int tape, int left_, int forward_, int right_);
 void forward_regulated(signed e);
 bool intersection_detected(int left, int right);
 void find_start(void);
 void find_goal(void);
 bool goal_detected(int tape_value);
+void get_target(void);
 bool start_detected(void);
 void store_data(uint8_t header, uint8_t data);
 bool read_tape(int tape_value);
@@ -16,17 +17,12 @@ void turn(int direction);
 void return_to_start(void);
 void turn_back(int direction);
 
-
-uint8_t left_distance, right_distance, forward_left_distance, forward_right_distance,
-		forward_center_distance, tape_value;
-uint8_t tape;
 int		direction_array[50];
 int		i = 0;
 
-
-int unmarked_intersection_choice(int left, int forward_, int right_)
+int unmarked_intersection_choice(int left_, int forward_)
 {
-	if(left > 150)
+	if(left_ > 150)
 	{
 		return turn_left;
 	}
@@ -34,46 +30,47 @@ int unmarked_intersection_choice(int left, int forward_, int right_)
 	{
 		return go_forward;
 	}
-	else // right_
+	else // right
 	{
 		return turn_right;	
 	}
 }
 
-int marked_intersection_choice(int tape, int left, int forward, int right)
+int marked_intersection_choice(int tape, int left_, int forward_, int right_)
 {
-//tape = 0x02 = right, tape = 0x01 = left
-	if((tape == 0x02) & (right < 40))
+	//tape = 0x02 = right, tape = 0x01 = left
+	if((tape == 0x02) & (right_ < 40))
 	{
+		tape_value = 0x00;
 		return go_forward;
 	}
-	else if((tape == 0x02) & (forward < 40))
+	else if((tape == 0x02) & (forward_ < 40))
 	{
+		tape_value = 0x00;
 		return turn_right;
 	}
-	else if((tape == 0x01) & (left < 40))
+	else if((tape == 0x01) & (left_ < 40))
 	{
+		tape_value = 0x00;
 		return go_forward;	
 	}
 	else
 	{
+		tape_value = 0x00;
 		return turn_left;
 	}
 } 
 
 
 
-void forward_regulated(signed e)
+void forward_regulated(signed e_)
 {
-	//signed e;
-	//e =right_distance - left_distance;
 	PORTB = 0x03;
 	signed u, Kp, Kd;
 	Kp = 1;
 	Kd = 10; //KD=0.01/deltaT=0.1
-	u = Kp*e + Kd*(e - e_last); //KD-regulator
-	//u=Kp*e; //P-regulator
-	e_last = e;
+	u = Kp*e_ + Kd*(e_ - e_last); //KD-regulator
+	e_last = e_;
 	
 	if(u > 0) // turn right
 	{
@@ -116,11 +113,11 @@ void find_start()
 }
 
 //tape = 0x02 = right, tape = 0x01 = left
-bool read_tape(int tape_value)
+bool read_tape(int tape)
 {
-	if(tape_value == 0x01 || tape_value == 0x02)
+	if(tape == 0x01 || tape == 0x02)
 	{
-		tape_value = 0x00; //nollställ senaste tejpavläsningen
+	//	tape_value = 0x00; //nollställ senaste tejpavläsningen
 		return true;
 	} 
 	else
@@ -130,9 +127,9 @@ bool read_tape(int tape_value)
 }
 
 // Returnerar True när den hittat målmarkeringen 
-bool goal_detected(int tape_value)
+bool goal_detected(int tape)
 {
-	if(tape_value == 0x03)
+	if(tape == 0x03)
 	{
 		tape_value = 0x00; //nollställ senaste tejpavläsningen
 		return true;
@@ -211,7 +208,7 @@ void find_goal()
 	int direction;
 	while(!goal_detected(tape_value))
 	{
-		while(!intersection_detected(left_distance,right_distance)) // Korridor
+		while(!intersection_detected(left_long_s,right_long_s)) // Korridor
 		{
 			forward_regulated(e);
 		}
@@ -223,14 +220,13 @@ void find_goal()
 		
 		if(read_tape(tape_value)) // Markerad
 		{
-			direction = marked_intersection_choice(tape_value, left_distance, 
-														forward_center_distance, right_distance);
+			direction = marked_intersection_choice(tape_value,	left_long_s, 
+																forward_center_s, right_long_s);
 			turn(direction);
 		}
 		else // Omarkerad
 		{
-			direction = unmarked_intersection_choice(left_distance, forward_center_distance, 
-														right_distance);
+			direction = unmarked_intersection_choice(left_long_s, forward_center_s);
 			turn(direction);			
 		}
 		direction_array[i] = direction;
@@ -241,33 +237,11 @@ void find_goal()
 }
 
 
-void store_data(uint8_t header, uint8_t data)
-{
-	switch(header){
-		case 0x03:
-			left_distance = data;
-			break;
-		case 0x04:
-			right_distance = data;
-			break;
-		case 0x05:
-			forward_right_distance = data;
-			break;
-		case 0x06:
-			forward_left_distance = data;
-			break;
-		case 0x07:
-			forward_center_distance = data;
-			break;		
-	}
-}
-
-
 void return_to_start()
 {
 	for(int x = i-1; x > 0; x--)
 	{
-		while(!intersection_detected(left_distance, right_distance))
+		while(!intersection_detected(left_long_s, right_long_s))
 		{
 			forward_regulated(e);
 		}

@@ -36,20 +36,23 @@
 
 //Sensordata 
 uint8_t control_command, left_short_s, right_short_s, left_long_s, right_long_s, 
-		forward_left_s, forward_right_s, forward_center_s, tape;
+		forward_left_s, forward_right_s, forward_center_s, tape_value;
 signed e; //reglerfelet
+
+//header och data som sänds och tas emot
 volatile uint8_t header_s = 0;
 volatile uint8_t data_s = 0;
 volatile uint8_t header_r = 0;
 volatile uint8_t data_r = 0x06;
 
+//startknapp och switch
 uint8_t button, switch_;
 
-#include <communication.h>
-#include <man_functions.h>
-#include <auto_functions.h>
+#include <communication.h> // kommunikationen
+#include <man_functions.h> // manuella funktioner
+#include <auto_functions.h> // automatiska funktioner som kräver sensormodulen
 
-#include "twi_slave.h"
+#include "twi_slave.h" // I2C
 
 
 ISR(INT2_vect) //Avbrott från sensormodulen: sluta rotera
@@ -67,61 +70,28 @@ int main (void)
 	pwm_start_L();
 	pwm_start_R();
 	pwm_start_G();
-	//uint8_t header;
-	//uint8_t data; 
-	 
+	
 	sei();
 	//cli();
 
-	// testa sändning
-	
-	switch_ = 0x01;
-	while(1) // manuellt läge
-	{
-		if(header_r == 0x00) // Styrkommando
-		{
-				manual_action(data_r);
-		}
-	}
-	
-	
-
-
-/*
-	while(1) // test av _delay_ms()
-	{
-		_delay_ms(50);
-		PORTB = 0x00;
-		_delay_ms(50);
-		PORTB = 0xFF;
-	}
-	_delay_ms(2000);
 	while(1)
 	{
-		PORTB = 0x00;
-		_delay_ms(1000);
-		rotate_left90();
-		PORTB = 0x00;
-		_delay_ms(1000);
-		rotate_right90();
-*/	
+		button = PINA & 0x02; // read PortA, pin 1
+		switch_ = PINA & 0x01; // read PortA, pin 0
 
-
-		//button = PINA & 0x02; // read PortA, pin 1
-		//switch_ = PINA & 0x01; // read PortA, pin 0
-/*
 		while(switch_ != 0) // man
 		{	
 			//TWI_slave_receive_message(&header, &data); 
-			if(header == 0x00)
+			if(header_r == 0x00)
 			{
-				manual_action(data);
+				manual_action(data_r);
 			}
 		switch_ = (PINA & 0x01);
 		}
 		
 		while(switch_ == 0) //autonomt läge
 		{
+			/*
 			if(button != 0) //startar autonomt läge
 			{
 				find_start();
@@ -137,11 +107,12 @@ int main (void)
 				//stop
 			
 			}
+			*/
 			switch_ = PINA & 0x01;
 		}
 
 	}
-	*/
+	
 	// Insert application code here, after the board has been initialized.
 }
 

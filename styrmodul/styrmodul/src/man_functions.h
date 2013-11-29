@@ -18,9 +18,10 @@ void forward_left(void);
 void stop(void);
 void grip_on(void);
 void grip_off(void);
-void start_sending(void);
-void stop_sending(void);
+void open_grip(void);
+void close_grip(void);
 void manual_action(uint8_t control_command);
+
 signed int e_last = 0;
 
 volatile uint8_t keep_turning = 0;
@@ -48,9 +49,9 @@ void pwm_start_G() // Starta PWM för griparm
 
 void forward(int speed)
 {
-	PORTB = 0x03;
-	OCR1BL = speed;
-	OCR1AL = speed;
+	PORTB = 0x03; 
+	OCR1BL = speed; // right side
+	OCR1AL = speed; // left side
 	if(switch_ == 0)
 	{
 		send(0x01, 0x00);
@@ -60,8 +61,8 @@ void forward(int speed)
 void backward(int speed)
 {
 	PORTB = 0x00;
-	OCR1BL = speed;
-	OCR1AL = speed;
+	OCR1BL = speed; // right side
+	OCR1AL = speed; // left side
 	if(switch_ == 0)
 	{
 		send(0x01, 0x01);
@@ -70,16 +71,16 @@ void backward(int speed)
 
 void forward_left()
 {
-	PORTB = 0x03;
-	OCR1BL = 0xA0; // right side
+	PORTB = 0x03; 
+	OCR1BL = 0xF0; // right side
 	OCR1AL = 0x30; // left side
 }
 
 void forward_right()
 {
 	PORTB = 0x03;
-	OCR1BL = 0x30;
-	OCR1AL = 0xA0;
+	OCR1BL = 0x30; // right side
+	OCR1AL = 0xF0; // left side
 }
 
 
@@ -126,15 +127,15 @@ void rotate_right90()
 void rotate_left()
 {
 	PORTB = 0x01;	// hjulens rotationsriktning
-	OCR1BL = 0xA0;	// vänster sida
-	OCR1AL = 0xA0;	// höger sida
+	OCR1BL = 0xF0;	// vänster sida
+	OCR1AL = 0xF0;	// höger sida
 }
 
 void rotate_right()
 {
 	PORTB = 0x02;	// hjulens rotationsriktning
-	OCR1BL = 0xA0;	// vänster sida
-	OCR1AL = 0xA0;	// höger sida
+	OCR1BL = 0xF0;	// vänster sida
+	OCR1AL = 0xF0;	// höger sida
 }
 
 void stop()
@@ -149,27 +150,46 @@ void stop()
 	}
 }
 
-void grip_on()
+void grip_on() //grip helt
 {
 	OCR3AL = 0x10; // 0x12 ca 1.25ms, 0x11 1.2ms, 0x07 0.5ms
 }
-void grip_off()
+void grip_off() //öppna helt
 {
 	OCR3AL = 0x1B; // 0x1B ca 1.9ms, 0x1D 2ms, 0x23 2.5ms
 }
 
+uint8_t grip = 0x1B;
 
+void open_grip() //öppna griparmen ett steg
+{
+	if (grip < 0x1B)
+		{
+			grip++;
+			OCR3AL = grip;
+			_delay_ms(200); //vänta 200 ms innan ett steg till 
+		}	
+}
 
+void close_grip() //stäng griparmen ett steg
+{
+	if (grip > 0x0F)
+	{
+		grip--;
+		OCR3AL = grip;
+		_delay_ms(200); //vänta 200 ms innan ett steg till 
+	}
+}
 
 void manual_action(uint8_t control_command_) //Kolla senaste kontrollkommandot från kommunikationsmodulen och utför kommandot
 {
 	switch (control_command_) //Kommandon från laptopen
 	{
 	case 0x00:
-		forward(0xA0);
+		forward(0xF0);
 		break;
 	case 0x01:
-		backward(0xA0);
+		backward(0xF0);
 		break;
 	case 0x02:
 		forward_right();
@@ -191,6 +211,12 @@ void manual_action(uint8_t control_command_) //Kolla senaste kontrollkommandot f
 		break;
 	case 0x08:
 		rotate_left();
+		break;
+	case 0x09:
+		open_grip();
+		break;
+	case 0x0A:
+		close_grip();
 		break;
 	}
 }

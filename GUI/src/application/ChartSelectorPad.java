@@ -1,14 +1,37 @@
 package application;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.geometry.Pos;
+import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
 public class ChartSelectorPad extends VBox {
+	
+	public interface ToggleCallback {
+		public void callback(SelectedToggleButton stb);
+	}
+	
+	enum SelectedToggleButton {
+		DISTANCE_LEFT_SHORT,
+		DISTANCE_LEFT_LONG,
+		DISTANCE_FORWARD_LEFT,
+		DISTANCE_FORWARD_CENTER,
+		DISTANCE_FORWARD_RIGHT,
+		DISTANCE_RIGHT_LONG,
+		DISTANCE_RIGHT_SHORT,
+		TAPE
+	}
+	
+	private final Map<Toggle, SelectedToggleButton> map;
 
-	/*final ToggleGroup group;
+	final ToggleGroup group;
 
 	private final ToggleButton distanceLeftShort;
 	private final ToggleButton distanceLeftLong;
@@ -16,10 +39,10 @@ public class ChartSelectorPad extends VBox {
 	private final ToggleButton distanceForwardCenter;
 	private final ToggleButton distanceForwardRight;
 	private final ToggleButton distanceRightLong;
-	private final ToggleButton distanceForwardShort;
+	private final ToggleButton distanceRightShort;
 	private final ToggleButton tape;
 
-	public ChartSelectorPad() {
+	public ChartSelectorPad(final ToggleCallback callback) {
 
 		this.setAlignment(Pos.CENTER);
 
@@ -31,35 +54,55 @@ public class ChartSelectorPad extends VBox {
 		r2.setAlignment(Pos.CENTER);
 		r3.setAlignment(Pos.BOTTOM_CENTER);
 
-		distanceForwardLeft = generateButton("↖");
-		distanceForwardCenter = generateButton("↑");
-		distanceForwardRight = generateButton("↗");
-		distanceLeftShort = generateButton("↺");
-		distanceLeftLong = generateButton("⇞");
-		rotateRight = generateButton("↻");
-		backwards = generateButton("↓");
+		distanceLeftShort = generateButton("1.2");
+		distanceLeftLong = generateButton("2.1");
+		distanceForwardLeft = generateButton("2.2");
+		distanceForwardCenter = generateButton("1.1");
+		distanceForwardRight = generateButton("2.3");
+		distanceRightShort = generateButton("2.4");
+		distanceRightLong = generateButton("1.3");
+		tape = generateButton("Tape");
 
 		group = new ToggleGroup();
-		leftForward.setToggleGroup(group);
-		forward.setToggleGroup(group);
-		rightForward.setToggleGroup(group);
-		rotateLeft.setToggleGroup(group);
-		stop.setToggleGroup(group);
-		rotateRight.setToggleGroup(group);
-		backwards.setToggleGroup(group);
-
-		r1.getChildren().addAll(leftForward, forward, rightForward);
-		r2.getChildren().addAll(rotateLeft, stop, rotateRight);
-		r3.getChildren().addAll(backwards);
+		distanceLeftShort.setToggleGroup(group);
+		distanceLeftLong.setToggleGroup(group);
+		distanceForwardLeft.setToggleGroup(group);
+		distanceForwardCenter.setToggleGroup(group);
+		distanceForwardRight.setToggleGroup(group);
+		distanceRightShort.setToggleGroup(group);
+		distanceRightLong.setToggleGroup(group);
+		tape.setToggleGroup(group);
+		
+		r1.getChildren().addAll(distanceForwardLeft, distanceForwardCenter, distanceForwardRight);
+		r2.getChildren().addAll(distanceLeftLong, tape, distanceRightLong);
+		r3.getChildren().addAll(distanceLeftShort, distanceRightShort);
 
 		this.getChildren().addAll(r1, r2, r3);
 		
-		leftForward.setSelected(true);
+		distanceForwardCenter.setSelected(true);
+		
+		map = new HashMap<>();
+		map.put(distanceLeftShort, SelectedToggleButton.DISTANCE_LEFT_SHORT);
+		map.put(distanceLeftLong, SelectedToggleButton.DISTANCE_LEFT_LONG);
+		map.put(distanceForwardLeft, SelectedToggleButton.DISTANCE_FORWARD_LEFT);
+		map.put(distanceForwardCenter, SelectedToggleButton.DISTANCE_FORWARD_CENTER);
+		map.put(distanceForwardRight, SelectedToggleButton.DISTANCE_FORWARD_RIGHT);
+		map.put(distanceRightLong, SelectedToggleButton.DISTANCE_RIGHT_LONG);
+		map.put(distanceRightShort, SelectedToggleButton.DISTANCE_RIGHT_SHORT);
+		map.put(tape, SelectedToggleButton.TAPE);
+		
+		group.selectedToggleProperty().addListener(new ChangeListener<Toggle>() {
+
+			@Override
+			public void changed(ObservableValue<? extends Toggle> arg0,
+					Toggle arg1, Toggle arg2) {
+				callback.callback(map.get(group.getSelectedToggle()));
+			}
+		});
 	}
 
 	private ToggleButton generateButton(String text) {
 		ToggleButton b = new ToggleButton(text);
-		b.setDisable(true);
 		b.setStyle("-fx-font: 26 arial;");
 		
 		setFocusTraversable(false);
@@ -67,25 +110,7 @@ public class ChartSelectorPad extends VBox {
 		return b;
 	}
 
-	public void pressLeftForward() {
-		leftForward.setSelected(true);
+	public SelectedToggleButton getSelected() {
+		return map.get(group.getSelectedToggle());
 	}
-	public void pressForward() {
-		forward.setSelected(true);
-	}
-	public void pressRightForward() {
-		rightForward.setSelected(true);
-	}
-	public void pressRotateLeft() {
-		rotateLeft.setSelected(true);
-	}
-	public void pressStop() {
-		stop.setSelected(true);
-	}
-	public void pressRotateRight() {
-		rotateRight.setSelected(true);
-	}
-	public void pressBackwards() {
-		backwards.setSelected(true);
-	}*/
 }

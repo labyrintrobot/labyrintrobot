@@ -1,8 +1,7 @@
 package application;
 
 import java.io.IOException;
-import java.util.Date;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -26,20 +25,25 @@ import javafx.stage.WindowEvent;
 
 public class PresentationStage extends Stage implements BluetoothAdapter.IMessageReceiver {
 
+	private static final boolean NEW_TEST = true;
+	
 	private static final String PAUSE_TEXT = "Pause";
 	private static final String RESUME_TEXT = "Resume";
 
 	private final ControllerAdapter controllerAdapter;
 	private final BluetoothAdapter bluetoothAdapter;
 	private final ControlPad controlPad;
+	private final ChartSelectorPad chartSelectorPad;
 
-	private final RealTimeChart leftChart;
+	/*private final RealTimeChart leftChart;
 	private final RealTimeChart rightChart;
 	private final RealTimeChart forwardLeftChart;
 	private final RealTimeChart forwardRightChart;
 	private final RealTimeChart forwardChart;
 	private final RealTimeChart gyroChart;
-	private final RealTimeChart tapeChart;
+	private final RealTimeChart tapeChart;*/
+	
+	private final LineChart<Number, Number> lineChart;
 
 	private final TextArea errorLog;
 
@@ -47,13 +51,27 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
 	
 	//////////////////////////////
 	private static class TimeValuePair {
-		public int time = 0;
-		public int value = 0;
+		public final long time;
+		public final int value;
+		
+		public TimeValuePair(long time, int value) {
+			this.time = time;
+			this.value = value;
+		}
 	}
 	
-	private final List<TimeValuePair> distanceLeftShortList = new LinkedList<>();
+	private final List<TimeValuePair> distanceLeftShortList = new ArrayList<>();
+	private final List<TimeValuePair> distanceLeftLongList = new ArrayList<>();
+	private final List<TimeValuePair> distanceForwardLeftList = new ArrayList<>();
+	private final List<TimeValuePair> distanceForwardCenterList = new ArrayList<>();
+	private final List<TimeValuePair> distanceForwardRightList = new ArrayList<>();
+	private final List<TimeValuePair> distanceRightLongList = new ArrayList<>();
+	private final List<TimeValuePair> distanceRightShortList = new ArrayList<>();
+	private final List<TimeValuePair> tapeList = new ArrayList<>();
 	
 	private static final int DATA_MAX = 200;
+	
+	private int i;
 	
 	private LineChart<Number, Number> generateRealTimeChart(String name, String yAxisText, int maxY, TimeValuePair[] data) {
 		
@@ -90,6 +108,8 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
         	lcData.add(new XYChart.Data<Number, Number>(tp.time, tp.value));
         }
         
+        series.setData(lcData);
+        
         return lc;
 	}
 /////////////////////////
@@ -97,17 +117,72 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
 
 		bluetoothAdapter = new BluetoothAdapter(this);
 
+		lineChart = generateRealTimeChart("NAME", "y", 128, new TimeValuePair[0]);
 
 		controllerAdapter = new ControllerAdapter(bluetoothAdapter);
 		controlPad = new ControlPad();
+		chartSelectorPad = new ChartSelectorPad(new ChartSelectorPad.ToggleCallback() {
+			
+			@Override
+			public void callback(ChartSelectorPad.SelectedToggleButton stb) {
+		        XYChart.Series<Number, Number> series = new XYChart.Series<Number, Number>();
+		        series.setName("horg");
+		        
+		        TimeValuePair[] data;
 
-		rightChart = new RealTimeChart("Right", "Distance", 256);
-		forwardRightChart = new RealTimeChart("Forward, right", "Distance", 256);
-		forwardChart = new RealTimeChart("Forward", "Distance", 256);
-		forwardLeftChart = new RealTimeChart("Forward, left", "Distance", 256);
-		leftChart = new RealTimeChart("Left", "Distance", 256);
-		gyroChart = new RealTimeChart("Gyro", "Angular rate", 256);
-		tapeChart = new RealTimeChart("Tape sensor", "Hamming distance", 8);
+				switch (stb) {
+				case DISTANCE_FORWARD_CENTER:
+					data = distanceForwardCenterList.toArray(new TimeValuePair[distanceForwardCenterList.size()]);
+					break;
+				case DISTANCE_FORWARD_LEFT:
+					data = distanceForwardLeftList.toArray(new TimeValuePair[distanceForwardLeftList.size()]);
+					break;
+				case DISTANCE_FORWARD_RIGHT:
+					data = distanceForwardRightList.toArray(new TimeValuePair[distanceForwardRightList.size()]);
+					break;
+				case DISTANCE_LEFT_LONG:
+					data = distanceLeftLongList.toArray(new TimeValuePair[distanceLeftLongList.size()]);
+					break;
+				case DISTANCE_LEFT_SHORT:
+					data = distanceLeftShortList.toArray(new TimeValuePair[distanceLeftShortList.size()]);
+					break;
+				case DISTANCE_RIGHT_LONG:
+					data = distanceRightLongList.toArray(new TimeValuePair[distanceRightLongList.size()]);
+					break;
+				case DISTANCE_RIGHT_SHORT:
+					data = distanceRightShortList.toArray(new TimeValuePair[distanceRightShortList.size()]);
+					break;
+				case TAPE:
+					data = tapeList.toArray(new TimeValuePair[tapeList.size()]);
+					break;
+				default:
+					data = null;
+					// Should not happen
+					break;
+				}
+				
+		        for (TimeValuePair tp : data) {
+		        	// TODO: Add all
+		        	series.getData().add(new XYChart.Data<Number, Number>(tp.time, tp.value));
+		        }
+		        
+		        NumberAxis xAxis = (NumberAxis) lineChart.getXAxis();
+		        
+		        xAxis.setLowerBound(data[0].time);
+		        xAxis.setUpperBound(data[data.length-1].time);
+		        
+		        lineChart.getData().remove(0, lineChart.getData().size());
+		        lineChart.getData().add(series);
+			}
+		});
+
+		//rightChart = new RealTimeChart("Right", "Distance", 256);
+		//forwardRightChart = new RealTimeChart("Forward, right", "Distance", 256);
+		//forwardChart = new RealTimeChart("Forward", "Distance", 256);
+		//forwardLeftChart = new RealTimeChart("Forward, left", "Distance", 256);
+		//leftChart = new RealTimeChart("Left", "Distance", 256);
+		//gyroChart = new RealTimeChart("Gyro", "Angular rate", 256);
+		//tapeChart = new RealTimeChart("Tape sensor", "Hamming distance", 8);
 
 		errorLog = new TextArea();
 
@@ -136,13 +211,13 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
 			westBox.setAlignment(Pos.CENTER_RIGHT);
 			southBox.setAlignment(Pos.BOTTOM_CENTER);
 			centerBox.setAlignment(Pos.CENTER);
+			
 
-
-			eastBox.getChildren().add(rightChart.getUnderLyingLineChart());
+			/*eastBox.getChildren().add(rightChart.getUnderLyingLineChart());
 			westBox.getChildren().add(leftChart.getUnderLyingLineChart());
-			northBox.getChildren().addAll(forwardLeftChart.getUnderLyingLineChart(), forwardChart.getUnderLyingLineChart(), forwardRightChart.getUnderLyingLineChart());
-			southBox.getChildren().addAll(errorLog, tapeChart.getUnderLyingLineChart(), gyroChart.getUnderLyingLineChart());
-			centerBox.getChildren().addAll(pauseButton, controlPad);
+			northBox.getChildren().addAll(forwardLeftChart.getUnderLyingLineChart(), forwardChart.getUnderLyingLineChart(), forwardRightChart.getUnderLyingLineChart());*/
+			southBox.getChildren().addAll(errorLog, /*tapeChart.getUnderLyingLineChart(), gyroChart.getUnderLyingLineChart(),*/ chartSelectorPad);
+			centerBox.getChildren().addAll(pauseButton, controlPad, lineChart);
 
 			BorderPane root = new BorderPane();
 			root.setRight(eastBox);
@@ -225,13 +300,14 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
 					} else {
 						pauseButton.setText(PAUSE_TEXT);
 					}
-					rightChart.flush();
+					// TODO
+					/*rightChart.flush();
 					forwardRightChart.flush();
 					forwardChart.flush();
 					forwardLeftChart.flush();
 					leftChart.flush();
 					gyroChart.flush();
-					tapeChart.flush();
+					tapeChart.flush();*/
 				}
 			});
 
@@ -285,6 +361,10 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
 	public void receiveMessage(int header, int data) {
 		switch (header) {
 
+		case 0x00:
+			log(errorLog, "Unexpected header " + header + ": 0x" + Integer.toHexString(data));
+			break;
+		
 		case 0x01:
 			switch (data) {
 
@@ -317,37 +397,61 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
 				break;
 
 			default:
-				log(errorLog, "Illegal data received for header " + header + ": 0x" + Integer.toHexString(data));
+				log(errorLog, "Illegal data received for header 0x" + Integer.toHexString(header) + ": 0x" + Integer.toHexString(data));
 				break;
 			}
 			break;
 
 		case 0x03:
-			leftChart.update(data, !paused);
+			if (NEW_TEST) {
+				distanceLeftShortList.add(new TimeValuePair(System.currentTimeMillis(), data));
+			} else {
+				//leftChart.update(data, !paused);
+			}
 			break;
 
 		case 0x04:
-			rightChart.update(data, !paused);
+			if (NEW_TEST) {
+				distanceLeftLongList.add(new TimeValuePair(System.currentTimeMillis(), data));
+			} else {
+				//rightChart.update(data, !paused);
+			}
 			break;
 
 		case 0x05:
-			forwardRightChart.update(data, !paused);
+			if (NEW_TEST) {
+				distanceForwardLeftList.add(new TimeValuePair(System.currentTimeMillis(), data));
+			} else {
+				//forwardRightChart.update(data, !paused);
+			}
 			break;
 
 		case 0x06:
-			forwardLeftChart.update(data, !paused);
+			if (NEW_TEST) {
+				distanceForwardCenterList.add(new TimeValuePair(System.currentTimeMillis(), data));
+			} else {
+				//forwardLeftChart.update(data, !paused);
+			}
 			break;
 
 		case 0x07:
-			forwardChart.update(data, !paused);
+			if (NEW_TEST) {
+				distanceForwardRightList.add(new TimeValuePair(System.currentTimeMillis(), data));
+			} else {
+				//forwardChart.update(data, !paused);				
+			}
 			break;
 
 		case 0x08:
-			// TODO: Avstånd höger lång
+			if (NEW_TEST) {
+				distanceRightLongList.add(new TimeValuePair(System.currentTimeMillis(), data));
+			}
 			break;
 
 		case 0x09:
-			// TODO: avstånd höger kort
+			if (NEW_TEST) {
+				distanceRightShortList.add(new TimeValuePair(System.currentTimeMillis(), data));
+			}
 			break;
 
 		case 0x0A:
@@ -356,11 +460,12 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
 			break;
 
 		case 0x0B:
-			// TODO tjocklek tejpmarkering
+			if (NEW_TEST) {
+				tapeList.add(new TimeValuePair(System.currentTimeMillis(), data));
+			}
 			break;
 			
 		case 0x0C:
-			// TODO: error
 			log(errorLog, "Error code 0x" + Integer.toHexString(data));
 			break;
 			
@@ -372,7 +477,7 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
 			break;
 
 		default:
-			log(errorLog, "Invalid header: 0x" + Integer.toHexString(header));
+			log(errorLog, "Invalid header: 0x" + Integer.toHexString(header) + ", data: 0x" + Integer.toHexString(data));
 			break;
 		}
 	}

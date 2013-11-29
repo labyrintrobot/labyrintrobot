@@ -7,7 +7,7 @@ import javafx.application.Platform;
 
 public class BluetoothAdapter {
 	
-	private static final boolean DEBUG = false;
+	private static final boolean DEBUG = true;
 	
 	private boolean running = true;
 	
@@ -23,7 +23,9 @@ public class BluetoothAdapter {
 	}
 	
 	public void setup(String bluetoothUrl) throws IOException {
-		this.bluetoothCommunicator.setup(bluetoothUrl);
+		if (DEBUG == false) {
+			this.bluetoothCommunicator.setup(bluetoothUrl);
+		}
 	}
 	
 	public interface IMessageReceiver {
@@ -71,9 +73,9 @@ public class BluetoothAdapter {
 						receiver.receiveMessage(ret[0], ret[1]);
 					}
 				});
+				this.bluetoothCommunicator.teardown();
 			}
 		}
-		this.bluetoothCommunicator.teardown();
 	}
 	
 	public void exit() {

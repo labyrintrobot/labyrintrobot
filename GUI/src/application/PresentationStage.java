@@ -1,11 +1,20 @@
 package application;
 
 import java.io.IOException;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.chart.LineChart;
+import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 import javafx.scene.input.KeyEvent;
@@ -35,7 +44,55 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
 	private final TextArea errorLog;
 
 	private boolean paused = false;
-
+	
+	//////////////////////////////
+	private static class TimeValuePair {
+		public int time = 0;
+		public int value = 0;
+	}
+	
+	private final List<TimeValuePair> distanceLeftShortList = new LinkedList<>();
+	
+	private static final int DATA_MAX = 200;
+	
+	private LineChart<Number, Number> generateRealTimeChart(String name, String yAxisText, int maxY, TimeValuePair[] data) {
+		
+		// Setup
+		NumberAxis xAxis = new NumberAxis(0, DATA_MAX, DATA_MAX / 8);
+        NumberAxis yAxis = new NumberAxis(0, maxY, maxY/8);
+        xAxis.setLabel("Time");
+        yAxis.setLabel(yAxisText);
+        xAxis.setForceZeroInRange(false);
+        
+        LineChart<Number, Number> lc = new LineChart<Number, Number>(xAxis, yAxis);
+        lc.setAnimated(false);
+        lc.setCreateSymbols(false);
+        
+        lc.setMaxHeight(360);
+        
+        lc.setTitle(name);
+        lc.setLegendVisible(false);
+        
+        Set<Node> lookupAll = lc.lookupAll(".series0");
+        for (Node n : lookupAll) {
+        	n.setStyle("-fx-stroke-width: 1px;-fx-stroke: black;");
+        }
+        
+        // Add data
+        
+        XYChart.Series<Number, Number> series = new XYChart.Series<Number, Number>();
+        series.setName(name);
+        
+        lc.getData().add(series);
+        ObservableList<XYChart.Data<Number, Number>> lcData = series.getData();
+        
+        for (TimeValuePair tp : data) {
+        	lcData.add(new XYChart.Data<Number, Number>(tp.time, tp.value));
+        }
+        
+        return lc;
+	}
+/////////////////////////
 	public PresentationStage(String bluetoothUrl) {
 
 		bluetoothAdapter = new BluetoothAdapter(this);
@@ -214,6 +271,7 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
 			}
 
 		});
+		listenerThread.setDaemon(true);
 
 		listenerThread.start();
 	}
@@ -285,37 +343,36 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
 			break;
 
 		case 0x08:
-			if ((data & 0x80) == 0) {
-				int hamDist = hammingDistance(0, data);
-				tapeChart.update(hamDist, !paused);
-			} else {				
-				log(errorLog, "Invalid tape sensor data: 0x" + Integer.toHexString(data));
-			}
+			// TODO: Avstånd höger lång
 			break;
 
 		case 0x09:
-			gyroChart.update(data, !paused);
+			// TODO: avstånd höger kort
 			break;
 
 		case 0x0A:
+			// TODO: reglerfel
 			log(errorLog, "Error code 0x" + Integer.toHexString(data));
 			break;
 
 		case 0x0B:
-			if (data == 0x00) {
-				try {
-					bluetoothAdapter.sendMessage(header, data);
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			} else {
+			// TODO tjocklek tejpmarkering
+			break;
+			
+		case 0x0C:
+			// TODO: error
+			log(errorLog, "Error code 0x" + Integer.toHexString(data));
+			break;
+			
+		case 0x0D:
+			// TODO: ping
+			if (data != 0x00) {
 				log(errorLog, "Invalid ping data: 0x" + Integer.toHexString(data));
 			}
 			break;
 
 		default:
-			log(errorLog, "Invalid header: 0x" + Integer.toHexString(data));
+			log(errorLog, "Invalid header: 0x" + Integer.toHexString(header));
 			break;
 		}
 	}

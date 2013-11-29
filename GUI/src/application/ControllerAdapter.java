@@ -106,10 +106,10 @@ public class ControllerAdapter {
 			} else if (rightPressed != leftPressed) {
 				if (rightPressed) {
 					System.out.println("rotate right");
-					data = 0x04;
+					data = 0x07;
 				} else {
 					System.out.println("rotate left");
-					data = 0x05;
+					data = 0x08;
 				}
 			} else {
 				System.out.println("stop");

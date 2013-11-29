@@ -197,62 +197,59 @@
   <ItemGroup>
     <Compile Include="..\..\commonlib\twi_common.h">
       <SubType>compile</SubType>
-      <Link>twi_common.h</Link>
+      <Link>src\twi_common.h</Link>
     </Compile>
     <Compile Include="..\..\commonlib\twi_common_private.c">
       <SubType>compile</SubType>
-      <Link>twi_common_private.c</Link>
+      <Link>src\twi_common_private.c</Link>
     </Compile>
     <Compile Include="..\..\commonlib\twi_common_private.h">
       <SubType>compile</SubType>
-      <Link>twi_common_private.h</Link>
+      <Link>src\twi_common_private.h</Link>
     </Compile>
     <Compile Include="..\..\commonlib\twi_master.c">
       <SubType>compile</SubType>
-      <Link>twi_master.c</Link>
+      <Link>src\twi_master.c</Link>
     </Compile>
     <Compile Include="..\..\commonlib\twi_master.h">
       <SubType>compile</SubType>
-      <Link>twi_master.h</Link>
+      <Link>src\twi_master.h</Link>
     </Compile>
     <Compile Include="..\..\commonlib\twi_master_test.c">
       <SubType>compile</SubType>
-      <Link>twi_master_test.c</Link>
+      <Link>src\twi_master_test.c</Link>
     </Compile>
     <Compile Include="..\..\commonlib\twi_master_test.h">
       <SubType>compile</SubType>
-      <Link>twi_master_test.h</Link>
+      <Link>src\twi_master_test.h</Link>
     </Compile>
     <Compile Include="..\..\commonlib\twi_slave.c">
       <SubType>compile</SubType>
-      <Link>twi_slave.c</Link>
+      <Link>src\twi_slave.c</Link>
     </Compile>
     <Compile Include="..\..\commonlib\twi_slave.h">
       <SubType>compile</SubType>
-      <Link>twi_slave.h</Link>
+      <Link>src\twi_slave.h</Link>
     </Compile>
     <Compile Include="..\..\commonlib\twi_slave_test.c">
       <SubType>compile</SubType>
-      <Link>twi_slave_test.c</Link>
+      <Link>src\twi_slave_test.c</Link>
     </Compile>
     <Compile Include="..\..\commonlib\twi_slave_test.h">
       <SubType>compile</SubType>
-      <Link>twi_slave_test.h</Link>
+      <Link>src\twi_slave_test.h</Link>
     </Compile>
     <Compile Include="..\..\commonlib\twi_test_common.h">
       <SubType>compile</SubType>
-      <Link>twi_test_common.h</Link>
+      <Link>src\twi_test_common.h</Link>
     </Compile>
     <Compile Include="..\..\commonlib\USART.c">
       <SubType>compile</SubType>
-      <Link>USART.c</Link>
+      <Link>src\USART.c</Link>
     </Compile>
     <Compile Include="..\..\commonlib\USART.h">
       <SubType>compile</SubType>
-      <Link>USART.h</Link>
-    </Compile>
-    <Compile Include="queue.h">
-      <SubType>compile</SubType>
+      <Link>src\USART.h</Link>
     </Compile>
     <Compile Include="src\communication.c">
       <SubType>compile</SubType>

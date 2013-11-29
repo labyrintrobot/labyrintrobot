@@ -16,6 +16,7 @@ import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextArea;
 import javafx.scene.input.KeyEvent;
@@ -42,6 +43,8 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
 	private final LineChart<Number, Number> lineChart;
 	private final Slider minSlider;
 	private final Slider maxSlider;
+	private final Label minSliderLabel;
+	private final Label maxSliderLabel;
 
 	private final TextArea errorLog;
 
@@ -81,8 +84,6 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
         LineChart<Number, Number> lc = new LineChart<Number, Number>(xAxis, yAxis);
         lc.setAnimated(false);
         lc.setCreateSymbols(false);
-        
-        lc.setMaxHeight(360);
         
         lc.setTitle(name);
         lc.setLegendVisible(false);
@@ -132,6 +133,8 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
 		
 		minSlider = new Slider(0.0, 1.0, 0.0);
 		maxSlider = new Slider(0.0, 1.0, 1.0);
+		minSliderLabel = new Label("Min");
+		maxSliderLabel = new Label("Max");
 		
 		controllerAdapter = new ControllerAdapter(bluetoothAdapter);
 		controlPad = new ControlPad();
@@ -139,10 +142,8 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
 			
 			@Override
 			public void callback(ChartSelectorPad.SelectedToggleButton stb) {
-		        
-		        String title = "schlorg";
-				
-				setLineChartData(getFromSel(stb), title);
+		        GetFromSelRetPair gfsrp = getFromSel(stb);
+				setLineChartData(gfsrp.l, gfsrp.s);
 			}
 		});
 		
@@ -155,7 +156,8 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
 				minSlider.setValue(Math.min(minSlider.getValue(), maxSlider.getValue()));
 				
 				if (paused) {
-					setLineChartData(getFromSel(chartSelectorPad.getSelected()), "schlorbar");
+			        GetFromSelRetPair gfsrp = getFromSel(chartSelectorPad.getSelected());
+					setLineChartData(gfsrp.l, gfsrp.s);
 				}
 			}
 		});
@@ -169,7 +171,8 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
 				maxSlider.setValue(Math.max(minSlider.getValue(), maxSlider.getValue()));
 				
 				if (paused) {
-					setLineChartData(getFromSel(chartSelectorPad.getSelected()), "schlorbar");
+			        GetFromSelRetPair gfsrp = getFromSel(chartSelectorPad.getSelected());
+					setLineChartData(gfsrp.l, gfsrp.s);
 				}
 			}
 		});
@@ -190,7 +193,7 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
 				pauseButton.setText(PAUSE_TEXT);
 			}
 
-			HBox northBox = new HBox();
+			VBox northBox = new VBox();
 			HBox southBox = new HBox();
 			VBox centerBox = new VBox();
 
@@ -198,9 +201,9 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
 			southBox.setAlignment(Pos.BOTTOM_CENTER);
 			centerBox.setAlignment(Pos.CENTER);
 			
-			northBox.getChildren().addAll(minSlider, maxSlider);
-			southBox.getChildren().addAll(errorLog, chartSelectorPad);
-			centerBox.getChildren().addAll(pauseButton, controlPad, lineChart);
+			northBox.getChildren().addAll(minSlider, minSliderLabel, maxSlider, maxSliderLabel);
+			centerBox.getChildren().addAll(pauseButton, lineChart);
+			southBox.getChildren().addAll(errorLog, controlPad, chartSelectorPad);
 
 			BorderPane root = new BorderPane();
 			root.setTop(northBox);
@@ -290,6 +293,7 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
 						pauseButton.setText(RESUME_TEXT);
 					} else {
 						pauseButton.setText(PAUSE_TEXT);
+						maxSlider.setValue(1.0);
 					}
 				}
 			});
@@ -316,30 +320,58 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
 		}
 	}
 	
-	private List<TimeValuePair> getFromSel(ChartSelectorPad.SelectedToggleButton stb) {
+	private static class GetFromSelRetPair {
+		public String s;
+		public List<TimeValuePair> l;
+	}
+	
+	private GetFromSelRetPair getFromSel(ChartSelectorPad.SelectedToggleButton stb) {
+		
+		GetFromSelRetPair gfsrp = new GetFromSelRetPair();
+		
 		switch (stb) {
 		case DISTANCE_LEFT_SHORT:
-			return distanceLeftShortList;
+			gfsrp.s = "Distance left, short";
+			gfsrp.l = distanceLeftShortList;
+			break;
 		case DISTANCE_LEFT_LONG:
-			return distanceLeftLongList;
+			gfsrp.s = "Distance left, long";
+			gfsrp.l = distanceLeftShortList;
+			break;
 		case DISTANCE_FORWARD_CENTER:
-			return distanceForwardCenterList;
+			gfsrp.s = "Distance forward, center";
+			gfsrp.l = distanceLeftShortList;
+			break;
 		case DISTANCE_FORWARD_LEFT:
-			return distanceForwardLeftList;
+			gfsrp.s = "Distance forward, left";
+			gfsrp.l = distanceLeftShortList;
+			break;
 		case DISTANCE_FORWARD_RIGHT:
-			return distanceForwardRightList;
+			gfsrp.s = "Distance forward, right";
+			gfsrp.l = distanceLeftShortList;
+			break;
 		case DISTANCE_RIGHT_LONG:
-			return distanceRightLongList;
+			gfsrp.s = "Distance right, long";
+			gfsrp.l = distanceLeftShortList;
+			break;
 		case DISTANCE_RIGHT_SHORT:
-			return distanceRightShortList;
+			gfsrp.s = "Distance right, short";
+			gfsrp.l = distanceLeftShortList;
+			break;
 		case TAPE:
-			return tapeList;
+			gfsrp.s = "Tape width";
+			gfsrp.l = distanceLeftShortList;
+			break;
 		case CONTROL_ERROR:
-			return controlErrorList;
+			gfsrp.s = "Control error";
+			gfsrp.l = distanceLeftShortList;
+			break;
 		default:
 			// Should not happen
 			return null;
 		}
+		
+		return gfsrp;
 	}
 
 	private void listen() {

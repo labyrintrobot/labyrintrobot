@@ -27,9 +27,9 @@ volatile uint8_t fireflyreceiveddata=0;
 void enable_irqs() {
 	
 	
-	EICRA |= (1 << ISC00) | (1 << ISC01); // Interrupts on rising edge
-	EIMSK |= (1 << INT0) | (1 << INT1); // Enable INT0 and INT1
-	EIFR |= (1 << INTF0) | (1 << INTF1);
+	//EICRA |= (1 << ISC00) | (1 << ISC01); // Interrupts on rising edge
+	//EIMSK |= (1 << INT0) | (1 << INT1); // Enable INT0 and INT1
+	//EIFR |= (1 << INTF0) | (1 << INTF1);
 	
 	sei(); //enable interrupts by setting I-bit in SREG
 }
@@ -39,8 +39,6 @@ void enable_irqs() {
 ISR(USART0_RX_vect){
 	//should interrupt on USART0 received a byte,dunno what to do otherwise
 	USART_receive(&fireflyheader , &fireflydata);
-	PORTB=31;
-	USART_transmit(fireflyheader , fireflydata);
 	
 	fireflyreceiveddata=true;
 }
@@ -81,7 +79,7 @@ void mainfunction(){
 	
 	while(1){
 		
-		/*if(receiveddata){
+		if(receiveddata){
 			
 			//send to right instance depending on header
 			if (header==0x00){
@@ -138,12 +136,12 @@ void mainfunction(){
 			cli();//shutdown interrupts, so that no funky business happens
 			
 			header=fireflyheader;
-			data=fireflyheader;
+			data=fireflydata;
 			fireflyreceiveddata=false;
 			
-			sei();//shutdown interrupts
+			sei();//start interrupts
 			
 			receiveddata = true;
-		}*/
+		}
 	}
 }

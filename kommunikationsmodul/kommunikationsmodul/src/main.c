@@ -19,7 +19,7 @@ int main (void)
 	PORTB = 0;
 	DDRA = 0xFF; // Data
 	
-	USART_init(115200);
+	USART_init(14400);
 	TWI_master_initialize(TWI_COMMUNICATION_MODULE_ADDRESS);
 	
 	mainfunction();

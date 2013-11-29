@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
@@ -24,8 +23,6 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
 public class PresentationStage extends Stage implements BluetoothAdapter.IMessageReceiver {
-
-	private static final boolean NEW_TEST = true;
 	
 	private static final String PAUSE_TEXT = "Pause";
 	private static final String RESUME_TEXT = "Resume";
@@ -34,14 +31,6 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
 	private final BluetoothAdapter bluetoothAdapter;
 	private final ControlPad controlPad;
 	private final ChartSelectorPad chartSelectorPad;
-
-	/*private final RealTimeChart leftChart;
-	private final RealTimeChart rightChart;
-	private final RealTimeChart forwardLeftChart;
-	private final RealTimeChart forwardRightChart;
-	private final RealTimeChart forwardChart;
-	private final RealTimeChart gyroChart;
-	private final RealTimeChart tapeChart;*/
 	
 	private final LineChart<Number, Number> lineChart;
 
@@ -71,9 +60,7 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
 	
 	private static final int DATA_MAX = 200;
 	
-	private int i;
-	
-	private LineChart<Number, Number> generateRealTimeChart(String name, String yAxisText, int maxY, TimeValuePair[] data) {
+	private LineChart<Number, Number> generateRealTimeChart(String name, String yAxisText, int maxY) {
 		
 		// Setup
 		NumberAxis xAxis = new NumberAxis(0, DATA_MAX, DATA_MAX / 8);
@@ -96,20 +83,6 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
         	n.setStyle("-fx-stroke-width: 1px;-fx-stroke: black;");
         }
         
-        // Add data
-        
-        XYChart.Series<Number, Number> series = new XYChart.Series<Number, Number>();
-        series.setName(name);
-        
-        lc.getData().add(series);
-        ObservableList<XYChart.Data<Number, Number>> lcData = series.getData();
-        
-        for (TimeValuePair tp : data) {
-        	lcData.add(new XYChart.Data<Number, Number>(tp.time, tp.value));
-        }
-        
-        series.setData(lcData);
-        
         return lc;
 	}
 /////////////////////////
@@ -117,7 +90,7 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
 
 		bluetoothAdapter = new BluetoothAdapter(this);
 
-		lineChart = generateRealTimeChart("NAME", "y", 128, new TimeValuePair[0]);
+		lineChart = generateRealTimeChart("NAME", "y", 256);
 
 		controllerAdapter = new ControllerAdapter(bluetoothAdapter);
 		controlPad = new ControlPad();
@@ -126,6 +99,7 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
 			@Override
 			public void callback(ChartSelectorPad.SelectedToggleButton stb) {
 		        XYChart.Series<Number, Number> series = new XYChart.Series<Number, Number>();
+		        
 		        series.setName("horg");
 		        
 		        TimeValuePair[] data;
@@ -156,13 +130,13 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
 					data = tapeList.toArray(new TimeValuePair[tapeList.size()]);
 					break;
 				default:
-					data = null;
 					// Should not happen
+					data = null;
 					break;
 				}
 				
 		        for (TimeValuePair tp : data) {
-		        	// TODO: Add all
+		        	// TODO: Add all?
 		        	series.getData().add(new XYChart.Data<Number, Number>(tp.time, tp.value));
 		        }
 		        
@@ -173,16 +147,13 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
 		        
 		        lineChart.getData().remove(0, lineChart.getData().size());
 		        lineChart.getData().add(series);
+		        
+		        Set<Node> lookupAll = lineChart.lookupAll(".series0");
+		        for (Node n : lookupAll) {
+		        	n.setStyle("-fx-stroke-width: 1px;-fx-stroke: black;");
+		        }
 			}
 		});
-
-		//rightChart = new RealTimeChart("Right", "Distance", 256);
-		//forwardRightChart = new RealTimeChart("Forward, right", "Distance", 256);
-		//forwardChart = new RealTimeChart("Forward", "Distance", 256);
-		//forwardLeftChart = new RealTimeChart("Forward, left", "Distance", 256);
-		//leftChart = new RealTimeChart("Left", "Distance", 256);
-		//gyroChart = new RealTimeChart("Gyro", "Angular rate", 256);
-		//tapeChart = new RealTimeChart("Tape sensor", "Hamming distance", 8);
 
 		errorLog = new TextArea();
 
@@ -212,11 +183,7 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
 			southBox.setAlignment(Pos.BOTTOM_CENTER);
 			centerBox.setAlignment(Pos.CENTER);
 			
-
-			/*eastBox.getChildren().add(rightChart.getUnderLyingLineChart());
-			westBox.getChildren().add(leftChart.getUnderLyingLineChart());
-			northBox.getChildren().addAll(forwardLeftChart.getUnderLyingLineChart(), forwardChart.getUnderLyingLineChart(), forwardRightChart.getUnderLyingLineChart());*/
-			southBox.getChildren().addAll(errorLog, /*tapeChart.getUnderLyingLineChart(), gyroChart.getUnderLyingLineChart(),*/ chartSelectorPad);
+			southBox.getChildren().addAll(errorLog, chartSelectorPad);
 			centerBox.getChildren().addAll(pauseButton, controlPad, lineChart);
 
 			BorderPane root = new BorderPane();
@@ -254,7 +221,6 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
 							break;
 						}
 					} catch (IOException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 				}
@@ -286,7 +252,6 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
 							break;
 						}
 					} catch (IOException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 				}
@@ -300,14 +265,6 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
 					} else {
 						pauseButton.setText(PAUSE_TEXT);
 					}
-					// TODO
-					/*rightChart.flush();
-					forwardRightChart.flush();
-					forwardChart.flush();
-					forwardLeftChart.flush();
-					leftChart.flush();
-					gyroChart.flush();
-					tapeChart.flush();*/
 				}
 			});
 
@@ -403,55 +360,31 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
 			break;
 
 		case 0x03:
-			if (NEW_TEST) {
-				distanceLeftShortList.add(new TimeValuePair(System.currentTimeMillis(), data));
-			} else {
-				//leftChart.update(data, !paused);
-			}
+			distanceLeftShortList.add(new TimeValuePair(System.currentTimeMillis(), data));
 			break;
 
 		case 0x04:
-			if (NEW_TEST) {
-				distanceLeftLongList.add(new TimeValuePair(System.currentTimeMillis(), data));
-			} else {
-				//rightChart.update(data, !paused);
-			}
+			distanceLeftLongList.add(new TimeValuePair(System.currentTimeMillis(), data));
 			break;
 
 		case 0x05:
-			if (NEW_TEST) {
-				distanceForwardLeftList.add(new TimeValuePair(System.currentTimeMillis(), data));
-			} else {
-				//forwardRightChart.update(data, !paused);
-			}
+			distanceForwardLeftList.add(new TimeValuePair(System.currentTimeMillis(), data));
 			break;
 
 		case 0x06:
-			if (NEW_TEST) {
-				distanceForwardCenterList.add(new TimeValuePair(System.currentTimeMillis(), data));
-			} else {
-				//forwardLeftChart.update(data, !paused);
-			}
+			distanceForwardCenterList.add(new TimeValuePair(System.currentTimeMillis(), data));
 			break;
 
 		case 0x07:
-			if (NEW_TEST) {
-				distanceForwardRightList.add(new TimeValuePair(System.currentTimeMillis(), data));
-			} else {
-				//forwardChart.update(data, !paused);				
-			}
+			distanceForwardRightList.add(new TimeValuePair(System.currentTimeMillis(), data));
 			break;
 
 		case 0x08:
-			if (NEW_TEST) {
-				distanceRightLongList.add(new TimeValuePair(System.currentTimeMillis(), data));
-			}
+			distanceRightLongList.add(new TimeValuePair(System.currentTimeMillis(), data));
 			break;
 
 		case 0x09:
-			if (NEW_TEST) {
-				distanceRightShortList.add(new TimeValuePair(System.currentTimeMillis(), data));
-			}
+			distanceRightShortList.add(new TimeValuePair(System.currentTimeMillis(), data));
 			break;
 
 		case 0x0A:
@@ -460,9 +393,7 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
 			break;
 
 		case 0x0B:
-			if (NEW_TEST) {
-				tapeList.add(new TimeValuePair(System.currentTimeMillis(), data));
-			}
+			tapeList.add(new TimeValuePair(System.currentTimeMillis(), data));
 			break;
 			
 		case 0x0C:
@@ -470,9 +401,14 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
 			break;
 			
 		case 0x0D:
-			// TODO: ping
 			if (data != 0x00) {
 				log(errorLog, "Invalid ping data: 0x" + Integer.toHexString(data));
+			}
+			// Just respond
+			try {
+				bluetoothAdapter.sendMessage(header, 0x00);
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
 			break;
 

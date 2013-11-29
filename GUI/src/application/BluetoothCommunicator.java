@@ -46,7 +46,7 @@ public class BluetoothCommunicator {
 		conn.close();
 	}
 
-	public int[] receiveMessage(int length) throws IOException {
+	public synchronized int[] receiveMessage(int length) throws IOException {
 		if (! isSetup) {
 			throw new IllegalStateException("Has not been set up");
 		}
@@ -60,7 +60,7 @@ public class BluetoothCommunicator {
 		return ret;
 	}
 
-	public void sendMessageToDevice(int[] message) throws IOException {
+	public synchronized void sendMessageToDevice(int[] message) throws IOException {
 		if (! isSetup) {
 			throw new IllegalStateException("Has not been set up");
 		}
@@ -71,33 +71,4 @@ public class BluetoothCommunicator {
 		}
 		os.flush();
 	}
-	
-	/*public void broadcastCommand(String str) {
-		String url = this.service.getConnectionURL(ServiceRecord.AUTHENTICATE_NOENCRYPT, false);
-
-		StreamConnection conn = null;
-
-		try {
-			System.out.println("Sending command to " + url);
-
-			conn = (StreamConnection) Connector.open(url);
-			DataInputStream din = conn.openDataInputStream();
-
-			byte[] b = new byte[2];
-			for (int i = 0; i < 20; i++) {
-				int s = din.read(b);
-				System.out.println(b[0]);
-				System.out.println(b[1]);
-			}
-
-			din.close();
-			conn.close();
-
-			System.out.println("Sent. Connection Closed.");
-
-		} catch (Exception e) {
-			System.out.println("Failed to connect to " + url);
-			e.printStackTrace();
-		}
-	}*/
 }

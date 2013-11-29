@@ -251,9 +251,6 @@
       <SubType>compile</SubType>
       <Link>USART.h</Link>
     </Compile>
-    <Compile Include="queue.c">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="queue.h">
       <SubType>compile</SubType>
     </Compile>
@@ -267,6 +264,12 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\ASF\mega\boards\stk600\rcx_x\init.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\queue.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\queue.h">
       <SubType>compile</SubType>
     </Compile>
     <None Include="src\asf.h">

@@ -19,7 +19,7 @@ void queue_add(queue* q, uint8_t header, uint8_t data) {
 	e->header = header;
 	e->next = 0;
 	
-	if (q->last == 0) {
+	if (q->first == 0) {
 		q->first = e;
 		q->last = e;
 	} else {

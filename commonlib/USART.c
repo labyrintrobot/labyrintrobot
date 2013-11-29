@@ -24,7 +24,7 @@ void USART_initialize(unsigned int baud){
 int USART_init(uint32_t baud){
 	
 	if(baud==115200){
-		USART_initialize(7);
+		USART_initialize(63);
 	} else if(baud==57600){
 		USART_initialize(15);
 	} else if(baud==14400){

@@ -23,15 +23,9 @@ public class BluetoothCommunicator {
 		}
 		isSetup = true;
 
-		try {
-			conn = (StreamConnection) Connector.open(bluetoothUrl);
-			os = new DataOutputStream(conn.openOutputStream());
-			is = conn.openDataInputStream();
-
-		} catch (Exception e) {
-			System.out.println("Failed to connect to " + bluetoothUrl);
-			e.printStackTrace();
-		}
+		conn = (StreamConnection) Connector.open(bluetoothUrl);
+		os = new DataOutputStream(conn.openOutputStream());
+		is = conn.openDataInputStream();
 	}
 
 	public void teardown() throws IOException {

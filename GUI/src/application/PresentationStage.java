@@ -125,7 +125,7 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
         }
 	}
 	
-	public PresentationStage(String bluetoothUrl) {
+	public PresentationStage(String bluetoothUrl) throws IOException {
 
 		bluetoothAdapter = new BluetoothAdapter(this);
 
@@ -182,8 +182,8 @@ public class PresentationStage extends Stage implements BluetoothAdapter.IMessag
 		controlPad.pressStop();
 		errorLog.setEditable(false);
 
+		bluetoothAdapter.setup(bluetoothUrl);
 		try {
-			bluetoothAdapter.setup(bluetoothUrl);
 			
 			this.setTitle("Labyrintrobot");
 			final Button pauseButton = new Button();

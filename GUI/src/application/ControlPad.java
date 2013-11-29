@@ -34,7 +34,7 @@ public class ControlPad extends VBox {
 		forward = generateButton("↑");
 		rightForward = generateButton("↗");
 		rotateLeft = generateButton("↺");
-		stop = generateButton("⇞");
+		stop = generateButton("↥");
 		rotateRight = generateButton("↻");
 		backwards = generateButton("↓");
 

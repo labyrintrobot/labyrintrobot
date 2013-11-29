@@ -26,7 +26,8 @@ public class ChartSelectorPad extends VBox {
 		DISTANCE_FORWARD_RIGHT,
 		DISTANCE_RIGHT_LONG,
 		DISTANCE_RIGHT_SHORT,
-		TAPE
+		TAPE,
+		CONTROL_ERROR
 	}
 	
 	private final Map<Toggle, SelectedToggleButton> map;
@@ -41,6 +42,7 @@ public class ChartSelectorPad extends VBox {
 	private final ToggleButton distanceRightLong;
 	private final ToggleButton distanceRightShort;
 	private final ToggleButton tape;
+	private final ToggleButton controlError;
 
 	public ChartSelectorPad(final ToggleCallback callback) {
 
@@ -62,6 +64,7 @@ public class ChartSelectorPad extends VBox {
 		distanceRightShort = generateButton("2.4");
 		distanceRightLong = generateButton("1.3");
 		tape = generateButton("Tape");
+		controlError = generateButton("Control error");
 
 		group = new ToggleGroup();
 		distanceLeftShort.setToggleGroup(group);
@@ -72,10 +75,11 @@ public class ChartSelectorPad extends VBox {
 		distanceRightShort.setToggleGroup(group);
 		distanceRightLong.setToggleGroup(group);
 		tape.setToggleGroup(group);
+		controlError.setToggleGroup(group);
 		
 		r1.getChildren().addAll(distanceForwardLeft, distanceForwardCenter, distanceForwardRight);
 		r2.getChildren().addAll(distanceLeftLong, tape, distanceRightLong);
-		r3.getChildren().addAll(distanceLeftShort, distanceRightShort);
+		r3.getChildren().addAll(distanceLeftShort, controlError, distanceRightShort);
 
 		this.getChildren().addAll(r1, r2, r3);
 		
@@ -90,6 +94,7 @@ public class ChartSelectorPad extends VBox {
 		map.put(distanceRightLong, SelectedToggleButton.DISTANCE_RIGHT_LONG);
 		map.put(distanceRightShort, SelectedToggleButton.DISTANCE_RIGHT_SHORT);
 		map.put(tape, SelectedToggleButton.TAPE);
+		map.put(controlError, SelectedToggleButton.CONTROL_ERROR);
 		
 		group.selectedToggleProperty().addListener(new ChangeListener<Toggle>() {
 

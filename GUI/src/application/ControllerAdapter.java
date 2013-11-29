@@ -81,6 +81,22 @@ public class ControllerAdapter {
 	public void releaseC() {
 		// Do nothing
 	}
+	
+	public void pressQ() {
+		// TODO
+	}
+
+	public void releaseQ() {
+		// TODO
+	}
+	
+	public void pressW() {
+		// TODO
+	}
+
+	public void releaseW() {
+		// TODO
+	}
 
 	private void revalidateButtons() throws IOException {
 		final byte header = 0x00;

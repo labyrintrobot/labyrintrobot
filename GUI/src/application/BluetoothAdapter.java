@@ -23,7 +23,7 @@ public class BluetoothAdapter {
 	}
 	
 	public void setup(String bluetoothUrl) throws IOException {
-		if (DEBUG == false) {
+		if (! DEBUG) {
 			this.bluetoothCommunicator.setup(bluetoothUrl);
 		}
 	}
@@ -43,12 +43,12 @@ public class BluetoothAdapter {
 		while (running) {
 			if (DEBUG) {
 				try {
-					Thread.sleep(2);
+					Thread.sleep(10);
 				} catch (InterruptedException e) {
 					// Do nothing
 				}
 				
-				final byte header = (byte)rng.nextInt(0x0B);
+				final byte header = (byte)rng.nextInt(0x0C);
 				final int data;
 				if (header == 0x01) {
 					data = rng.nextInt(0x07);

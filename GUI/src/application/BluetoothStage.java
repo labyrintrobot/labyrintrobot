@@ -55,8 +55,6 @@ public class BluetoothStage extends Application {
 			primaryStage.setScene(scene);
 			primaryStage.show();
 			
-			//startButton.setDisable(true);
-			
 			startButton.setOnAction(new EventHandler<ActionEvent>() {
 				@Override public void handle(ActionEvent e) {
 					//Stage stage = new PresentationStage(bluetoothUrl);

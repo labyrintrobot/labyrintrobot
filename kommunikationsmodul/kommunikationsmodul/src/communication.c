@@ -27,9 +27,10 @@ volatile uint8_t fireflyreceiveddata=0;
 void enable_irqs() {
 	
 	
-	//EICRA |= (1 << ISC00) | (1 << ISC01); // Interrupts on rising edge
-	//EIMSK |= (1 << INT0) | (1 << INT1); // Enable INT0 and INT1
-	//EIFR |= (1 << INTF0) | (1 << INTF1);
+	EICRA |= (1 << ISC00) | (1 << ISC01); // Interrupts irq0 on rising edge
+	EICRA |= (1 << ISC10) | (1 << ISC11); // Interrupts irq1 on rising edge
+	EIMSK |= (1 << INT0) | (1 << INT1); // Enable INT0 and INT1
+	EIFR |= (1 << INTF0) | (1 << INTF1);
 	
 	sei(); //enable interrupts by setting I-bit in SREG
 }
@@ -84,7 +85,6 @@ void mainfunction(){
 			//send to right instance depending on header
 			if (header==0x00){
 				//firefly is sending styr commands, relay to styr module
-				// TODO
 				TWI_master_send_message(TWI_CONTROL_MODULE_ADDRESS , header , data);
 				
 			} else if (header == 0x01){
@@ -92,13 +92,11 @@ void mainfunction(){
 				USART_transmit(header , data);
 			} else if (header == 0x02){
 				//firefly is sending a calibration command, relay to sensor module
-				//TWI_master_send_message(TWI_SENSOR_MODULE_ADDRESS , header , data);
+				TWI_master_send_message(TWI_SENSOR_MODULE_ADDRESS , header , data);
 							
 			} else if (header >= 0x03 && header <= 0x0B){
 				//sensor module is sending, relay to styr module and firefly
-				
-				// TODO
-				//TWI_master_send_message(TWI_CONTROL_MODULE_ADDRESS , header , data);
+				TWI_master_send_message(TWI_CONTROL_MODULE_ADDRESS , header , data);
 				
 				USART_transmit(header, data);
 			} else if (header == 0x0C){
@@ -118,16 +116,18 @@ void mainfunction(){
 		}
 		
 		if (sensor_module_interrupt){
-			
 			//get data from sensor module
-			//TWI_master_receive_message(TWI_SENSOR_MODULE_ADDRESS, &header, &data);
+			cli();
+			TWI_master_receive_message(TWI_SENSOR_MODULE_ADDRESS, &header, &data);
+			sei();
 			
 			receiveddata = true;
 			sensor_module_interrupt=false;
 		} else if (control_module_interrupt){
-			
 			//get data from styr module
+			cli();
 			TWI_master_receive_message(TWI_CONTROL_MODULE_ADDRESS, &header, &data);
+			sei();
 			
 			receiveddata = true;
 			control_module_interrupt=false;

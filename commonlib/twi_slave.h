@@ -18,4 +18,6 @@ int TWI_slave_send_message(uint8_t header, uint8_t data);
 
 int TWI_slave_receive_message(uint8_t* header_out, uint8_t* data_out);
 
+void TWI_slave_recover_from_bus_error();
+
 #endif /* TWI_SLAVE_H_ */

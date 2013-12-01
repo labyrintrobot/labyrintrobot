@@ -185,3 +185,12 @@ int TWI_slave_receive_message(uint8_t* header_out, uint8_t* data_out) {
 	
 	return 0;
 }
+
+
+TWI_slave_recover_from_bus_error(){
+	
+	//TWSR==0x00 is the statuscode for bus error
+	
+	TWSR|=(1<<TWSTO)|(1<<TWINT);
+
+}

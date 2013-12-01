@@ -177,15 +177,17 @@ int TWI_master_receive_message(TWI_MODULE_ADDRESS from_address, uint8_t* header,
 	return 0;
 }
 
-int TWI_master_reset() {
-	// TODO: Rewrite
-	int err;
-	int i;
-	for (i = 0; i < 3; i++) {
-		err = TWI_master_send_start();
-		if (err) return err;
-		TWI_master_send_stop();
-	}
+// function to tell the slaves that it is ready to handle their interrupts
+int TWI_master_init_slaves() {
+	cli();
 	
+	uint8_t initheader;
+	
+	_delay_ms(100);
+	
+	TWI_master_send_message(TWI_CONTROL_MODULE_ADDRESS , initheader , 0); 
+	TWI_master_send_message(TWI_SENSOR_MODULE_ADDRESS , initheader , 0);
+	
+	sei();
 	return 0;
 }

@@ -11,7 +11,7 @@ import javax.microedition.io.StreamConnection;
 
 public class BluetoothAdapter {
 
-	private static final boolean DEBUG = false;
+	private static final boolean DEBUG = true;
 
 	private final Object recLock = new Object();
 	private final Object sendLock = new Object();
@@ -65,7 +65,18 @@ public class BluetoothAdapter {
 
 	public void receiveMessages() {
 		while (running) {
+			// Generate fake data if debug
 			if (DEBUG) {
+				
+				if (!isSetup) {
+					try {
+						this.setup();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				
 				try {
 					Thread.sleep(10);
 				} catch (InterruptedException e) {
@@ -109,7 +120,7 @@ public class BluetoothAdapter {
 	}
 
 	private void teardown() {
-		if (isSetup) {
+		if (! DEBUG && isSetup) {
 			try {
 				os.close();
 				is.close();

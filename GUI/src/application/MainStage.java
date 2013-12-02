@@ -37,8 +37,6 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 	private final String BLUETOOTH_URL = "btspp://00066603A696:1;authenticate=true;encrypt=false;master=false";
 	private static final String PAUSE_TEXT = "Pause";
 	private static final String RESUME_TEXT = "Resume";
-	private static final int CHART_BATCHES_MAX = 100;
-
 	private final ControllerAdapter controllerAdapter;
 	private final BluetoothAdapter bluetoothAdapter;
 	private final ControlPad controlPad;
@@ -57,8 +55,6 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 	private final TextArea errorLog;
 
 	private boolean paused = false;
-
-	private int chartBatches = 0;
 
 	private static class TimeValuePair {
 		public final long time;
@@ -115,7 +111,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 	}
 
 	private LineChart<Number, Number> generateRealTimeChart(String name, String yAxisText, int maxY) {
-
+		
 		// Setup
 		NumberAxis xAxis = new NumberAxis(0, 100, 10);
 		NumberAxis yAxis = new NumberAxis(0, maxY, maxY/8);
@@ -123,7 +119,8 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 		yAxis.setLabel(yAxisText);
 		xAxis.setForceZeroInRange(false);
 
-		LineChart<Number, Number> lc = new LineChart<Number, Number>(xAxis, yAxis);
+		LineChart<Number, Number> lc = new LineChart<>(xAxis, yAxis);
+		lc.getData().add(new XYChart.Series<Number, Number>());
 		lc.setAnimated(false);
 		lc.setCreateSymbols(false);
 
@@ -143,7 +140,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 
 			@Override
 			public void run() {
-				XYChart.Series<Number, Number> series = new XYChart.Series<Number, Number>();
+				XYChart.Series<Number, Number> series = new XYChart.Series<>();
 
 				lineChart.setTitle(title);
 
@@ -172,6 +169,33 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 			}
 		});
 	}
+	
+	private void addLineChartData(final TimeValuePair data) {
+		Platform.runLater(new Runnable() {
+
+			@Override
+			public void run() {
+				XYChart.Series<Number, Number> series = lineChart.getData().get(0);
+
+				series.getData().add(new XYChart.Data<Number, Number>(data.time, data.value));
+				
+				int lower = (int) (minSlider.getValue() * series.getData().size());
+				int upper = (int) (maxSlider.getValue() * series.getData().size());
+				
+				NumberAxis xAxis = (NumberAxis) lineChart.getXAxis();
+
+				if (series.getData().size() != 0) {
+					xAxis.setLowerBound(series.getData().get(lower).getXValue().longValue());
+					xAxis.setUpperBound(series.getData().get(upper - 1).getXValue().longValue());
+				}
+			}
+		});
+	}
+	
+	private void updateLineChart() {
+		GetFromSelRetPair gfsrp = getFromSel(chartSelectorPad.getSelected());
+		setLineChartData(gfsrp.l, gfsrp.s);
+	}
 
 	public void start(Stage primaryStage) {
 
@@ -184,8 +208,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 				minSlider.setValue(Math.min(minSlider.getValue(), maxSlider.getValue()));
 
 				if (paused) {
-					GetFromSelRetPair gfsrp = getFromSel(chartSelectorPad.getSelected());
-					setLineChartData(gfsrp.l, gfsrp.s);
+					updateLineChart();
 				}
 			}
 		});
@@ -199,8 +222,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 				maxSlider.setValue(Math.max(minSlider.getValue(), maxSlider.getValue()));
 
 				if (paused) {
-					GetFromSelRetPair gfsrp = getFromSel(chartSelectorPad.getSelected());
-					setLineChartData(gfsrp.l, gfsrp.s);
+					updateLineChart();
 				}
 			}
 		});
@@ -325,6 +347,10 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 				distanceRightShortList.clear();
 				tapeList.clear();
 				controlErrorList.clear();
+				
+				startTime = System.currentTimeMillis();
+				updateLineChart();
+				MainStage.this.errorLog.setText("");
 			}
 		});
 		
@@ -360,35 +386,35 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 			break;
 		case DISTANCE_LEFT_LONG:
 			gfsrp.s = "Distance left, long";
-			gfsrp.l = distanceLeftShortList;
+			gfsrp.l = distanceLeftLongList;
 			break;
 		case DISTANCE_FORWARD_CENTER:
 			gfsrp.s = "Distance forward, center";
-			gfsrp.l = distanceLeftShortList;
+			gfsrp.l = distanceForwardCenterList;
 			break;
 		case DISTANCE_FORWARD_LEFT:
 			gfsrp.s = "Distance forward, left";
-			gfsrp.l = distanceLeftShortList;
+			gfsrp.l = distanceForwardLeftList;
 			break;
 		case DISTANCE_FORWARD_RIGHT:
 			gfsrp.s = "Distance forward, right";
-			gfsrp.l = distanceLeftShortList;
+			gfsrp.l = distanceForwardRightList;
 			break;
 		case DISTANCE_RIGHT_LONG:
 			gfsrp.s = "Distance right, long";
-			gfsrp.l = distanceLeftShortList;
+			gfsrp.l = distanceRightLongList;
 			break;
 		case DISTANCE_RIGHT_SHORT:
 			gfsrp.s = "Distance right, short";
-			gfsrp.l = distanceLeftShortList;
+			gfsrp.l = distanceRightShortList;
 			break;
 		case TAPE:
 			gfsrp.s = "Tape width";
-			gfsrp.l = distanceLeftShortList;
+			gfsrp.l = tapeList;
 			break;
 		case CONTROL_ERROR:
 			gfsrp.s = "Control error";
-			gfsrp.l = distanceLeftShortList;
+			gfsrp.l = controlErrorList;
 			break;
 		default:
 			// Should not happen
@@ -412,32 +438,31 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 		listenerThread.start();
 	}
 
-	private void log(final TextArea ta, final String text) {
+	private void log(final String text) {
 		Platform.runLater(new Runnable() {
 
 			@Override
 			public void run() {
-				ta.setText(ta.getText() + text + '\n');
-				ta.positionCaret(ta.getText().length()); // Scroll to end
+				MainStage.this.errorLog.setText(MainStage.this.errorLog.getText() + text + '\n');
+				MainStage.this.errorLog.positionCaret(MainStage.this.errorLog.getText().length()); // Scroll to end
 			}
 		});
 	}
 
 	private void updateLineChartData(List<TimeValuePair> l, int newData, SelectedToggleButton stb, String text) {
-		l.add(new TimeValuePair((System.currentTimeMillis() - startTime) / 100, newData));
-		if (!paused && chartSelectorPad.getSelected() == stb && chartBatches >= CHART_BATCHES_MAX) {
-			chartBatches = 0;
-			setLineChartData(l, text);
+		TimeValuePair tvp = new TimeValuePair((System.currentTimeMillis() - startTime) / 100, newData);
+		l.add(tvp);
+		if (!paused && chartSelectorPad.getSelected() == stb) {
+			addLineChartData(tvp);
 		}
 	}
 
 	@Override
 	public void receiveMessage(int header, int data) {
-		chartBatches++;
 		switch (header) {
 
 		case 0x00:
-			log(errorLog, "Unexpected header " + Integer.toHexString(header) + ": 0x" + Integer.toHexString(data));
+			log("Unexpected header " + Integer.toHexString(header) + ": 0x" + Integer.toHexString(data));
 			break;
 
 		case 0x01:
@@ -472,13 +497,13 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 				break;
 
 			default:
-				log(errorLog, "Illegal data received for header 0x" + Integer.toHexString(header) + ": 0x" + Integer.toHexString(data));
+				log("Illegal data received for header 0x" + Integer.toHexString(header) + ": 0x" + Integer.toHexString(data));
 				break;
 			}
 			break;
 
 		case 0x02:
-			log(errorLog, "Unexpected header " + Integer.toHexString(header) + ": 0x" + Integer.toHexString(data));
+			log("Unexpected header " + Integer.toHexString(header) + ": 0x" + Integer.toHexString(data));
 			break;
 
 		case 0x03:
@@ -518,19 +543,19 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 			break;
 
 		case 0x0C:
-			log(errorLog, "Error code 0x" + Integer.toHexString(data));
+			log("Error code 0x" + Integer.toHexString(data));
 			break;
 
 		case 0x0D:
 			if (data != 0x00) {
-				log(errorLog, "Invalid ping data: 0x" + Integer.toHexString(data));
+				log("Invalid ping data: 0x" + Integer.toHexString(data));
 			}
-			// Just respond
+			// Ping. Just respond.
 			bluetoothAdapter.sendMessage(header, 0x00);
 			break;
 
 		default:
-			log(errorLog, "Invalid header: 0x" + Integer.toHexString(header) + ", data: 0x" + Integer.toHexString(data));
+			log("Invalid header: 0x" + Integer.toHexString(header) + ", data: 0x" + Integer.toHexString(data));
 			break;
 		}
 	}

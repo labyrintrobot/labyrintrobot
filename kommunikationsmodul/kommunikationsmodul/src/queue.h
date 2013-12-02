@@ -31,7 +31,7 @@ void queue_init(queue* q);
 
 void queue_add(queue* q, uint8_t header, uint8_t data);
 
-int queue_remove(queue* q, uint8_t* header, uint8_t* data);
+bool queue_remove(queue* q, uint8_t* header, uint8_t* data);
 
 bool queue_is_empty(queue* q);
 

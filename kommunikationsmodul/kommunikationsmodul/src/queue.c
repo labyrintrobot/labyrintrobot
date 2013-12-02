@@ -21,7 +21,6 @@ void queue_add(queue* q, uint8_t header, uint8_t data) {
 	
 	if (q->first == 0) {
 		q->first = e;
-		q->last = e;
 	} else {
 		q->last->next = e;
 	}
@@ -29,12 +28,14 @@ void queue_add(queue* q, uint8_t header, uint8_t data) {
 	q->last = e;
 }
 
-int queue_remove(queue* q, uint8_t* header, uint8_t* data) {
+bool queue_remove(queue* q, uint8_t* header, uint8_t* data) {
 	
 	queue_element* e = q->first;
 	
 	if (e == 0) {
-		return -1;
+		*header = 0xFF;
+		*data = 0xFF;
+		return false;
 	} else {
 		q->first = q->first->next;
 		
@@ -44,7 +45,7 @@ int queue_remove(queue* q, uint8_t* header, uint8_t* data) {
 		free(e);
 	}
 	
-	return 0;
+	return true;
 }
 
 bool queue_is_empty(queue* q) {

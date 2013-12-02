@@ -13,6 +13,8 @@
 #include "communication.h"
 
 void enable_irqs(void);
+void enable_timer(void);
+int TWI_master_init_slaves(void);
 
 // Global variables
 volatile bool control_module_interrupt = false;
@@ -20,20 +22,29 @@ volatile bool sensor_module_interrupt = false;
 volatile uint8_t firefly_header = 0xFF;
 volatile uint8_t firefly_data = 0xFF;
 volatile bool firefly_received_data = false;
+#ifdef USE_PING
 volatile bool ping_received = false;
-
-int TWI_master_init_slaves(void);
+#endif
 
 // Interrupt init
 // Remember to set firefly interrupt flag
 void enable_irqs() {
 	
-	EICRA |= (1 << ISC00) | (1 << ISC01); // Interrupts irq0 on rising edge
-	EICRA |= (1 << ISC10) | (1 << ISC11); // Interrupts irq1 on rising edge
+	EICRA |= (1 << ISC00) | (1 << ISC01); // Interrupt irq0 on rising edge
+	EICRA |= (1 << ISC10) | (1 << ISC11); // Interrupt irq1 on rising edge
 	EIMSK |= (1 << INT0) | (1 << INT1); // Enable INT0 and INT1
 	EIFR |= (1 << INTF0) | (1 << INTF1);
+#ifdef USE_PING
+	TIMSK = (1<<TOIE0); // Enable timer 1
+#endif
 	
 	sei();
+}
+
+void enable_timer() {
+#ifdef USE_PING
+	TCNT0 = 0x00;
+#endif
 }
 
 //Firefly interrupt routine
@@ -68,7 +79,8 @@ ISR(INT1_vect) {
 }
 
 // Timer 1 overflow
-/*ISR(TIMER1_OVF_vect) {
+#ifdef USE_PING
+ISR(TIMER0_OVF_vect) {
 	
 	if (! ping_received) {
 		// Send TWI
@@ -76,7 +88,8 @@ ISR(INT1_vect) {
 	// Send new ping
 	USART_transmit(0x0D, 0x00);
 	ping_received = false;
-}*/
+}
+#endif
 
 void mainfunction() {
 	
@@ -85,6 +98,7 @@ void mainfunction() {
 	bool received_data = false;
 	
 	enable_irqs();
+	enable_timer();
 	
 	while(true) {
 		
@@ -116,7 +130,9 @@ void mainfunction() {
 				// Error. Relay to firefly
 				USART_transmit(header, data);
 			} else if (header == 0x0D) {
+#ifdef USE_PING
 				ping_received = true;
+#endif
 			} else {
 				// Invalid header. Send error message
 				USART_transmit(0x0C, 0x00);

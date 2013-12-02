@@ -11,5 +11,4 @@
 
 void mainfunction(void);
 
-
 #endif /* COMMUNICATION_H_ */

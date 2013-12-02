@@ -29,7 +29,7 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import application.ChartSelectorPad.SelectedToggleButton;
 
-public class BluetoothStage extends Application implements BluetoothAdapter.IMessageReceiver {
+public class MainStage extends Application implements BluetoothAdapter.IMessageReceiver {
 	
 	long startTime = System.currentTimeMillis();
 	
@@ -80,7 +80,7 @@ public class BluetoothStage extends Application implements BluetoothAdapter.IMes
 		launch(args);
 	}
 	
-	public BluetoothStage() {
+	public MainStage() {
 
 		this.bluetoothAdapter = new BluetoothAdapter(BLUETOOTH_URL, this);
 

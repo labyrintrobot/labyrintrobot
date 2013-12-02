@@ -1,0 +1,1 @@
+"C:\Program Files\Java\jre7\bin\javaw.exe" -Dfile.encoding=Cp1252 -classpath "H:\Documents\GitHub\labyrintrobot\GUI\bin;C:\Program Files\Java\jre7\lib\jfxrt.jar;H:\Documents\GitHub\labyrintrobot\GUI\bluecove-2.1.1-SNAPSHOT.jar" application.MainStage

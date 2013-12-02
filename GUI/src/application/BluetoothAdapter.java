@@ -8,7 +8,6 @@ import java.util.Random;
 
 import javax.microedition.io.Connector;
 import javax.microedition.io.StreamConnection;
-import javafx.application.Platform;
 
 public class BluetoothAdapter {
 
@@ -55,13 +54,7 @@ public class BluetoothAdapter {
 					sendMessageToDevice(b);
 				} catch (IOException e) {
 					this.teardown();
-					Platform.runLater(new Runnable() {
-
-						@Override
-						public void run() {
-							receiver.communicationLost();
-						}
-					});
+					receiver.communicationLost();
 				}
 			}
 		}
@@ -83,35 +76,17 @@ public class BluetoothAdapter {
 				} else {
 					data = rng.nextInt(0xFF);
 				}
-
-				Platform.runLater(new Runnable() {
-
-					@Override
-					public void run() {
-						receiver.receiveMessage(header, data);
-					}
-				});
+				
+				receiver.receiveMessage(header, data);
 			} else {
 				if (isSetup) {
 					try {
 						final int[] ret = receiveMessage(2);
 
-						Platform.runLater(new Runnable() {
-
-							@Override
-							public void run() {
-								receiver.receiveMessage(ret[0], ret[1]);
-							}
-						});
+						receiver.receiveMessage(ret[0], ret[1]);
 					} catch (IOException e) {
 						this.teardown();
-						Platform.runLater(new Runnable() {
-
-							@Override
-							public void run() {
-								receiver.communicationLost();
-							}
-						});
+						receiver.communicationLost();
 					}
 				} else {
 					try {

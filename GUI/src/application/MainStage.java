@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -30,9 +31,9 @@ import javafx.stage.WindowEvent;
 import application.ChartSelectorPad.SelectedToggleButton;
 
 public class MainStage extends Application implements BluetoothAdapter.IMessageReceiver {
-	
+
 	long startTime = System.currentTimeMillis();
-	
+
 	private final String BLUETOOTH_URL = "btspp://00066603A696:1;authenticate=true;encrypt=false;master=false";
 	private static final String PAUSE_TEXT = "Pause";
 	private static final String RESUME_TEXT = "Resume";
@@ -42,7 +43,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 	private final BluetoothAdapter bluetoothAdapter;
 	private final ControlPad controlPad;
 	private final ChartSelectorPad chartSelectorPad;
-	
+
 	private final LineChart<Number, Number> lineChart;
 	private final Slider minSlider;
 	private final Slider maxSlider;
@@ -53,19 +54,19 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 	private final TextArea errorLog;
 
 	private boolean paused = false;
-	
+
 	private int chartBatches = 0;
-	
+
 	private static class TimeValuePair {
 		public final long time;
 		public final int value;
-		
+
 		public TimeValuePair(long time, int value) {
 			this.time = time;
 			this.value = value;
 		}
 	}
-	
+
 	private final List<TimeValuePair> distanceLeftShortList = new ArrayList<>();
 	private final List<TimeValuePair> distanceLeftLongList = new ArrayList<>();
 	private final List<TimeValuePair> distanceForwardLeftList = new ArrayList<>();
@@ -75,118 +76,124 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 	private final List<TimeValuePair> distanceRightShortList = new ArrayList<>();
 	private final List<TimeValuePair> tapeList = new ArrayList<>();
 	private final List<TimeValuePair> controlErrorList = new ArrayList<>();
-	
+
 	public static void main(String[] args) {
 		launch(args);
 	}
-	
+
 	public MainStage() {
 
 		this.bluetoothAdapter = new BluetoothAdapter(BLUETOOTH_URL, this);
 
 		this.lineChart = generateRealTimeChart("Forward left, short", "y", 256);
-		
+
 		this.minSlider = new Slider(0.0, 1.0, 0.0);
 		this.maxSlider = new Slider(0.0, 1.0, 1.0);
 		this.minSliderLabel = new Label("Min");
 		this.maxSliderLabel = new Label("Max");
-		
+
 		this.progressIndicator = new ProgressIndicator(-1.0);
-		
+
 		this.controllerAdapter = new ControllerAdapter(bluetoothAdapter);
 		this.controlPad = new ControlPad();
 		this.chartSelectorPad = new ChartSelectorPad(new ChartSelectorPad.ToggleCallback() {
-			
+
 			@Override
 			public void callback(ChartSelectorPad.SelectedToggleButton stb) {
-		        GetFromSelRetPair gfsrp = getFromSel(stb);
+				GetFromSelRetPair gfsrp = getFromSel(stb);
 				setLineChartData(gfsrp.l, gfsrp.s);
 			}
 		});
-		
+
 		this.errorLog = new TextArea();
 	}
-	
+
 	private LineChart<Number, Number> generateRealTimeChart(String name, String yAxisText, int maxY) {
-		
+
 		// Setup
 		NumberAxis xAxis = new NumberAxis(0, 100, 10);
-        NumberAxis yAxis = new NumberAxis(0, maxY, maxY/8);
-        xAxis.setLabel("Time");
-        yAxis.setLabel(yAxisText);
-        xAxis.setForceZeroInRange(false);
-        
-        LineChart<Number, Number> lc = new LineChart<Number, Number>(xAxis, yAxis);
-        lc.setAnimated(false);
-        lc.setCreateSymbols(false);
-        
-        lc.setTitle(name);
-        lc.setLegendVisible(false);
-        
-        Set<Node> lookupAll = lc.lookupAll(".series0");
-        for (Node n : lookupAll) {
-        	n.setStyle("-fx-stroke-width: 1px;-fx-stroke: black;");
-        }
-        
-        return lc;
+		NumberAxis yAxis = new NumberAxis(0, maxY, maxY/8);
+		xAxis.setLabel("Time");
+		yAxis.setLabel(yAxisText);
+		xAxis.setForceZeroInRange(false);
+
+		LineChart<Number, Number> lc = new LineChart<Number, Number>(xAxis, yAxis);
+		lc.setAnimated(false);
+		lc.setCreateSymbols(false);
+
+		lc.setTitle(name);
+		lc.setLegendVisible(false);
+
+		Set<Node> lookupAll = lc.lookupAll(".series0");
+		for (Node n : lookupAll) {
+			n.setStyle("-fx-stroke-width: 1px;-fx-stroke: black;");
+		}
+
+		return lc;
 	}
-	
-	private void setLineChartData(List<TimeValuePair> data, String title) {
-        XYChart.Series<Number, Number> series = new XYChart.Series<Number, Number>();
-        
-        lineChart.setTitle(title);
-        
-        int lower = (int) (minSlider.getValue() * data.size());
-        int upper = (int) (maxSlider.getValue() * data.size());
-		
-        for (int i = lower; i < upper; i++) {
-        	TimeValuePair tvp = data.get(i);
-        	series.getData().add(new XYChart.Data<Number, Number>(tvp.time, tvp.value));
-        }
-        
-        NumberAxis xAxis = (NumberAxis) lineChart.getXAxis();
-        
-        if (data.size() != 0) {
-        	xAxis.setLowerBound(data.get(lower).time);
-        	xAxis.setUpperBound(data.get(upper - 1).time);
-        }
-        
-        lineChart.getData().remove(0, lineChart.getData().size());
-        lineChart.getData().add(series);
-        
-        Set<Node> lookupAll = lineChart.lookupAll(".series0");
-        for (Node n : lookupAll) {
-        	n.setStyle("-fx-stroke-width: 1px;-fx-stroke: black;");
-        }
+
+	private void setLineChartData(final List<TimeValuePair> data, final String title) {
+		Platform.runLater(new Runnable() {
+
+			@Override
+			public void run() {
+				XYChart.Series<Number, Number> series = new XYChart.Series<Number, Number>();
+
+				lineChart.setTitle(title);
+
+				int lower = (int) (minSlider.getValue() * data.size());
+				int upper = (int) (maxSlider.getValue() * data.size());
+
+				for (int i = lower; i < upper; i++) {
+					TimeValuePair tvp = data.get(i);
+					series.getData().add(new XYChart.Data<Number, Number>(tvp.time, tvp.value));
+				}
+
+				NumberAxis xAxis = (NumberAxis) lineChart.getXAxis();
+
+				if (data.size() != 0) {
+					xAxis.setLowerBound(data.get(lower).time);
+					xAxis.setUpperBound(data.get(upper - 1).time);
+				}
+
+				lineChart.getData().remove(0, lineChart.getData().size());
+				lineChart.getData().add(series);
+
+				Set<Node> lookupAll = lineChart.lookupAll(".series0");
+				for (Node n : lookupAll) {
+					n.setStyle("-fx-stroke-width: 1px;-fx-stroke: black;");
+				}
+			}
+		});
 	}
-	
+
 	public void start(Stage primaryStage) {
-		
+
 		minSlider.valueProperty().addListener(new ChangeListener<Number>() {
 
 			@Override
 			public void changed(ObservableValue<? extends Number> arg0,
 					Number arg1, Number arg2) {
-				
+
 				minSlider.setValue(Math.min(minSlider.getValue(), maxSlider.getValue()));
-				
+
 				if (paused) {
-			        GetFromSelRetPair gfsrp = getFromSel(chartSelectorPad.getSelected());
+					GetFromSelRetPair gfsrp = getFromSel(chartSelectorPad.getSelected());
 					setLineChartData(gfsrp.l, gfsrp.s);
 				}
 			}
 		});
-		
+
 		maxSlider.valueProperty().addListener(new ChangeListener<Number>() {
 
 			@Override
 			public void changed(ObservableValue<? extends Number> arg0,
 					Number arg1, Number arg2) {
-				
+
 				maxSlider.setValue(Math.max(minSlider.getValue(), maxSlider.getValue()));
-				
+
 				if (paused) {
-			        GetFromSelRetPair gfsrp = getFromSel(chartSelectorPad.getSelected());
+					GetFromSelRetPair gfsrp = getFromSel(chartSelectorPad.getSelected());
 					setLineChartData(gfsrp.l, gfsrp.s);
 				}
 			}
@@ -194,9 +201,9 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 
 		controlPad.pressStop();
 		errorLog.setEditable(false);
-		
+
 		try {
-			
+
 			primaryStage.setTitle("Labyrintrobot");
 			final Button pauseButton = new Button();
 			if (paused) {
@@ -212,7 +219,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 			northBox.setAlignment(Pos.TOP_CENTER);
 			southBox.setAlignment(Pos.BOTTOM_CENTER);
 			centerBox.setAlignment(Pos.CENTER);
-			
+
 			northBox.getChildren().addAll(minSlider, minSliderLabel, maxSliderLabel, maxSlider);
 			centerBox.getChildren().addAll(progressIndicator, pauseButton, lineChart);
 			southBox.getChildren().addAll(errorLog, controlPad, chartSelectorPad);
@@ -331,16 +338,16 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 			e.printStackTrace();
 		}
 	}
-	
+
 	private static class GetFromSelRetPair {
 		public String s;
 		public List<TimeValuePair> l;
 	}
-	
+
 	private GetFromSelRetPair getFromSel(ChartSelectorPad.SelectedToggleButton stb) {
-		
+
 		GetFromSelRetPair gfsrp = new GetFromSelRetPair();
-		
+
 		switch (stb) {
 		case DISTANCE_LEFT_SHORT:
 			gfsrp.s = "Distance left, short";
@@ -382,7 +389,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 			// Should not happen
 			return null;
 		}
-		
+
 		return gfsrp;
 	}
 
@@ -400,11 +407,17 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 		listenerThread.start();
 	}
 
-	private void log(TextArea ta, String text) {
-		ta.setText(ta.getText() + text + '\n');
-		ta.positionCaret(ta.getText().length()); // Scroll to end
+	private void log(final TextArea ta, final String text) {
+		Platform.runLater(new Runnable() {
+
+			@Override
+			public void run() {
+				ta.setText(ta.getText() + text + '\n');
+				ta.positionCaret(ta.getText().length()); // Scroll to end
+			}
+		});
 	}
-	
+
 	private void updateLineChartData(List<TimeValuePair> l, int newData, SelectedToggleButton stb, String text) {
 		l.add(new TimeValuePair((System.currentTimeMillis() - startTime) / 100, newData));
 		if (!paused && chartSelectorPad.getSelected() == stb && chartBatches >= CHART_BATCHES_MAX) {
@@ -421,7 +434,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 		case 0x00:
 			log(errorLog, "Unexpected header " + Integer.toHexString(header) + ": 0x" + Integer.toHexString(data));
 			break;
-		
+
 		case 0x01:
 			switch (data) {
 
@@ -458,7 +471,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 				break;
 			}
 			break;
-			
+
 		case 0x02:
 			log(errorLog, "Unexpected header " + Integer.toHexString(header) + ": 0x" + Integer.toHexString(data));
 			break;
@@ -498,11 +511,11 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 		case 0x0B:
 			updateLineChartData(tapeList, data, SelectedToggleButton.TAPE, "Tape width");
 			break;
-			
+
 		case 0x0C:
 			log(errorLog, "Error code 0x" + Integer.toHexString(data));
 			break;
-			
+
 		case 0x0D:
 			if (data != 0x00) {
 				log(errorLog, "Invalid ping data: 0x" + Integer.toHexString(data));
@@ -520,12 +533,24 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 	@Override
 	public void communicationGained() {
 		// Finished
-		this.progressIndicator.setProgress(1.0);
+		Platform.runLater(new Runnable() {
+
+			@Override
+			public void run() {
+				MainStage.this.progressIndicator.setProgress(1.0);
+			}
+		});
 	}
 
 	@Override
 	public void communicationLost() {
 		// Keep "working"
-		this.progressIndicator.setProgress(-1.0);
+		Platform.runLater(new Runnable() {
+
+			@Override
+			public void run() {
+				MainStage.this.progressIndicator.setProgress(-1.0);
+			}
+		});
 	}
 }

@@ -7,6 +7,8 @@ public class ControllerAdapter {
 	private boolean upPressed = false;
 	private boolean leftPressed = false;
 	private boolean downPressed = false;
+	
+	private boolean openArm = true;
 
 	private final BluetoothAdapter bluetoothAdapter;
 
@@ -83,18 +85,20 @@ public class ControllerAdapter {
 	}
 	
 	public void pressQ() {
-		// TODO
+		final byte header = 0x00;
+		final byte data;
+		if (openArm) {
+			System.out.println("Open arm");
+			data = 0x09;
+		} else {
+			System.out.println("Close arm");
+			data = 0x0A;
+		}
+		bluetoothAdapter.sendMessage(header, data);
+		openArm = !openArm;
 	}
 
 	public void releaseQ() {
-		// TODO
-	}
-	
-	public void pressW() {
-		// TODO
-	}
-
-	public void releaseW() {
 		// TODO
 	}
 

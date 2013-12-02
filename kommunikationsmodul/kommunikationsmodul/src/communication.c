@@ -20,6 +20,7 @@ volatile bool sensor_module_interrupt = false;
 volatile uint8_t firefly_header = 0xFF;
 volatile uint8_t firefly_data = 0xFF;
 volatile bool firefly_received_data = false;
+volatile bool ping_received = false;
 
 int TWI_master_init_slaves(void);
 
@@ -66,6 +67,17 @@ ISR(INT1_vect) {
 	SREG = cSREG; // restore
 }
 
+// Timer 1 overflow
+/*ISR(TIMER1_OVF_vect) {
+	
+	if (! ping_received) {
+		// Send TWI
+	}
+	// Send new ping
+	USART_transmit(0x0D, 0x00);
+	ping_received = false;
+}*/
+
 void mainfunction() {
 	
 	uint8_t header, data;
@@ -74,37 +86,43 @@ void mainfunction() {
 	
 	enable_irqs();
 	
-	while(1) {
+	while(true) {
 		
 		if (received_data) {
 			
 			int twi_send_err = 0;
+			
 			//send to right instance depending on header
 			if (header == 0x00) {
 				// Firefly is sending control commands, relay to control module
+				cli();
 				twi_send_err = TWI_master_send_message(TWI_CONTROL_MODULE_ADDRESS, header, data);
-				
+				sei();
 			} else if (header == 0x01) {
 				// Control module is sending, relay to firefly
 				USART_transmit(header, data);
 			} else if (header == 0x02) {
 				// Firefly is sending a calibration command, relay to sensor module
+				cli();
 				twi_send_err = TWI_master_send_message(TWI_SENSOR_MODULE_ADDRESS, header, data);
-							
+				sei();
 			} else if (header >= 0x03 && header <= 0x0B) {
 				// Sensor module is sending, relay to styr module and firefly
+				cli();
 				twi_send_err = TWI_master_send_message(TWI_CONTROL_MODULE_ADDRESS, header, data);
-				
+				sei();
 				USART_transmit(header, data);
 			} else if (header == 0x0C) {
 				// Error. Relay to firefly
 				USART_transmit(header, data);
 			} else if (header == 0x0D) {
-				// Ping. TODO
+				ping_received = true;
 			} else {
 				// Invalid header. Send error message
 				USART_transmit(0x0C, 0x00);
 			}
+			
+			// If there was any error with TWI
 			if (twi_send_err) {
 				// TWI error. Send error message.
 				USART_transmit(0x0C, 0x01);
@@ -132,13 +150,11 @@ void mainfunction() {
 			control_module_interrupt = false;
 		} else if (firefly_received_data) {
 			
-			cli();// Shutdown interrupts, so that no funky business happens
-			
+			cli();
 			header = firefly_header;
 			data = firefly_data;
 			firefly_received_data = false;
-			
-			sei(); //Start interrupts
+			sei();
 			
 			received_data = true;
 		}
@@ -151,14 +167,13 @@ void mainfunction() {
 
 // function to tell the slaves that it is ready to handle their interrupts
 int TWI_master_init_slaves() {
-	cli();
 	
 	uint8_t init_header;
 	
 	_delay_ms(100);
 	
-	int err;
-	err = TWI_master_send_message(TWI_CONTROL_MODULE_ADDRESS, init_header, 0);
+	cli();
+	int err = TWI_master_send_message(TWI_CONTROL_MODULE_ADDRESS, init_header, 0);
 	if (err) {
 		sei();
 		return err;

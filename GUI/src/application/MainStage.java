@@ -44,6 +44,9 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 	private final ControlPad controlPad;
 	private final ChartSelectorPad chartSelectorPad;
 
+	private final Button pauseButton;
+	private final Button clearButton;
+	
 	private final LineChart<Number, Number> lineChart;
 	private final Slider minSlider;
 	private final Slider maxSlider;
@@ -85,6 +88,9 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 
 		this.bluetoothAdapter = new BluetoothAdapter(BLUETOOTH_URL, this);
 
+		this.pauseButton = new Button(PAUSE_TEXT);
+		this.clearButton = new Button("Clear");
+		
 		this.lineChart = generateRealTimeChart("Forward left, short", "y", 256);
 
 		this.minSlider = new Slider(0.0, 1.0, 0.0);
@@ -169,7 +175,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 
 	public void start(Stage primaryStage) {
 
-		minSlider.valueProperty().addListener(new ChangeListener<Number>() {
+		this.minSlider.valueProperty().addListener(new ChangeListener<Number>() {
 
 			@Override
 			public void changed(ObservableValue<? extends Number> arg0,
@@ -184,7 +190,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 			}
 		});
 
-		maxSlider.valueProperty().addListener(new ChangeListener<Number>() {
+		this.maxSlider.valueProperty().addListener(new ChangeListener<Number>() {
 
 			@Override
 			public void changed(ObservableValue<? extends Number> arg0,
@@ -199,138 +205,143 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 			}
 		});
 
-		controlPad.pressStop();
-		errorLog.setEditable(false);
+		this.controlPad.pressStop();
+		this.errorLog.setEditable(false);
 
-		try {
-
-			primaryStage.setTitle("Labyrintrobot");
-			final Button pauseButton = new Button();
-			if (paused) {
-				pauseButton.setText(RESUME_TEXT);
-			} else {
-				pauseButton.setText(PAUSE_TEXT);
-			}
-
-			VBox northBox = new VBox();
-			HBox southBox = new HBox();
-			VBox centerBox = new VBox();
-
-			northBox.setAlignment(Pos.TOP_CENTER);
-			southBox.setAlignment(Pos.BOTTOM_CENTER);
-			centerBox.setAlignment(Pos.CENTER);
-
-			northBox.getChildren().addAll(minSlider, minSliderLabel, maxSliderLabel, maxSlider);
-			centerBox.getChildren().addAll(progressIndicator, pauseButton, lineChart);
-			southBox.getChildren().addAll(errorLog, controlPad, chartSelectorPad);
-
-			BorderPane root = new BorderPane();
-			root.setTop(northBox);
-			root.setBottom(southBox);
-			root.setCenter(centerBox);
-			Scene scene = new Scene(root, 1280, 1024);
-			primaryStage.setScene(scene);
-
-			EventHandler<KeyEvent> pressEvent = new EventHandler<KeyEvent>() {
-
-				@Override
-				public void handle(KeyEvent t) {
-					try {
-						switch (t.getCode()) {
-						case RIGHT:
-							controllerAdapter.pressRight();
-							break;
-						case UP:
-							controllerAdapter.pressUp();
-							break;
-						case LEFT:
-							controllerAdapter.pressLeft();
-							break;
-						case DOWN:
-							controllerAdapter.pressDown();
-							break;
-						case C:
-							controllerAdapter.pressC();
-							break;
-						case Q:
-							controllerAdapter.pressQ();
-							break;
-						default:
-							// Do nothing
-							break;
-						}
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-				}
-			};
-
-			EventHandler<KeyEvent> releaseEvent = new EventHandler<KeyEvent>() {
-
-				@Override
-				public void handle(KeyEvent t) {
-					try {
-						switch (t.getCode()) {
-						case RIGHT:
-							controllerAdapter.releaseRight();
-							break;
-						case UP:
-							controllerAdapter.releaseUp();
-							break;
-						case LEFT:
-							controllerAdapter.releaseLeft();
-							break;
-						case DOWN:
-							controllerAdapter.releaseDown();
-							break;
-						case C:
-							controllerAdapter.releaseC();
-							break;
-						case Q:
-							controllerAdapter.releaseQ();
-							break;
-						default:
-							// Do nothing
-							break;
-						}
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-				}
-			};
-
-			pauseButton.setOnAction(new EventHandler<ActionEvent>() {
-				@Override public void handle(ActionEvent e) {
-					paused = !paused;
-					if (paused) {
-						pauseButton.setText(RESUME_TEXT);
-					} else {
-						pauseButton.setText(PAUSE_TEXT);
-						maxSlider.setValue(1.0);
-					}
-				}
-			});
-
-			primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
-
-				@Override
-				public void handle(WindowEvent we) {
-					bluetoothAdapter.exit();
-				}
-			});
-
-			pauseButton.setFocusTraversable(false);
-
-			primaryStage.addEventFilter(KeyEvent.KEY_PRESSED, pressEvent);
-			primaryStage.addEventFilter(KeyEvent.KEY_RELEASED, releaseEvent);
-
-			primaryStage.show();
-
-			listen();
-
-		} catch(Exception e) {
-			e.printStackTrace();
+		primaryStage.setTitle("Labyrintrobot");
+		if (paused) {
+			this.pauseButton.setText(RESUME_TEXT);
+		} else {
+			this.pauseButton.setText(PAUSE_TEXT);
 		}
+		
+		VBox northBox = new VBox();
+		HBox southBox = new HBox();
+		VBox centerBox = new VBox();
+		
+		northBox.setAlignment(Pos.TOP_CENTER);
+		southBox.setAlignment(Pos.BOTTOM_CENTER);
+		centerBox.setAlignment(Pos.CENTER);
+		
+		northBox.getChildren().addAll(minSlider, minSliderLabel, maxSliderLabel, maxSlider);
+		centerBox.getChildren().addAll(progressIndicator, pauseButton, clearButton, lineChart);
+		southBox.getChildren().addAll(errorLog, controlPad, chartSelectorPad);
+		
+		BorderPane root = new BorderPane();
+		root.setTop(northBox);
+		root.setBottom(southBox);
+		root.setCenter(centerBox);
+		Scene scene = new Scene(root, 1280, 1024);
+		primaryStage.setScene(scene);
+		
+		EventHandler<KeyEvent> pressEvent = new EventHandler<KeyEvent>() {
+			
+			@Override
+			public void handle(KeyEvent t) {
+				try {
+					switch (t.getCode()) {
+					case RIGHT:
+						controllerAdapter.pressRight();
+						break;
+					case UP:
+						controllerAdapter.pressUp();
+						break;
+					case LEFT:
+						controllerAdapter.pressLeft();
+						break;
+					case DOWN:
+						controllerAdapter.pressDown();
+						break;
+					case C:
+						controllerAdapter.pressC();
+						break;
+					case Q:
+						controllerAdapter.pressQ();
+						break;
+					default:
+						// Do nothing
+						break;
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		};
+		
+		EventHandler<KeyEvent> releaseEvent = new EventHandler<KeyEvent>() {
+			
+			@Override
+			public void handle(KeyEvent t) {
+				try {
+					switch (t.getCode()) {
+					case RIGHT:
+						controllerAdapter.releaseRight();
+						break;
+					case UP:
+						controllerAdapter.releaseUp();
+						break;
+					case LEFT:
+						controllerAdapter.releaseLeft();
+						break;
+					case DOWN:
+						controllerAdapter.releaseDown();
+						break;
+					case C:
+						controllerAdapter.releaseC();
+						break;
+					case Q:
+						controllerAdapter.releaseQ();
+						break;
+					default:
+						// Do nothing
+						break;
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		};
+		
+		this.pauseButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override public void handle(ActionEvent e) {
+				paused = !paused;
+				if (paused) {
+					pauseButton.setText(RESUME_TEXT);
+				} else {
+					pauseButton.setText(PAUSE_TEXT);
+					maxSlider.setValue(1.0);
+				}
+			}
+		});
+		
+		this.clearButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override public void handle(ActionEvent e) {
+				distanceLeftShortList.clear();
+				distanceLeftLongList.clear();
+				distanceForwardLeftList.clear();
+				distanceForwardCenterList.clear();
+				distanceForwardRightList.clear();
+				distanceRightLongList.clear();
+				distanceRightShortList.clear();
+				tapeList.clear();
+				controlErrorList.clear();
+			}
+		});
+		
+		primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+			
+			@Override
+			public void handle(WindowEvent we) {
+				bluetoothAdapter.exit();
+			}
+		});
+		
+		primaryStage.addEventFilter(KeyEvent.KEY_PRESSED, pressEvent);
+		primaryStage.addEventFilter(KeyEvent.KEY_RELEASED, releaseEvent);
+		
+		primaryStage.show();
+		
+		listen();
 	}
 
 	private static class GetFromSelRetPair {

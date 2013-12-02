@@ -157,9 +157,14 @@ int TWI_master_init_slaves() {
 	
 	_delay_ms(100);
 	
-	TWI_master_send_message(TWI_CONTROL_MODULE_ADDRESS, init_header, 0);
-	TWI_master_send_message(TWI_SENSOR_MODULE_ADDRESS, init_header, 0);
-	
+	int err;
+	err = TWI_master_send_message(TWI_CONTROL_MODULE_ADDRESS, init_header, 0);
+	if (err) {
+		sei();
+		return err;
+	}
+	err = TWI_master_send_message(TWI_SENSOR_MODULE_ADDRESS, init_header, 0);
 	sei();
-	return 0;
+	
+	return err;
 }

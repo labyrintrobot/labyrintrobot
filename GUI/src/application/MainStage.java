@@ -239,20 +239,20 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 		
 		VBox northBox = new VBox();
 		HBox southBox = new HBox();
-		VBox centerBox = new VBox();
+		HBox buttonBox = new HBox();
 		
 		northBox.setAlignment(Pos.TOP_CENTER);
 		southBox.setAlignment(Pos.BOTTOM_CENTER);
-		centerBox.setAlignment(Pos.CENTER);
+		buttonBox.setAlignment(Pos.CENTER);
 		
-		northBox.getChildren().addAll(minSlider, minSliderLabel, maxSliderLabel, maxSlider);
-		centerBox.getChildren().addAll(progressIndicator, pauseButton, clearButton, lineChart);
+		northBox.getChildren().addAll(minSlider, minSliderLabel, maxSliderLabel, maxSlider, buttonBox);
+		buttonBox.getChildren().addAll(progressIndicator, pauseButton, clearButton);
 		southBox.getChildren().addAll(errorLog, controlPad, chartSelectorPad);
 		
 		BorderPane root = new BorderPane();
 		root.setTop(northBox);
 		root.setBottom(southBox);
-		root.setCenter(centerBox);
+		root.setCenter(this.lineChart);
 		Scene scene = new Scene(root, 1280, 1024);
 		primaryStage.setScene(scene);
 		

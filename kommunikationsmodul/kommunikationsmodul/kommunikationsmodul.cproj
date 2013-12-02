@@ -269,6 +269,12 @@
     <Compile Include="src\queue.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\queue_test.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\queue_test.h">
+      <SubType>compile</SubType>
+    </Compile>
     <None Include="src\asf.h">
       <SubType>compile</SubType>
     </None>

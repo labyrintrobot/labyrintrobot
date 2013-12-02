@@ -31,20 +31,4 @@ int main (void)
 		_delay_ms(250);
 		USART_transmit(0x01, 0x02);
 	}*/
-	
-	//enable_irqs();
-	//USART_init(14400);
-	/*int err = TWI_master_initialize(TWI_COMMUNICATION_MODULE_ADDRESS);
-	if (err) {
-		PORTB = err;
-		while (1);
-	}
-	
-	//_delay_ms(200);
-	err = TWI_master_test_both();
-	if (err) {
-		PORTB = 0;
-	} else {
-		PORTB = 0b00110011;
-	}*/
 }

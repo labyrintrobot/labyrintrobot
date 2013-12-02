@@ -70,34 +70,34 @@ void mainfunction() {
 	
 	uint8_t header, data;
 	
-	bool receiveddata = false;
+	bool received_data = false;
 	
 	enable_irqs();
 	
 	while(1) {
 		
-		if (receiveddata) {
+		if (received_data) {
 			
+			int twi_send_err = 0;
 			//send to right instance depending on header
-			if (header==0x00) {
-				//firefly is sending styr commands, relay to styr module
-				TWI_master_send_message(TWI_CONTROL_MODULE_ADDRESS, header, data);
+			if (header == 0x00) {
+				// Firefly is sending control commands, relay to control module
+				twi_send_err = TWI_master_send_message(TWI_CONTROL_MODULE_ADDRESS, header, data);
 				
 			} else if (header == 0x01) {
-				//styr module is sending, relay to firefly
+				// Control module is sending, relay to firefly
 				USART_transmit(header, data);
 			} else if (header == 0x02) {
-				//firefly is sending a calibration command, relay to sensor module
-				TWI_master_send_message(TWI_SENSOR_MODULE_ADDRESS, header, data);
+				// Firefly is sending a calibration command, relay to sensor module
+				twi_send_err = TWI_master_send_message(TWI_SENSOR_MODULE_ADDRESS, header, data);
 							
 			} else if (header >= 0x03 && header <= 0x0B) {
-				//sensor module is sending, relay to styr module and firefly
-				TWI_master_send_message(TWI_CONTROL_MODULE_ADDRESS, header, data);
+				// Sensor module is sending, relay to styr module and firefly
+				twi_send_err = TWI_master_send_message(TWI_CONTROL_MODULE_ADDRESS, header, data);
 				
 				USART_transmit(header, data);
 			} else if (header == 0x0C) {
-				// error. Send to firefly
-			
+				// Error. Relay to firefly
 				USART_transmit(header, data);
 			} else if (header == 0x0D) {
 				// Ping. TODO
@@ -105,25 +105,30 @@ void mainfunction() {
 				// Invalid header. Send error message
 				USART_transmit(0x0C, 0x00);
 			}
+			if (twi_send_err) {
+				// TWI error. Send error message.
+				USART_transmit(0x0C, 0x01);
+			}
 			
-			receiveddata = false;
+			received_data = false;
 		}
 		
+		int twi_rec_err = 0;
 		if (sensor_module_interrupt) {
 			// Get data from sensor module
 			cli();
-			TWI_master_receive_message(TWI_SENSOR_MODULE_ADDRESS, &header, &data);
+			twi_rec_err = TWI_master_receive_message(TWI_SENSOR_MODULE_ADDRESS, &header, &data);
 			sei();
 			
-			receiveddata = true;
+			received_data = true;
 			sensor_module_interrupt = false;
 		} else if (control_module_interrupt) {
-			// Get data from styr module
+			// Get data from control module
 			cli();
-			TWI_master_receive_message(TWI_CONTROL_MODULE_ADDRESS, &header, &data);
+			twi_rec_err = TWI_master_receive_message(TWI_CONTROL_MODULE_ADDRESS, &header, &data);
 			sei();
 			
-			receiveddata = true;
+			received_data = true;
 			control_module_interrupt = false;
 		} else if (firefly_received_data) {
 			
@@ -135,7 +140,11 @@ void mainfunction() {
 			
 			sei(); //Start interrupts
 			
-			receiveddata = true;
+			received_data = true;
+		}
+		if (twi_rec_err) {
+			// TWI error. Send error message.
+			USART_transmit(0x0C, 0x02);
 		}
 	}
 }
@@ -144,12 +153,12 @@ void mainfunction() {
 int TWI_master_init_slaves() {
 	cli();
 	
-	uint8_t initheader;
+	uint8_t init_header;
 	
 	_delay_ms(100);
 	
-	TWI_master_send_message(TWI_CONTROL_MODULE_ADDRESS, initheader, 0);
-	TWI_master_send_message(TWI_SENSOR_MODULE_ADDRESS, initheader, 0);
+	TWI_master_send_message(TWI_CONTROL_MODULE_ADDRESS, init_header, 0);
+	TWI_master_send_message(TWI_SENSOR_MODULE_ADDRESS, init_header, 0);
 	
 	sei();
 	return 0;

@@ -1,10 +1,8 @@
 #define F_CPU 14.7456E6
 
 #include <asf.h>
-#include <avr/interrupt.h>
 #include <util/delay.h>
 #include "twi_master.h"
-#include "twi_master_test.h"
 #include "USART.h"
 #include "communication.h"
 
@@ -12,12 +10,10 @@ int main (void)
 {
 	board_init();
 	
-	// Errors on PORT A
-	// Messages on PORT B
-	
 	DDRB = 0xFF; // Err
-	PORTB = 0;
 	DDRA = 0xFF; // Data
+	PORTA = 0;
+	PORTB = 0;
 	
 	USART_init(14400);
 	TWI_master_initialize(TWI_COMMUNICATION_MODULE_ADDRESS);

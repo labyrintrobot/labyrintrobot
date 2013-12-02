@@ -29,8 +29,8 @@
 #include <inttypes.h>
 #include <stdio.h>
 //#include <avr/signal.h>
-//#define F_CPU 14.745E6
-#define F_CPU 1.843E6
+#define F_CPU 14.745E6
+//#define F_CPU 1.843E6
 #include <util/delay.h>
 #include <avr/interrupt.h>
 
@@ -38,6 +38,7 @@
 uint8_t control_command, left_short_s, right_short_s, left_long_s, right_long_s, 
 		forward_left_s, forward_right_s, forward_center_s, tape_value;
 signed e; //reglerfelet
+signed int e_last = 0; //sparade reglerfelet
 
 //header och data som sänds och tas emot
 volatile uint8_t header_s = 0;
@@ -47,6 +48,8 @@ volatile uint8_t data_r = 0x06;
 
 //startknapp och switch
 uint8_t button, switch_;
+
+uint8_t grip_value = 0; // 0 = öppen griparm
 
 #include <communication.h> // kommunikationen
 #include <man_functions.h> // manuella funktioner
@@ -70,33 +73,37 @@ int main (void)
 	pwm_start_L();
 	pwm_start_R();
 	pwm_start_G();
-	
 	sei();
-	//cli();
-
+	//get_target();
 	while(1)
 	{
-		button = PINA & 0x02; // read PortA, pin 1
-		switch_ = PINA & 0x01; // read PortA, pin 0
 
+		switch_ = PINA & 0x01; // read PortA, pin 0
+		
 		while(switch_ != 0) // man
 		{	
-			//TWI_slave_receive_message(&header, &data); 
-			if(header_r == 0x00)
-			{
-				manual_action(data_r);
-			}
+			//if(header_r == 0x00)
+			//{
+				manual_action(control_command);
+			//}
 		switch_ = (PINA & 0x01);
 		}
 		
 		while(switch_ == 0) //autonomt läge
 		{
-			/*
+			button = PINA & 0x02; // read PortA, pin 1			
+			//forward(left_short_s*3+0x40);	
+			
+			_delay_ms(100);
+			forward_regulated();
 			if(button != 0) //startar autonomt läge
 			{
-				find_start();
-				find_goal();
-				return_to_start();
+				
+				//rotate_left90();
+				//_delay_ms(1000);
+				//rotate_right90();
+				//get_target();
+
 					
 			
 				
@@ -107,7 +114,7 @@ int main (void)
 				//stop
 			
 			}
-			*/
+			
 			switch_ = PINA & 0x01;
 		}
 

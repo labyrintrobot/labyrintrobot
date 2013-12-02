@@ -4,7 +4,7 @@
 
 int unmarked_intersection_choice(int left_, int forward_);
 int marked_intersection_choice(int tape, int left_, int forward_, int right_);
-void forward_regulated(signed e);
+void forward_regulated(void);
 bool intersection_detected(int left, int right);
 void find_start(void);
 void find_goal(void);
@@ -38,7 +38,7 @@ int unmarked_intersection_choice(int left_, int forward_)
 
 int marked_intersection_choice(int tape, int left_, int forward_, int right_)
 {
-	//tape = 0x02 = right, tape = 0x01 = left
+	//tape: 0x02 = right, tape: 0x01 = left
 	if((tape == 0x02) & (right_ < 40))
 	{
 		tape_value = 0x00;
@@ -63,21 +63,21 @@ int marked_intersection_choice(int tape, int left_, int forward_, int right_)
 
 
 
-void forward_regulated(signed e_)
+void forward_regulated()
 {
 	PORTB = 0x03;
 	signed u, Kp, Kd;
-	Kp = 1;
-	Kd = 10; //KD=0.01/deltaT=0.1
-	u = Kp*e_ + Kd*(e_ - e_last); //KD-regulator
-	e_last = e_;
+	Kp = 2;
+	Kd = 10; //KD=1/deltaT=0.1
+	u = Kp*e + Kd*(e - e_last); //KD-regulator
+	e_last = e;
 	
-	if(u > 0) // turn right
+	if(u < 0) // turn right
 	{
 		OCR1BL = 0x80 - u; //right side
 		OCR1AL = 0x80; // left side
 	}
-	else if(u < 0) // turn left
+	else if(u > 0) // turn left
 	{
 		OCR1BL = 0x80; //right side
 		OCR1AL = 0x80 + u; // left side
@@ -108,7 +108,7 @@ void find_start()
 {
 	while(!start_detected())
 	{ 
-	forward(0xA0);	
+		forward(0xA0);	
 	}
 }
 
@@ -117,7 +117,8 @@ bool read_tape(int tape)
 {
 	if(tape == 0x01 || tape == 0x02)
 	{
-	//	tape_value = 0x00; //nollställ senaste tejpavläsningen
+		//
+		tape_value = 0x00; //nollställ senaste tejpavläsningen
 		return true;
 	} 
 	else
@@ -191,13 +192,22 @@ void turn_back(int direction)
 
 void get_target()
 {
+	uint8_t grip_switch = 4;
 	//kör sakta fram till föremålet
+	forward(0x70);
+	_delay_ms(20);
+	forward(0x50);
+	while(grip_switch == 4)
+	{
+		grip_switch = PINA & 0x04;
+	}
+	stop();
 	grip_on();
-	backward(0xA0);
+	backward(0x50);
 	_delay_ms(200);
 	stop();
-	rotate_right90();
-	rotate_right90();
+	//rotate_right();
+	//rotate_right();
 	
 }
 
@@ -210,7 +220,7 @@ void find_goal()
 	{
 		while(!intersection_detected(left_long_s,right_long_s)) // Korridor
 		{
-			forward_regulated(e);
+			forward_regulated();
 		}
 		
 		// Kommit till en korsning eller sväng
@@ -221,7 +231,7 @@ void find_goal()
 		if(read_tape(tape_value)) // Markerad
 		{
 			direction = marked_intersection_choice(tape_value,	left_long_s, 
-																forward_center_s, right_long_s);
+												   forward_center_s, right_long_s);
 			turn(direction);
 		}
 		else // Omarkerad
@@ -243,7 +253,7 @@ void return_to_start()
 	{
 		while(!intersection_detected(left_long_s, right_long_s))
 		{
-			forward_regulated(e);
+			forward_regulated();
 		}
 		forward(0xA0);
 		_delay_ms(200); //Kör in en bit i korsningen
@@ -252,7 +262,7 @@ void return_to_start()
 	}
 	while(!start_detected())
 	{
-		forward_regulated(e);
+		forward_regulated();
 	}
 	stop();
 }

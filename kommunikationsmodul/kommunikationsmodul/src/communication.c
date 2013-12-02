@@ -35,7 +35,7 @@ void enable_irqs() {
 	EIMSK |= (1 << INT0) | (1 << INT1); // Enable INT0 and INT1
 	EIFR |= (1 << INTF0) | (1 << INTF1);
 #ifdef USE_PING
-	TIMSK = (1<<TOIE0); // Enable timer 1
+	TIMSK = (1<<TOIE1); // Enable timer 1
 #endif
 	
 	sei();
@@ -43,7 +43,8 @@ void enable_irqs() {
 
 void enable_timer() {
 #ifdef USE_PING
-	TCNT0 = 0x00;
+	TCNT1 = 0x00;
+	TCCR1B = (1<<CS02); // 256 prescaler. 14000000 / 65536 / 256 = 0.8 times per second.
 #endif
 }
 
@@ -100,7 +101,7 @@ void mainfunction() {
 	enable_irqs();
 	enable_timer();
 	
-	while(true) {
+	while (true) {
 		
 		if (received_data) {
 			

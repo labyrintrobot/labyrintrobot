@@ -13,6 +13,9 @@ public class BluetoothAdapter {
 
 	private static final boolean DEBUG = false;
 
+	private final Object recLock = new Object();
+	private final Object sendLock = new Object();
+
 	private final String bluetoothUrl;
 	private final IMessageReceiver receiver;
 	private final Random rng = new Random();
@@ -76,7 +79,7 @@ public class BluetoothAdapter {
 				} else {
 					data = rng.nextInt(0xFF);
 				}
-				
+
 				receiver.receiveMessage(header, data);
 			} else {
 				if (isSetup) {
@@ -119,25 +122,28 @@ public class BluetoothAdapter {
 		this.isSetup = false;
 	}
 
-	private synchronized int[] receiveMessage(int length) throws IOException {
-
-		int[] ret = new int[length];
-		for (int i = 0; i < length; i++) {
-			ret[i] = is.read();
-			if (ret[i] == -1) {
-				throw new IOException();
+	private int[] receiveMessage(int length) throws IOException {
+		synchronized (recLock) {
+			int[] ret = new int[length];
+			for (int i = 0; i < length; i++) {
+				ret[i] = is.read();
+				if (ret[i] == -1) {
+					throw new IOException();
+				}
 			}
-		}
-		System.out.println("Received: " + Arrays.toString(ret));
+			System.out.println("Received: " + Arrays.toString(ret));
 
-		return ret;
+			return ret;
+		}
 	}
 
-	private synchronized void sendMessageToDevice(int[] message) throws IOException {
-		System.out.println("Sent: " + Arrays.toString(message));
-		for (int i = 0; i < message.length; i++) {
-			os.write(message[i]);
+	private void sendMessageToDevice(int[] message) throws IOException {
+		synchronized (sendLock) {
+			System.out.println("Sent: " + Arrays.toString(message));
+			for (int i = 0; i < message.length; i++) {
+				os.write(message[i]);
+			}
+			os.flush();
 		}
-		os.flush();
 	}
 }

@@ -32,6 +32,9 @@ uint8_t sensorTabel(uint8_t data,enum sensor_t sensor)
 		case S24:
 		fData = sensor24(data);
 		break;
+		case S13:
+		fData = sensor13(data);
+		break;
 		default:
 		fData = 0;
 		break;
@@ -41,7 +44,63 @@ uint8_t sensorTabel(uint8_t data,enum sensor_t sensor)
 
 uint8_t sensor11(uint8_t data)
 {
-	return 0;
+	float fData;
+	uint8_t x1,x2,y1,y2;
+	if(data > 215)
+		return 255;
+	else if(data > 150)
+	{
+		x1=5;
+		x2=8;
+		y1=215;
+		y2=150;
+	}
+	else if(data > 99)
+	{
+		x1=8;
+		x2=12;
+		y1=150;
+		y2=99;
+	}
+	else if(data > 76)
+	{
+		x1=12;
+		x2=16;
+		y1=99;
+		y2=76;
+	}
+	else if(data > 60)
+	{
+		x1=16;
+		x2=20;
+		y1=76;
+		y2=60;
+	}
+	else if(data > 48)
+	{
+		x1=20;
+		x2=24;
+		y1=60;
+		y2=48;
+	}
+	else if(data > 42)
+	{
+		x1=24;
+		x2=28;
+		y1=48;
+		y2=42;
+	}
+	else if(data > 36)
+	{
+		x1=28;
+		x2=32;
+		y1=42;
+		y2=36;
+	}
+	else
+		return 0;
+	fData = interpolate(y1,y2,x1,x2,data);
+	return fData;
 }
 uint8_t sensor12(uint8_t data)
 {
@@ -105,7 +164,63 @@ uint8_t sensor12(uint8_t data)
 }
 uint8_t sensor13(uint8_t data)
 {
-	return 0;
+	float fData;
+	uint8_t x1,x2,y1,y2;
+	if(data > 227)
+		return 255;
+	else if(data > 145)
+	{
+		x1=5;
+		x2=8;
+		y1=227;
+		y2=145;
+	}
+	else if(data > 101)
+	{
+		x1=8;
+		x2=12;
+		y1=145;
+		y2=101;
+	}
+	else if(data > 76)
+	{
+		x1=12;
+		x2=16;
+		y1=101;
+		y2=76;
+	}
+	else if(data > 58)
+	{
+		x1=16;
+		x2=20;
+		y1=76;
+		y2=58;
+	}
+	else if(data > 48)
+	{
+		x1=20;
+		x2=24;
+		y1=58;
+		y2=48;
+	}
+	else if(data > 40)
+	{
+		x1=24;
+		x2=28;
+		y1=48;
+		y2=40;
+	}
+	else if(data > 34)
+	{
+		x1=28;
+		x2=32;
+		y1=40;
+		y2=34;
+	}
+	else
+		return 0;
+	fData = interpolate(y1,y2,x1,x2,data);
+	return fData;
 }
 uint8_t sensor21(uint8_t data)
 {

@@ -26,11 +26,12 @@ unsigned int SPI_Init(void)
 	/* Set direction for SPI pins SCK, MOSI, SS is output */
 	DDRB |= (1<<DDB4) | (1<<DDB5) | (1<<DDB7);
 	/* Set SPI double frequency */
-	SPSR = (1<<SPI2X);
+	//SPSR = (1<<SPI2X); dont use this ...SPI clk too high for gyro att sys_clk = 14.745Mhz
+	
 	/* Configure SPI mode: */
 	/* Enable SPI, Master mode, MSB first, SCK high when idle, trailing edge sampling, Fc/8, */
 	
-	SPCR = (1<<SPE)|(1<<MSTR)|(0<<DORD)|(1<<CPOL)|(1<<CPHA)|(1<<SPR0) ;
+	SPCR = (1<<SPE)|(1<<MSTR)|(0<<DORD)|(1<<CPOL)|(1<<CPHA)|(1<<SPR1)|(1<<SPR0) ;
 	
 	//Wake up !!!
 	unsigned int ADC_response;

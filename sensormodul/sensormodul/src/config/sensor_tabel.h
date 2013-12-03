@@ -8,7 +8,6 @@
 
 #ifndef SENSORTABEL_H_
 #define SENSORTABEL_H_
-#include <asf.h>
 #include "Interpolate.h"
 
 enum sensor_t{S12,S21,S22,S11,S23,S24,S13};

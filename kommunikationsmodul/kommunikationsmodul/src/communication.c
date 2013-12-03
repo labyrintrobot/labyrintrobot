@@ -170,21 +170,21 @@ void mainfunction() {
 		
 		int twi_rec_err = 0;
 		if (sensor_module_interrupt) {
+			sensor_module_interrupt = false;
 			// Get data from sensor module
 			cli();
 			twi_rec_err = TWI_master_receive_message(TWI_SENSOR_MODULE_ADDRESS, &header, &data);
 			sei();
 			
 			received_data = true;
-			sensor_module_interrupt = false;
 		} else if (control_module_interrupt) {
+			control_module_interrupt = false;
 			// Get data from control module
 			cli();
 			twi_rec_err = TWI_master_receive_message(TWI_CONTROL_MODULE_ADDRESS, &header, &data);
 			sei();
 			
 			received_data = true;
-			control_module_interrupt = false;
 		} else if (firefly_received_data) {
 			
 			cli();

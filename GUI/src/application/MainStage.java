@@ -194,7 +194,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 				}
 
 				if (data.size() != 0) {
-					lineChart.getData().remove(0, data.size());
+					lineChart.getData().remove(0);
 				}
 				lineChart.getData().add(series);
 
@@ -637,7 +637,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 
 		case 0x0A:
 			// Signed
-			updateLineChartData(controlErrorList, (data << 1) >> 1, SelectedToggleButton.CONTROL_ERROR);
+			updateLineChartData(controlErrorList, (byte) data, SelectedToggleButton.CONTROL_ERROR);
 			break;
 
 		case 0x0B:

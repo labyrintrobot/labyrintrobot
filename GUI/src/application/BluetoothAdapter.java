@@ -16,6 +16,7 @@ import javax.microedition.io.StreamConnection;
  */
 public class BluetoothAdapter {
 
+	// true to generate data
 	private static final boolean DEBUG = false;
 
 	private final Object recLock = new Object();

@@ -9,7 +9,7 @@
 
 int TWI_common_initialize(TWI_MODULE_ADDRESS my_address) {
 	
-	const int bitrate = 50;
+	const int bitrate = 100;
 	
 	if (bitrate == 5) {
 		TWBR = 87; // Clockspeed

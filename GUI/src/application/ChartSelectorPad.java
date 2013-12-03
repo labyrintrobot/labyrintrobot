@@ -12,12 +12,20 @@ import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
+/**
+ * A GUI control that allows the user to select which LineChart to display.
+ * @author Emil Berg
+ *
+ */
 public class ChartSelectorPad extends VBox {
 	
 	public interface ToggleCallback {
 		public void callback(SelectedToggleButton stb);
 	}
 	
+	/**
+	 * The different selections that can be made.
+	 */
 	enum SelectedToggleButton {
 		DISTANCE_LEFT_SHORT,
 		DISTANCE_LEFT_LONG,
@@ -115,6 +123,9 @@ public class ChartSelectorPad extends VBox {
 		return b;
 	}
 
+	/**
+	 * @return The type of LineChart that should be used.
+	 */
 	public SelectedToggleButton getSelected() {
 		return map.get(group.getSelectedToggle());
 	}

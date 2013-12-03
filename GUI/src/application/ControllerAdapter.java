@@ -2,6 +2,11 @@ package application;
 
 import java.io.IOException;
 
+/**
+ * An adapter that lets the user control the robot.
+ * @author Emil Berg
+ *
+ */
 public class ControllerAdapter {
 	private boolean rightPressed = false;
 	private boolean upPressed = false;

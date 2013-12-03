@@ -9,6 +9,11 @@ import java.util.Random;
 import javax.microedition.io.Connector;
 import javax.microedition.io.StreamConnection;
 
+/**
+ * Abstraction from the Bluetooth layer.
+ * @author Emil Berg
+ *
+ */
 public class BluetoothAdapter {
 
 	private static final boolean DEBUG = false;
@@ -31,6 +36,9 @@ public class BluetoothAdapter {
 		this.receiver = receiver;
 	}
 
+	/**
+	 * Setups a Bluetooth connection.
+	 */
 	private void setup() throws IOException {
 		if (! DEBUG) {
 			conn = (StreamConnection) Connector.open(this.bluetoothUrl);
@@ -41,12 +49,20 @@ public class BluetoothAdapter {
 		receiver.communicationGained();
 	}
 
+	/**
+	 * Callback class for users of this class.
+	 */
 	public interface IMessageReceiver {
 		public void receiveMessage(int header, int data);
 		public void communicationGained();
 		public void communicationLost();
 	}
 
+	/**
+	 * Sends a message to the Bluetooth server.
+	 * @param header The header byte to send
+	 * @param data The data byte to send
+	 */
 	public void sendMessage(int header, int data) {
 		if (! DEBUG) {
 			int[] b = new int[2];
@@ -63,6 +79,10 @@ public class BluetoothAdapter {
 		}
 	}
 
+	/**
+	 * Blocks until exit() is called. Issues a callback when the connection is lost or a message is received. 
+	 * Tries to reconnect if the connection was lost.
+	 */
 	public void receiveMessages() {
 		while (running) {
 			// Generate fake data if debug
@@ -72,7 +92,6 @@ public class BluetoothAdapter {
 					try {
 						this.setup();
 					} catch (IOException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 				}
@@ -115,10 +134,16 @@ public class BluetoothAdapter {
 		this.teardown();
 	}
 
+	/**
+	 * Stops listening for messages.
+	 */
 	public void exit() {
 		running = false;
 	}
 
+	/**
+	 * Cleanup.
+	 */
 	private void teardown() {
 		if (! DEBUG && isSetup) {
 			try {
@@ -126,13 +151,18 @@ public class BluetoothAdapter {
 				is.close();
 				conn.close();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
 		this.isSetup = false;
 	}
 
+	/**
+	 * 
+	 * @param length The length of the int array.
+	 * @return The received array with the specified length.
+	 * @throws IOException If there was a connection error.
+	 */
 	private int[] receiveMessage(int length) throws IOException {
 		synchronized (recLock) {
 			int[] ret = new int[length];
@@ -148,6 +178,11 @@ public class BluetoothAdapter {
 		}
 	}
 
+	/**
+	 * Sends a message to the server.
+	 * @param message The message to send.
+	 * @throws IOException If there was a connection error.
+	 */
 	private void sendMessageToDevice(int[] message) throws IOException {
 		synchronized (sendLock) {
 			System.out.println("Sent: " + Arrays.toString(message));

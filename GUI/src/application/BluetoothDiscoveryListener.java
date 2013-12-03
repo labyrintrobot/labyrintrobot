@@ -10,6 +10,11 @@ import javax.bluetooth.RemoteDevice;
 import javax.bluetooth.ServiceRecord;
 import javax.bluetooth.UUID;
 
+/**
+ * Used to listen for Bluetooth devices. Currently unused.
+ * @author Emil Berg
+ *
+ */
 public class BluetoothDiscoveryListener implements DiscoveryListener {
 
 	// http://www.almightybuserror.com/2011/09/06/android-to-pc-bluetooth-communication.html

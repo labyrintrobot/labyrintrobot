@@ -6,6 +6,11 @@ import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
+/**
+ * A GUI control that displays what the control module is doing to the user.
+ * @author Emil Berg
+ *
+ */
 public class ControlPad extends VBox {
 
 	final ToggleGroup group;

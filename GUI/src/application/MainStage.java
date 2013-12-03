@@ -30,6 +30,11 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import application.ChartSelectorPad.SelectedToggleButton;
 
+/**
+ * The main stage shown. Currently too big for its own good.
+ * @author Emil Berg
+ *
+ */
 public class MainStage extends Application implements BluetoothAdapter.IMessageReceiver {
 
 	long startTime = System.currentTimeMillis();

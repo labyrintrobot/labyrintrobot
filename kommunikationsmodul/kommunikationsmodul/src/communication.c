@@ -147,9 +147,13 @@ void mainfunction() {
 				USART_transmit(header, data);
 				sei();
 				//
-			}else if(header=0x0D){
-				ping_received=true;
-			} else {
+		}
+		#ifdef
+		else if(header=0x0D){
+			ping_received=true;
+		}
+		#endif
+		else {
 				// Invalid header. Send error message
 				cli();
 				send_error(0x00);
@@ -166,14 +170,16 @@ void mainfunction() {
 			
 			received_data = false;
 		}
+		#ifdef USE_PING
 		else if (ping_state!=0) {
-			#ifdef USE_PING
+			
 			USART_transmit(0x0D , 0x00);
 			if(ping_state==2)
 				TWI_master_send_message(TWI_CONTROL_MODULE_ADDRESS , 0x00 , 0x06);
 			ping_state=0;
-			#endif
+			
 		}
+		#endif
 		
 		int twi_rec_err = 0;
 		if (sensor_module_interrupt) {

@@ -193,9 +193,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 					yAxis.setUpperBound(128);
 				}
 
-				if (data.size() != 0) {
-					lineChart.getData().remove(0);
-				}
+				lineChart.getData().clear();
 				lineChart.getData().add(series);
 
 				Set<Node> lookupAll = lineChart.lookupAll(".series0");

@@ -280,6 +280,12 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 					case Q:
 						controllerAdapter.pressQ();
 						break;
+					case W:
+						controllerAdapter.pressW();
+						break;
+					case E:
+						controllerAdapter.pressE();
+						break;
 					default:
 						// Do nothing
 						break;
@@ -313,6 +319,12 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 						break;
 					case Q:
 						controllerAdapter.releaseQ();
+						break;
+					case W:
+						controllerAdapter.releaseW();
+						break;
+					case E:
+						controllerAdapter.releaseE();
 						break;
 					default:
 						// Do nothing

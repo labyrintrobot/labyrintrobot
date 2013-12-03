@@ -99,7 +99,27 @@ public class ControllerAdapter {
 	}
 
 	public void releaseQ() {
-		// TODO
+		// Do nothing
+	}
+	
+	public void pressW() {
+		final byte header = 0x00;
+		final byte data = 0x05;
+		bluetoothAdapter.sendMessage(header, data);
+	}
+
+	public void releaseW() {
+		// Do nothing
+	}
+	
+	public void pressE() {
+		final byte header = 0x00;
+		final byte data = 0x04;
+		bluetoothAdapter.sendMessage(header, data);
+	}
+
+	public void releaseE() {
+		// Do nothing
 	}
 
 	private void revalidateButtons() throws IOException {

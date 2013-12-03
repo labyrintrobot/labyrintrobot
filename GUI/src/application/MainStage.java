@@ -121,8 +121,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 
 			@Override
 			public void callback(ChartSelectorPad.SelectedToggleButton stb) {
-				GetFromSelRetPair gfsrp = getFromSel(stb);
-				setLineChartData(gfsrp.l, gfsrp.s);
+				updateLineChart();
 			}
 		});
 
@@ -160,7 +159,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 	/**
 	 * Changes LineChart data completely.
 	 */
-	private void setLineChartData(final List<TimeValuePair> data, final String title) {
+	private void setLineChartData(final List<TimeValuePair> data, final String title, final boolean unsigned) {
 		Platform.runLater(new Runnable() {
 
 			@Override
@@ -178,13 +177,24 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 				}
 
 				NumberAxis xAxis = (NumberAxis) lineChart.getXAxis();
+				NumberAxis yAxis = (NumberAxis) lineChart.getYAxis();
 
 				if (data.size() != 0) {
 					xAxis.setLowerBound(data.get(lower).time);
 					xAxis.setUpperBound(data.get(upper - 1).time);
 				}
+				
+				if (unsigned) {
+					yAxis.setLowerBound(0);
+					yAxis.setUpperBound(256);
+				} else {
+					yAxis.setLowerBound(-128);
+					yAxis.setUpperBound(128);
+				}
 
-				lineChart.getData().remove(0, lineChart.getData().size());
+				if (data.size() != 0) {
+					lineChart.getData().remove(0, data.size());
+				}
 				lineChart.getData().add(series);
 
 				Set<Node> lookupAll = lineChart.lookupAll(".series0");
@@ -230,8 +240,9 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 	 * Updates the data for the currently selected LineChart.
 	 */
 	private void updateLineChart() {
-		GetFromSelRetPair gfsrp = getFromSel(chartSelectorPad.getSelected());
-		setLineChartData(gfsrp.l, gfsrp.s);
+		SelectedToggleButton stb = chartSelectorPad.getSelected();
+		GetFromSelStruct gfsrp = getFromSel(stb);
+			setLineChartData(gfsrp.l, gfsrp.s, gfsrp.u);
 	}
 
 	public void start(Stage primaryStage) {
@@ -425,49 +436,59 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 	/**
 	 * Garbage class to return two values
 	 */
-	private static class GetFromSelRetPair {
+	private static class GetFromSelStruct {
+		public boolean u;
 		public String s;
 		public List<TimeValuePair> l;
 	}
 
-	private GetFromSelRetPair getFromSel(ChartSelectorPad.SelectedToggleButton stb) {
+	private GetFromSelStruct getFromSel(ChartSelectorPad.SelectedToggleButton stb) {
 
-		GetFromSelRetPair gfsrp = new GetFromSelRetPair();
+		GetFromSelStruct gfsrp = new GetFromSelStruct();
 
 		switch (stb) {
 		case DISTANCE_LEFT_SHORT:
+			gfsrp.u = true;
 			gfsrp.s = "Distance left, short";
 			gfsrp.l = distanceLeftShortList;
 			break;
 		case DISTANCE_LEFT_LONG:
+			gfsrp.u = true;
 			gfsrp.s = "Distance left, long";
 			gfsrp.l = distanceLeftLongList;
 			break;
 		case DISTANCE_FORWARD_CENTER:
+			gfsrp.u = true;
 			gfsrp.s = "Distance forward, center";
 			gfsrp.l = distanceForwardCenterList;
 			break;
 		case DISTANCE_FORWARD_LEFT:
+			gfsrp.u = true;
 			gfsrp.s = "Distance forward, left";
 			gfsrp.l = distanceForwardLeftList;
 			break;
 		case DISTANCE_FORWARD_RIGHT:
+			gfsrp.u = true;
 			gfsrp.s = "Distance forward, right";
 			gfsrp.l = distanceForwardRightList;
 			break;
 		case DISTANCE_RIGHT_LONG:
+			gfsrp.u = true;
 			gfsrp.s = "Distance right, long";
 			gfsrp.l = distanceRightLongList;
 			break;
 		case DISTANCE_RIGHT_SHORT:
+			gfsrp.u = true;
 			gfsrp.s = "Distance right, short";
 			gfsrp.l = distanceRightShortList;
 			break;
 		case TAPE:
+			gfsrp.u = true;
 			gfsrp.s = "Tape width";
 			gfsrp.l = tapeList;
 			break;
 		case CONTROL_ERROR:
+			gfsrp.u = false;
 			gfsrp.s = "Control error";
 			gfsrp.l = controlErrorList;
 			break;
@@ -604,7 +625,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 			break;
 
 		case 0x0A:
-			updateLineChartData(controlErrorList, data, SelectedToggleButton.CONTROL_ERROR, "Control error");
+			updateLineChartData(controlErrorList, (data << 1) >> 1, SelectedToggleButton.CONTROL_ERROR, "Control error");
 			break;
 
 		case 0x0B:

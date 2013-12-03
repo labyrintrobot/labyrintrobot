@@ -28,7 +28,7 @@ volatile uint8_t firefly_data = 0xFF;
 volatile bool firefly_received_data = false;
 #ifdef USE_PING
 volatile bool ping_received = false;
-volatile uint8_t ping_state;// 0 not timed out, 1 received ping and timed out , 2 not received ping and timed out. 
+volatile uint8_t ping_state = 0;// 0 not timed out, 1 received ping and timed out , 2 not received ping and timed out. 
 #endif
 
 //Firefly interrupt routine
@@ -66,13 +66,10 @@ ISR(INT1_vect) {
 #ifdef USE_PING
 ISR(TIMER0_OVF_vect) {
 	
-	if (!ping_received){
+	if (!ping_received) {
 		ping_state=2;
-		}
-		else{
-			ping_state=1;
-		}
-		
+	} else {
+		ping_state=1;
 	}
 	ping_received = false;
 }
@@ -99,8 +96,8 @@ void enable_irqs() {
 
 void enable_timer() {
 	#ifdef USE_PING
+	TCCR1B = (1<<CS12); // 256 prescaler. 14000000 / 65536 / 256 = 0.8 times per second.
 	TCNT1 = 0x00;
-	TCCR1B = (1<<CS02); // 256 prescaler. 14000000 / 65536 / 256 = 0.8 times per second.
 	#endif
 }
 
@@ -147,13 +144,11 @@ void mainfunction() {
 				USART_transmit(header, data);
 				sei();
 				//
-		}
-		#ifdef
-		else if(header=0x0D){
-			ping_received=true;
-		}
-		#endif
-		else {
+			} else if(header==0x0D) {
+				#ifdef USE_PING
+				ping_received=true;
+				#endif
+			} else {
 				// Invalid header. Send error message
 				cli();
 				send_error(0x00);
@@ -168,15 +163,18 @@ void mainfunction() {
 				sei();
 			}
 			
-			received_data = false;
+		received_data = false;
 		}
 		#ifdef USE_PING
 		else if (ping_state!=0) {
+			ping_state=0;
 			
+			cli();
 			USART_transmit(0x0D , 0x00);
 			if(ping_state==2)
 				TWI_master_send_message(TWI_CONTROL_MODULE_ADDRESS , 0x00 , 0x06);
-			ping_state=0;
+			sei();
+			
 			
 		}
 		#endif

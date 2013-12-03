@@ -28,6 +28,7 @@ volatile uint8_t firefly_data = 0xFF;
 volatile bool firefly_received_data = false;
 #ifdef USE_PING
 volatile bool ping_received = false;
+volatile uint8_t ping_state;// 0 not timed out, 1 received ping and timed out , 2 not received ping and timed out. 
 #endif
 
 //Firefly interrupt routine
@@ -65,15 +66,14 @@ ISR(INT1_vect) {
 #ifdef USE_PING
 ISR(TIMER0_OVF_vect) {
 	
-	if (! ping_received) {
-		// No ping. Send stop to control module.
-		int twi_send_err = TWI_master_send_message(TWI_SENSOR_MODULE_ADDRESS, 0x00, 0x06);
-		if (twi_send_err) {
-			send_error(0x03);
+	if (!ping_received){
+		ping_state=2;
 		}
+		else{
+			ping_state=1;
+		}
+		
 	}
-	// Send new ping
-	USART_transmit(0x0D, 0x00);
 	ping_received = false;
 }
 #endif
@@ -146,10 +146,9 @@ void mainfunction() {
 				cli();
 				USART_transmit(header, data);
 				sei();
-			} else if (header == 0x0D) {
-#ifdef USE_PING
-				ping_received = true;
-#endif
+				//
+			}else if(header=0x0D){
+				ping_received=true;
 			} else {
 				// Invalid header. Send error message
 				cli();
@@ -166,6 +165,14 @@ void mainfunction() {
 			}
 			
 			received_data = false;
+		}
+		else if (ping_state!=0) {
+			#ifdef USE_PING
+			USART_transmit(0x0D , 0x00);
+			if(ping_state==2)
+				TWI_master_send_message(TWI_CONTROL_MODULE_ADDRESS , 0x00 , 0x06);
+			ping_state=0;
+			#endif
 		}
 		
 		int twi_rec_err = 0;

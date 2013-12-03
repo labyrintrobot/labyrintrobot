@@ -35,7 +35,7 @@
 #include <avr/interrupt.h>
 
 //Sensordata 
-uint8_t control_command, left_short_s, right_short_s, left_long_s, right_long_s, 
+uint8_t control_command = 0x06, left_short_s, right_short_s, left_long_s, right_long_s, 
 		forward_left_s, forward_right_s, forward_center_s, tape_value;
 signed e; //reglerfelet
 signed int e_last = 0; //sparade reglerfelet
@@ -94,11 +94,18 @@ int main (void)
 			button = PINA & 0x02; // read PortA, pin 1			
 			//forward(left_short_s*3+0x40);	
 			
+			/*
+			_delay_ms(2000);
+			forward(0xA0);
+			_delay_ms(2000);
+			backward(0xA0);
+			*/
+			
 			_delay_ms(100);
-			forward_regulated();
+			forward_regulated();				
 			if(button != 0) //startar autonomt läge
 			{
-				
+
 				//rotate_left90();
 				//_delay_ms(1000);
 				//rotate_right90();

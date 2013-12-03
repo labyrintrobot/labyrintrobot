@@ -72,13 +72,13 @@ void forward_left()
 {
 	PORTB = 0x03; 
 	OCR1BL = 0xF0; // right side
-	OCR1AL = 0x40; // left side
+	OCR1AL = 0x50; // left side
 }
 
 void forward_right()
 {
 	PORTB = 0x03;
-	OCR1BL = 0x40; // right side
+	OCR1BL = 0x50; // right side
 	OCR1AL = 0xF0; // left side
 }
 

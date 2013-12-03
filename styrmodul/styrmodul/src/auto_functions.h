@@ -72,12 +72,12 @@ void forward_regulated()
 	u = Kp*e + Kd*(e - e_last); //KD-regulator
 	e_last = e;
 	
-	if(u < 0) // turn right
+	if(u > 0) // turn right
 	{
 		OCR1BL = 0x80 - u; //right side
 		OCR1AL = 0x80; // left side
 	}
-	else if(u > 0) // turn left
+	else if(u < 0) // turn left
 	{
 		OCR1BL = 0x80; //right side
 		OCR1AL = 0x80 + u; // left side

@@ -9,6 +9,7 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
@@ -17,6 +18,7 @@ import javafx.scene.Scene;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
+import javafx.scene.chart.XYChart.Data;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
@@ -38,18 +40,28 @@ import application.ChartSelectorPad.SelectedToggleButton;
 public class MainStage extends Application implements BluetoothAdapter.IMessageReceiver {
 
 	long startTime = System.currentTimeMillis();
-
-	private final String BLUETOOTH_URL = "btspp://00066603A696:1;authenticate=true;encrypt=false;master=false";
+	
+	// Maximum data amount to display on a LineChart
+	private static final int MAX_CHART_SIZE = 1000;
+	
+	// Bluetooth string to connect to "our" FireFly
+	private static final String BLUETOOTH_URL = "btspp://00066603A696:1;authenticate=true;encrypt=false;master=false";
+	
+	// Button texts
 	private static final String PAUSE_TEXT = "Pause";
 	private static final String RESUME_TEXT = "Resume";
+	
+	// Adapters and custom controls
 	private final ControllerAdapter controllerAdapter;
 	private final BluetoothAdapter bluetoothAdapter;
 	private final ControlPad controlPad;
 	private final ChartSelectorPad chartSelectorPad;
 
+	// Buttons
 	private final Button pauseButton;
 	private final Button clearButton;
 	
+	// Other controls
 	private final LineChart<Number, Number> lineChart;
 	private final Slider minSlider;
 	private final Slider maxSlider;
@@ -57,8 +69,10 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 	private final Label maxSliderLabel;
 	private final ProgressIndicator progressIndicator;
 
+	// Displays errors and debug messages
 	private final TextArea errorLog;
 
+	// true if the paused button is in paused mode
 	private boolean paused = false;
 
 	private static class TimeValuePair {
@@ -115,6 +129,9 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 		this.errorLog = new TextArea();
 	}
 
+	/**
+	 * Generates a LineChart with given properties.
+	 */
 	private LineChart<Number, Number> generateRealTimeChart(String name, String yAxisText, int maxY) {
 		
 		// Setup
@@ -140,6 +157,9 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 		return lc;
 	}
 
+	/**
+	 * Changes LineChart data completely.
+	 */
 	private void setLineChartData(final List<TimeValuePair> data, final String title) {
 		Platform.runLater(new Runnable() {
 
@@ -175,28 +195,40 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 		});
 	}
 	
-	private void addLineChartData(final TimeValuePair data) {
+	/**
+	 * Adds LineChart data, for effective data insertion.
+	 * @param tvp
+	 */
+	private void addLineChartData(final TimeValuePair tvp) {
 		Platform.runLater(new Runnable() {
 
 			@Override
 			public void run() {
 				XYChart.Series<Number, Number> series = lineChart.getData().get(0);
 
-				series.getData().add(new XYChart.Data<Number, Number>(data.time, data.value));
+				series.getData().add(new XYChart.Data<Number, Number>(tvp.time, tvp.value));
+				ObservableList<Data<Number, Number>> data = series.getData();
 				
-				int lower = (int) (minSlider.getValue() * series.getData().size());
-				int upper = (int) (maxSlider.getValue() * series.getData().size());
+				if (data.size() > MAX_CHART_SIZE) {
+					data.subList(0, data.size() - MAX_CHART_SIZE).clear();
+				}
+				
+				int lower = (int) (minSlider.getValue() * data.size());
+				int upper = (int) (maxSlider.getValue() * data.size());
 				
 				NumberAxis xAxis = (NumberAxis) lineChart.getXAxis();
 
 				if (series.getData().size() != 0) {
-					xAxis.setLowerBound(series.getData().get(lower).getXValue().longValue());
-					xAxis.setUpperBound(series.getData().get(upper - 1).getXValue().longValue());
+					xAxis.setLowerBound(data.get(lower).getXValue().longValue());
+					xAxis.setUpperBound(data.get(upper - 1).getXValue().longValue());
 				}
 			}
 		});
 	}
 	
+	/**
+	 * Updates the data for the currently selected LineChart.
+	 */
 	private void updateLineChart() {
 		GetFromSelRetPair gfsrp = getFromSel(chartSelectorPad.getSelected());
 		setLineChartData(gfsrp.l, gfsrp.s);
@@ -267,6 +299,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 			public void handle(KeyEvent t) {
 				try {
 					switch (t.getCode()) {
+					// Controller press
 					case RIGHT:
 						controllerAdapter.pressRight();
 						break;
@@ -307,6 +340,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 			public void handle(KeyEvent t) {
 				try {
 					switch (t.getCode()) {
+					// Controller release
 					case RIGHT:
 						controllerAdapter.releaseRight();
 						break;
@@ -353,6 +387,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 			}
 		});
 		
+		// Clear the LineChart and log
 		this.clearButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override public void handle(ActionEvent e) {
 				distanceLeftShortList.clear();
@@ -387,6 +422,9 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 		listen();
 	}
 
+	/**
+	 * Garbage class to return two values
+	 */
 	private static class GetFromSelRetPair {
 		public String s;
 		public List<TimeValuePair> l;
@@ -455,6 +493,9 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 		listenerThread.start();
 	}
 
+	/**
+	 * Logs in "terminal"
+	 */
 	private void log(final String text) {
 		Platform.runLater(new Runnable() {
 
@@ -466,14 +507,25 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 		});
 	}
 
+	/**
+	 * Helper function for receiveMessage.
+	 */
 	private void updateLineChartData(List<TimeValuePair> l, int newData, SelectedToggleButton stb, String text) {
 		TimeValuePair tvp = new TimeValuePair((System.currentTimeMillis() - startTime) / 100, newData);
 		l.add(tvp);
-		if (!paused && chartSelectorPad.getSelected() == stb) {
-			addLineChartData(tvp);
+		if (! paused) {
+			if (l.size() > MAX_CHART_SIZE) {
+				l.subList(0, l.size() - MAX_CHART_SIZE).clear();
+			}
+			if (chartSelectorPad.getSelected() == stb) {
+				addLineChartData(tvp);
+			}
 		}
 	}
 
+	/**
+	 * Callback function from BluetoothAdapter
+	 */
 	@Override
 	public void receiveMessage(int header, int data) {
 		switch (header) {
@@ -577,6 +629,9 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 		}
 	}
 
+	/**
+	 * Callback from BluetoothAdapter.
+	 */
 	@Override
 	public void communicationGained() {
 		// Finished
@@ -584,11 +639,15 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 
 			@Override
 			public void run() {
+				// Just to see when there is a Bluetooth connection
 				MainStage.this.progressIndicator.setProgress(1.0);
 			}
 		});
 	}
 
+	/**
+	 * Callback from BluetoothAdapter.
+	 */
 	@Override
 	public void communicationLost() {
 		// Keep "working"

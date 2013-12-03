@@ -106,7 +106,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 		this.pauseButton = new Button(PAUSE_TEXT);
 		this.clearButton = new Button("Clear");
 		
-		this.lineChart = generateRealTimeChart("Forward left, short", "y", 256);
+		this.lineChart = generateRealTimeChart("Forward left, short", "Distance (cm)", 256);
 
 		this.minSlider = new Slider(0.0, 1.0, 0.0);
 		this.maxSlider = new Slider(0.0, 1.0, 1.0);
@@ -159,7 +159,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 	/**
 	 * Changes LineChart data completely.
 	 */
-	private void setLineChartData(final List<TimeValuePair> data, final String title, final boolean unsigned) {
+	private void setLineChartData(final List<TimeValuePair> data, final String title, final boolean unsigned, final String yText) {
 		Platform.runLater(new Runnable() {
 
 			@Override
@@ -184,6 +184,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 					xAxis.setUpperBound(data.get(upper - 1).time);
 				}
 				
+				yAxis.setLabel(yText);
 				if (unsigned) {
 					yAxis.setLowerBound(0);
 					yAxis.setUpperBound(256);
@@ -242,7 +243,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 	private void updateLineChart() {
 		SelectedToggleButton stb = chartSelectorPad.getSelected();
 		GetFromSelStruct gfsrp = getFromSel(stb);
-			setLineChartData(gfsrp.l, gfsrp.s, gfsrp.u);
+		setLineChartData(gfsrp.data, gfsrp.title, gfsrp.unsigned, gfsrp.yText);
 	}
 
 	public void start(Stage primaryStage) {
@@ -437,9 +438,10 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 	 * Garbage class to return two values
 	 */
 	private static class GetFromSelStruct {
-		public boolean u;
-		public String s;
-		public List<TimeValuePair> l;
+		public boolean unsigned;
+		public String title;
+		public String yText;
+		public List<TimeValuePair> data;
 	}
 
 	private GetFromSelStruct getFromSel(ChartSelectorPad.SelectedToggleButton stb) {
@@ -448,49 +450,58 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 
 		switch (stb) {
 		case DISTANCE_LEFT_SHORT:
-			gfsrp.u = true;
-			gfsrp.s = "Distance left, short";
-			gfsrp.l = distanceLeftShortList;
+			gfsrp.unsigned = true;
+			gfsrp.title = "Distance left, short";
+			gfsrp.yText = "Distance (cm)";
+			gfsrp.data = distanceLeftShortList;
 			break;
 		case DISTANCE_LEFT_LONG:
-			gfsrp.u = true;
-			gfsrp.s = "Distance left, long";
-			gfsrp.l = distanceLeftLongList;
+			gfsrp.unsigned = true;
+			gfsrp.title = "Distance left, long";
+			gfsrp.yText = "Distance (cm)";
+			gfsrp.data = distanceLeftLongList;
 			break;
 		case DISTANCE_FORWARD_CENTER:
-			gfsrp.u = true;
-			gfsrp.s = "Distance forward, center";
-			gfsrp.l = distanceForwardCenterList;
+			gfsrp.unsigned = true;
+			gfsrp.title = "Distance forward, center";
+			gfsrp.yText = "Distance (cm)";
+			gfsrp.data = distanceForwardCenterList;
 			break;
 		case DISTANCE_FORWARD_LEFT:
-			gfsrp.u = true;
-			gfsrp.s = "Distance forward, left";
-			gfsrp.l = distanceForwardLeftList;
+			gfsrp.unsigned = true;
+			gfsrp.title = "Distance forward, left";
+			gfsrp.yText = "Distance (cm)";
+			gfsrp.data = distanceForwardLeftList;
 			break;
 		case DISTANCE_FORWARD_RIGHT:
-			gfsrp.u = true;
-			gfsrp.s = "Distance forward, right";
-			gfsrp.l = distanceForwardRightList;
+			gfsrp.unsigned = true;
+			gfsrp.title = "Distance forward, right";
+			gfsrp.yText = "Distance (cm)";
+			gfsrp.data = distanceForwardRightList;
 			break;
 		case DISTANCE_RIGHT_LONG:
-			gfsrp.u = true;
-			gfsrp.s = "Distance right, long";
-			gfsrp.l = distanceRightLongList;
+			gfsrp.unsigned = true;
+			gfsrp.title = "Distance right, long";
+			gfsrp.yText = "Distance (cm)";
+			gfsrp.data = distanceRightLongList;
 			break;
 		case DISTANCE_RIGHT_SHORT:
-			gfsrp.u = true;
-			gfsrp.s = "Distance right, short";
-			gfsrp.l = distanceRightShortList;
+			gfsrp.unsigned = true;
+			gfsrp.title = "Distance right, short";
+			gfsrp.yText = "Distance (cm)";
+			gfsrp.data = distanceRightShortList;
 			break;
 		case TAPE:
-			gfsrp.u = true;
-			gfsrp.s = "Tape width";
-			gfsrp.l = tapeList;
+			gfsrp.unsigned = true;
+			gfsrp.title = "Tape width";
+			gfsrp.yText = "Time spent on tape";
+			gfsrp.data = tapeList;
 			break;
 		case CONTROL_ERROR:
-			gfsrp.u = false;
-			gfsrp.s = "Control error";
-			gfsrp.l = controlErrorList;
+			gfsrp.unsigned = false;
+			gfsrp.title = "Control error";
+			gfsrp.yText = "Control error";
+			gfsrp.data = controlErrorList;
 			break;
 		default:
 			// Should not happen
@@ -531,7 +542,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 	/**
 	 * Helper function for receiveMessage.
 	 */
-	private void updateLineChartData(List<TimeValuePair> l, int newData, SelectedToggleButton stb, String text) {
+	private void updateLineChartData(List<TimeValuePair> l, int newData, SelectedToggleButton stb) {
 		TimeValuePair tvp = new TimeValuePair((System.currentTimeMillis() - startTime) / 100, newData);
 		l.add(tvp);
 		if (! paused) {
@@ -597,39 +608,40 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 			break;
 
 		case 0x03:
-			updateLineChartData(distanceLeftShortList, data, SelectedToggleButton.DISTANCE_LEFT_SHORT, "Distance left, short");
+			updateLineChartData(distanceLeftShortList, data, SelectedToggleButton.DISTANCE_LEFT_SHORT);
 			break;
 
 		case 0x04:
-			updateLineChartData(distanceLeftLongList, data, SelectedToggleButton.DISTANCE_LEFT_LONG, "Distance left, long");
+			updateLineChartData(distanceLeftLongList, data, SelectedToggleButton.DISTANCE_LEFT_LONG);
 			break;
 
 		case 0x05:
-			updateLineChartData(distanceForwardLeftList, data, SelectedToggleButton.DISTANCE_FORWARD_LEFT, "Distance forward left");
+			updateLineChartData(distanceForwardLeftList, data, SelectedToggleButton.DISTANCE_FORWARD_LEFT);
 			break;
 
 		case 0x06:
-			updateLineChartData(distanceForwardCenterList, data, SelectedToggleButton.DISTANCE_FORWARD_CENTER, "Distance forward center");
+			updateLineChartData(distanceForwardCenterList, data, SelectedToggleButton.DISTANCE_FORWARD_CENTER);
 			break;
 
 		case 0x07:
-			updateLineChartData(distanceForwardRightList, data, SelectedToggleButton.DISTANCE_FORWARD_RIGHT, "Distance forward right");
+			updateLineChartData(distanceForwardRightList, data, SelectedToggleButton.DISTANCE_FORWARD_RIGHT);
 			break;
 
 		case 0x08:
-			updateLineChartData(distanceRightLongList, data, SelectedToggleButton.DISTANCE_RIGHT_LONG, "Distance right long");
+			updateLineChartData(distanceRightLongList, data, SelectedToggleButton.DISTANCE_RIGHT_LONG);
 			break;
 
 		case 0x09:
-			updateLineChartData(distanceRightShortList, data, SelectedToggleButton.DISTANCE_RIGHT_SHORT, "Distance right short");
+			updateLineChartData(distanceRightShortList, data, SelectedToggleButton.DISTANCE_RIGHT_SHORT);
 			break;
 
 		case 0x0A:
-			updateLineChartData(controlErrorList, (data << 1) >> 1, SelectedToggleButton.CONTROL_ERROR, "Control error");
+			// Signed
+			updateLineChartData(controlErrorList, (data << 1) >> 1, SelectedToggleButton.CONTROL_ERROR);
 			break;
 
 		case 0x0B:
-			updateLineChartData(tapeList, data, SelectedToggleButton.TAPE, "Tape width");
+			updateLineChartData(tapeList, data, SelectedToggleButton.TAPE);
 			break;
 
 		case 0x0C:

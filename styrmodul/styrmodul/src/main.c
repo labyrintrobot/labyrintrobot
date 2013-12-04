@@ -92,28 +92,32 @@ int main (void)
 		while(switch_ == 0) //autonomt läge
 		{
 			button = PINA & 0x02; // read PortA, pin 1			
-			//forward(left_short_s*3+0x40);	
+
+			// Kommenterat bort en massamassa test //
 			
-			/*
-			_delay_ms(2000);
-			forward(0xA0);
-			_delay_ms(2000);
-			backward(0xA0);
-			*/
-			
-			_delay_ms(100);
-			forward_regulated();				
 			if(button != 0) //startar autonomt läge
 			{
-
-				//rotate_left90();
-				//_delay_ms(1000);
-				//rotate_right90();
-				//get_target();
-
-					
-			
+				/*
+				rotate_left90();
+				_delay_ms(1000);
+				rotate_right90();
+				*/
+				while(1)
+				{
+					while(!intersection_detected(left_long_s, right_long_s))
+					{
+						forward_regulated();
+					}
 				
+					// Kommit till en korsning eller sväng!
+						forward(0x80);
+						_delay_ms(250);
+						stop();
+						_delay_ms(1000);
+						int direction = unmarked_intersection_choice(left_long_s, right_long_s, forward_left_s);
+						turn(direction);
+			
+				}
 				//find start
 				//find goal
 				//grab target

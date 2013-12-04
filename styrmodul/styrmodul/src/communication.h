@@ -81,7 +81,9 @@ ISR(TWI_vect)
 			right_short_s = data_r;
 			break;
 		case regulation_error:
-			e = data_r;
+			e_last = e;
+			int8_t to_signed = data_r; // unsigned till signed
+			e = to_signed;
 			break;
 		case tape_mark:
 			tape_value = data_r;

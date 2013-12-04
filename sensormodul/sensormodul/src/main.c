@@ -1,29 +1,4 @@
-/**
- * \file
- *
- * \brief Empty user application template
- *
- */
 
-/**
- * \mainpage User Application template doxygen documentation
- *
- * \par Empty user application template
- *
- * Bare minimum empty user application template
- *
- * \par Content
- *
- * -# Include the ASF header files (through asf.h)
- * -# Minimal main function that starts with a call to board_init()
- * -# "Insert application code here" comment
- *
- */
-
-/*
- * Include header files for all drivers that have been imported from
- * Atmel Software Framework (ASF).
- */
 #include <asf.h>
 #include <util/delay.h>
 #include <avr/interrupt.h> 
@@ -88,6 +63,7 @@ uint8_t recieve_data;
 
 int main (void)
 {
+<<<<<<< HEAD
 	board_init();		
 	ADCsetup();
 	Int2_setup();		//Enable Extern interrupt INT2
@@ -144,6 +120,24 @@ int main (void)
 		//	PORTB = PORTB ^ 0x01; //Toggle PB0 for test of timer 
 		}		
 	}
+=======
+	board_init();
+	
+//int count = e_resistance(float orig_resistance, float *res_array ){
+	int i= 0, j=0, k=0, n=0;
+	int e12[] = {10, 12, 15, 18, 22, 27, 33, 39, 47, 56, 68, 82};
+	float orig, temp, temp2, temp3, e12_1, e12_2, e12_3;
+	for(i==0; i<11; i++ )
+	{
+		n = e12[i];	
+	}
+		
+
+
+
+k=n;
+	// Insert application code here, after the board has been initialized.
+>>>>>>> Sensormodul
 }
 
 ISR(TWI_vect)

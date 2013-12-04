@@ -23,16 +23,26 @@ ISR(INT2_vect)
 	uint8_t cSREG;
 	cSREG = SREG;
 	
+<<<<<<< HEAD
 	int Angula_Rate, test_nr;
+=======
+	int Angula_Rate;
+>>>>>>> Sensormodul
 	float Angle=0, Degree=0; 
 	styrmodul_interrupt = true;
 	turn_90_done = false;
 	
 
 	TCNT0 = 0;   //set timer to 0 
+<<<<<<< HEAD
 	while(1)
 	{
 		int cnt=0;
+=======
+	while(!turn_90_done)
+	{
+	
+>>>>>>> Sensormodul
 		if(TCNT0 == 255 && !turn_90_done) // This happens every 0.01770833333s
 		{
 			Angula_Rate = SPI_GetRate();
@@ -49,11 +59,14 @@ ISR(INT2_vect)
 		}
 		
 	} // End while
+<<<<<<< HEAD
 //	_delay_ms(100);
 //	PORTB &=(1<<PORTB0);
 	
 	
 	
+=======
+>>>>>>> Sensormodul
 
 	SREG = cSREG;
 } // End ISR INT2
@@ -76,6 +89,7 @@ void do_turn_90(void)
 	
 	while(1)
 	{
+<<<<<<< HEAD
 		_delay_ms(300);
 		PORTB &= ~(1<<PORTB0);
 	
@@ -85,6 +99,21 @@ void do_turn_90(void)
 
 		
 	//	PORTB &= ~(1<<PORTB0);	//BP0 low
+=======
+		_delay_ms(200);
+	
+		_delay_ms(100);
+		//PORTB &= ~(1<<PORTB1);
+	
+	//	PORTB &= ~(1<<PORTB0);
+	//	PORTB = PORTB ^ 0x02;  //Toggle PB1 1.476 MHZ ;))
+		//int test_rate = SPI_GetRate();
+		
+		SPI_GetNullvalue();
+		
+		_delay_ms(200);
+		PORTB &= ~(1<<PORTB0);	//BP0 low
+>>>>>>> Sensormodul
 	
 	
 	

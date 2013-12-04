@@ -28,18 +28,19 @@ volatile uint8_t firefly_data = 0xFF;
 volatile bool firefly_received_data = false;
 #ifdef USE_PING
 volatile bool ping_received = false;
-volatile uint8_t ping_state = 0;// 0 not timed out, 1 received ping and timed out , 2 not received ping and timed out. 
+volatile int32_t ping_counter = 0;//<0 timed out
 #endif
 
 //Firefly interrupt routine
 ISR(USART0_RX_vect) {
+	cli();
 	uint8_t header;
 	uint8_t data;
 	USART_receive(&header, &data);
 	firefly_header = header;
 	firefly_data = data;
-	
 	firefly_received_data = true;
+	sei();
 }
 
 // INT0 interrupts from control module
@@ -62,21 +63,10 @@ ISR(INT1_vect) {
 	SREG = cSREG; // restore
 }
 
-// Timer 1 overflow
-#ifdef USE_PING
-ISR(TIMER0_OVF_vect) {
-	
-	if (!ping_received) {
-		ping_state=2;
-	} else {
-		ping_state=1;
-	}
-	ping_received = false;
-}
-#endif
-
-void send_error(uint8_t error_code) {
+inline void send_error(uint8_t error_code) {
+	cli();
 	USART_transmit(0x0C, error_code);
+	sei();
 }
 
 // Interrupt init
@@ -94,13 +84,6 @@ void enable_irqs() {
 	sei();
 }
 
-void enable_timer() {
-	#ifdef USE_PING
-	TCCR1B = (1<<CS12); // 256 prescaler. 14000000 / 65536 / 256 = 0.8 times per second.
-	TCNT1 = 0x00;
-	#endif
-}
-
 void mainfunction() {
 	
 	uint8_t header, data;
@@ -108,7 +91,6 @@ void mainfunction() {
 	bool received_data = false;
 	
 	enable_irqs();
-	enable_timer();
 	
 	while (true) {
 		
@@ -119,9 +101,9 @@ void mainfunction() {
 			// Send to right instance depending on header
 			if (header == 0x00) {
 				// FireFly is sending control commands. Relay to control module.
-				cli();
+				
 				twi_send_err = TWI_master_send_message(TWI_CONTROL_MODULE_ADDRESS, header, data);
-				sei();
+				
 			} else if (header == 0x01) {
 				// Control module is sending. Relay to firefly
 				cli();
@@ -129,13 +111,11 @@ void mainfunction() {
 				sei();
 			} else if (header == 0x02) {
 				// FireFly is sending a calibration command. Relay to sensor module.
-				cli();
-				twi_send_err = TWI_master_send_message(TWI_SENSOR_MODULE_ADDRESS, header, data);
-				sei();
+				twi_send_err = TWI_master_send_message(TWI_SENSOR_MODULE_ADDRESS, header, data);	
 			} else if (header >= 0x03 && header <= 0x0B) {
 				// Sensor module is sending. Relay to control module and FireFly.
-				cli();
 				twi_send_err = TWI_master_send_message(TWI_CONTROL_MODULE_ADDRESS, header, data);
+				cli();
 				USART_transmit(header, data);
 				sei();
 			} else if (header == 0x0C) {
@@ -150,32 +130,29 @@ void mainfunction() {
 				#endif
 			} else {
 				// Invalid header. Send error message
-				cli();
 				send_error(0x00);
-				sei();
 			}
 			
 			// If there was any error with TWI
 			if (twi_send_err) {
 				// TWI error. Send error message.
-				cli();
 				send_error(0x01);
-				sei();
 			}
 			
 		received_data = false;
 		}
 		#ifdef USE_PING
-		else if (ping_state!=0) {
-			ping_state=0;
+		else if (ping_counter<0) {
+			ping_counter=1<<16;
 			
 			cli();
 			USART_transmit(0x0D , 0x00);
-			if(ping_state==2)
-				TWI_master_send_message(TWI_CONTROL_MODULE_ADDRESS , 0x00 , 0x06);
 			sei();
 			
+			if(!ping_received)
+				TWI_master_send_message(TWI_CONTROL_MODULE_ADDRESS , 0x00 , 0x06);
 			
+			ping_received=0;
 		}
 		#endif
 		
@@ -183,17 +160,13 @@ void mainfunction() {
 		if (sensor_module_interrupt) {
 			sensor_module_interrupt = false;
 			// Get data from sensor module
-			cli();
 			twi_rec_err = TWI_master_receive_message(TWI_SENSOR_MODULE_ADDRESS, &header, &data);
-			sei();
 			
 			received_data = true;
 		} else if (control_module_interrupt) {
 			control_module_interrupt = false;
 			// Get data from control module
-			cli();
 			twi_rec_err = TWI_master_receive_message(TWI_CONTROL_MODULE_ADDRESS, &header, &data);
-			sei();
 			
 			received_data = true;
 		} else if (firefly_received_data) {
@@ -202,16 +175,18 @@ void mainfunction() {
 			header = firefly_header;
 			data = firefly_data;
 			firefly_received_data = false;
+			received_data = true;
 			sei();
 			
-			received_data = true;
 		}
 		if (twi_rec_err) {
 			// TWI error. Send error message.
-			cli();
 			send_error(0x02);
-			sei();
 		}
+		
+		#ifdef USE_PING
+		ping_counter--;
+		#endif
 	}
 }
 

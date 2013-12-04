@@ -20,25 +20,10 @@ import javafx.scene.layout.VBox;
 public class ChartSelectorPad extends VBox {
 	
 	public interface ToggleCallback {
-		public void callback(SelectedToggleButton stb);
+		public void callback();
 	}
 	
-	/**
-	 * The different selections that can be made.
-	 */
-	enum SelectedToggleButton {
-		DISTANCE_LEFT_SHORT,
-		DISTANCE_LEFT_LONG,
-		DISTANCE_FORWARD_LEFT,
-		DISTANCE_FORWARD_CENTER,
-		DISTANCE_FORWARD_RIGHT,
-		DISTANCE_RIGHT_LONG,
-		DISTANCE_RIGHT_SHORT,
-		TAPE,
-		CONTROL_ERROR
-	}
-	
-	private final Map<Toggle, SelectedToggleButton> map;
+	private final Map<Toggle, SelStruct> map;
 
 	final ToggleGroup group;
 
@@ -64,15 +49,15 @@ public class ChartSelectorPad extends VBox {
 		r2.setAlignment(Pos.CENTER);
 		r3.setAlignment(Pos.BOTTOM_CENTER);
 
-		distanceLeftShort = generateButton("1.2");
-		distanceLeftLong = generateButton("2.1");
-		distanceForwardLeft = generateButton("2.2");
-		distanceForwardCenter = generateButton("1.1");
-		distanceForwardRight = generateButton("2.3");
-		distanceRightShort = generateButton("2.4");
-		distanceRightLong = generateButton("1.3");
-		tape = generateButton("Tape");
-		controlError = generateButton("Control error");
+		distanceLeftShort = generateButton(SelStruct.DISTANCE_LEFT_SHORT.getButtonText());
+		distanceLeftLong = generateButton(SelStruct.DISTANCE_LEFT_LONG.getButtonText());
+		distanceForwardLeft = generateButton(SelStruct.DISTANCE_FORWARD_LEFT.getButtonText());
+		distanceForwardCenter = generateButton(SelStruct.DISTANCE_FORWARD_CENTER.getButtonText());
+		distanceForwardRight = generateButton(SelStruct.DISTANCE_FORWARD_RIGHT.getButtonText());
+		distanceRightShort = generateButton(SelStruct.DISTANCE_RIGHT_SHORT.getButtonText());
+		distanceRightLong = generateButton(SelStruct.DISTANCE_RIGHT_LONG.getButtonText());
+		tape = generateButton(SelStruct.TAPE.getButtonText());
+		controlError = generateButton(SelStruct.CONTROL_ERROR.getButtonText());
 
 		group = new ToggleGroup();
 		distanceLeftShort.setToggleGroup(group);
@@ -94,22 +79,22 @@ public class ChartSelectorPad extends VBox {
 		distanceForwardCenter.setSelected(true);
 		
 		map = new HashMap<>();
-		map.put(distanceLeftShort, SelectedToggleButton.DISTANCE_LEFT_SHORT);
-		map.put(distanceLeftLong, SelectedToggleButton.DISTANCE_LEFT_LONG);
-		map.put(distanceForwardLeft, SelectedToggleButton.DISTANCE_FORWARD_LEFT);
-		map.put(distanceForwardCenter, SelectedToggleButton.DISTANCE_FORWARD_CENTER);
-		map.put(distanceForwardRight, SelectedToggleButton.DISTANCE_FORWARD_RIGHT);
-		map.put(distanceRightLong, SelectedToggleButton.DISTANCE_RIGHT_LONG);
-		map.put(distanceRightShort, SelectedToggleButton.DISTANCE_RIGHT_SHORT);
-		map.put(tape, SelectedToggleButton.TAPE);
-		map.put(controlError, SelectedToggleButton.CONTROL_ERROR);
+		map.put(distanceLeftShort, SelStruct.DISTANCE_LEFT_SHORT);
+		map.put(distanceLeftLong, SelStruct.DISTANCE_LEFT_LONG);
+		map.put(distanceForwardLeft, SelStruct.DISTANCE_FORWARD_LEFT);
+		map.put(distanceForwardCenter, SelStruct.DISTANCE_FORWARD_CENTER);
+		map.put(distanceForwardRight, SelStruct.DISTANCE_FORWARD_RIGHT);
+		map.put(distanceRightLong, SelStruct.DISTANCE_RIGHT_LONG);
+		map.put(distanceRightShort, SelStruct.DISTANCE_RIGHT_SHORT);
+		map.put(tape, SelStruct.TAPE);
+		map.put(controlError, SelStruct.CONTROL_ERROR);
 		
 		group.selectedToggleProperty().addListener(new ChangeListener<Toggle>() {
 
 			@Override
 			public void changed(ObservableValue<? extends Toggle> arg0,
 					Toggle arg1, Toggle arg2) {
-				callback.callback(map.get(group.getSelectedToggle()));
+				callback.callback();
 			}
 		});
 	}
@@ -126,7 +111,7 @@ public class ChartSelectorPad extends VBox {
 	/**
 	 * @return The type of LineChart that should be used.
 	 */
-	public SelectedToggleButton getSelected() {
+	public SelStruct getSelected() {
 		return map.get(group.getSelectedToggle());
 	}
 }

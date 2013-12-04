@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import application.SelStruct.TimeValuePair;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
@@ -30,7 +31,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
-import application.ChartSelectorPad.SelectedToggleButton;
 
 /**
  * The main stage shown. Currently too big for its own good.
@@ -74,16 +74,6 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 
 	// true if the paused button is in paused mode
 	private boolean paused = false;
-
-	private static class TimeValuePair {
-		public final long time;
-		public final int value;
-
-		public TimeValuePair(long time, int value) {
-			this.time = time;
-			this.value = value;
-		}
-	}
 
 	private final List<TimeValuePair> distanceLeftShortList = new ArrayList<>();
 	private final List<TimeValuePair> distanceLeftLongList = new ArrayList<>();
@@ -130,7 +120,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 		this.chartSelectorPad = new ChartSelectorPad(new ChartSelectorPad.ToggleCallback() {
 
 			@Override
-			public void callback(ChartSelectorPad.SelectedToggleButton stb) {
+			public void callback() {
 				updateLineChart();
 			}
 		});
@@ -249,7 +239,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 	 * Updates the data for the currently selected LineChart.
 	 */
 	private void updateLineChart() {
-		SelectedToggleButton stb = chartSelectorPad.getSelected();
+		SelStruct stb = chartSelectorPad.getSelected();
 		GetFromSelStruct gfsrp = getFromSel(stb);
 		if (paused) {
 			setLineChartData(gfsrp.pausedData, gfsrp.title, gfsrp.unsigned, gfsrp.yText);
@@ -468,15 +458,15 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 		public List<TimeValuePair> pausedData;
 	}
 
-	private GetFromSelStruct getFromSel(ChartSelectorPad.SelectedToggleButton stb) {
+	private GetFromSelStruct getFromSel(SelStruct stb) {
 
 		GetFromSelStruct gfsrp = new GetFromSelStruct();
 
 		switch (stb) {
 		case DISTANCE_LEFT_SHORT:
-			gfsrp.unsigned = true;
-			gfsrp.title = "Distance left, short";
-			gfsrp.yText = "Distance (cm)";
+			gfsrp.unsigned = stb.isUnsigned();
+			gfsrp.title = stb.getTitle();
+			gfsrp.yText = stb.getyText();
 			gfsrp.data = distanceLeftShortList;
 			gfsrp.pausedData = distanceLeftShortPausedList;
 			break;
@@ -575,11 +565,11 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 	/**
 	 * Helper function for receiveMessage.
 	 */
-	private void updateLineChartData(List<TimeValuePair> l, int newData, SelectedToggleButton stb) {
+	private void updateLineChartData(List<TimeValuePair> l, int newData, SelStruct ss) {
 		TimeValuePair tvp = new TimeValuePair((System.currentTimeMillis() - startTime) / 100, newData);
 		l.add(tvp);
 		if (! paused) {
-			if (chartSelectorPad.getSelected() == stb) {
+			if (chartSelectorPad.getSelected() == ss) {
 				if (l.size() > MAX_CHART_SIZE) {
 					l.subList(0, l.size() - MAX_CHART_SIZE).clear();
 				}
@@ -641,40 +631,40 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 			break;
 
 		case 0x03:
-			updateLineChartData(distanceLeftShortList, data, SelectedToggleButton.DISTANCE_LEFT_SHORT);
+			updateLineChartData(distanceLeftShortList, data, SelStruct.DISTANCE_LEFT_SHORT);
 			break;
 
 		case 0x04:
-			updateLineChartData(distanceLeftLongList, data, SelectedToggleButton.DISTANCE_LEFT_LONG);
+			updateLineChartData(distanceLeftLongList, data, SelStruct.DISTANCE_LEFT_LONG);
 			break;
 
 		case 0x05:
-			updateLineChartData(distanceForwardLeftList, data, SelectedToggleButton.DISTANCE_FORWARD_LEFT);
+			updateLineChartData(distanceForwardLeftList, data, SelStruct.DISTANCE_FORWARD_LEFT);
 			break;
 
 		case 0x06:
-			updateLineChartData(distanceForwardCenterList, data, SelectedToggleButton.DISTANCE_FORWARD_CENTER);
+			updateLineChartData(distanceForwardCenterList, data, SelStruct.DISTANCE_FORWARD_CENTER);
 			break;
 
 		case 0x07:
-			updateLineChartData(distanceForwardRightList, data, SelectedToggleButton.DISTANCE_FORWARD_RIGHT);
+			updateLineChartData(distanceForwardRightList, data, SelStruct.DISTANCE_FORWARD_RIGHT);
 			break;
 
 		case 0x08:
-			updateLineChartData(distanceRightLongList, data, SelectedToggleButton.DISTANCE_RIGHT_LONG);
+			updateLineChartData(distanceRightLongList, data, SelStruct.DISTANCE_RIGHT_LONG);
 			break;
 
 		case 0x09:
-			updateLineChartData(distanceRightShortList, data, SelectedToggleButton.DISTANCE_RIGHT_SHORT);
+			updateLineChartData(distanceRightShortList, data, SelStruct.DISTANCE_RIGHT_SHORT);
 			break;
 
 		case 0x0A:
 			// Signed
-			updateLineChartData(controlErrorList, (byte) data, SelectedToggleButton.CONTROL_ERROR);
+			updateLineChartData(controlErrorList, (byte) data, SelStruct.CONTROL_ERROR);
 			break;
 
 		case 0x0B:
-			updateLineChartData(tapeList, data, SelectedToggleButton.TAPE);
+			updateLineChartData(tapeList, data, SelStruct.TAPE);
 			break;
 
 		case 0x0C:

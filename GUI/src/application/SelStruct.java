@@ -34,11 +34,19 @@ public enum SelStruct {
 	}
 	
 	private final List<TimeValuePair> currentData = new ArrayList<>();
-	private final List<TimeValuePair> pausedData = new ArrayList<>();
+	private List<TimeValuePair> pausedData = new ArrayList<>();
 	private final boolean unsigned;
 	private final String title;
 	private final String yText;
 	private final String buttonText;
+	
+	public void clearData() {
+		this.currentData.clear();
+	}
+	
+	public void savePausedData() {
+		this.pausedData = new ArrayList<>(this.currentData);
+	}
 	
 	public List<TimeValuePair> getCurrentData() {
 		return currentData;

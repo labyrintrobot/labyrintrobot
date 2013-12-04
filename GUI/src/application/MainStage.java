@@ -42,7 +42,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 	long startTime = System.currentTimeMillis();
 	
 	// Maximum data amount to display on a LineChart
-	private static final int MAX_CHART_SIZE = 1000;
+	private static final int MAX_CHART_SIZE = 1200;
 	
 	// Bluetooth string to connect to "our" FireFly
 	private static final String BLUETOOTH_URL = "btspp://00066603A696:1;authenticate=true;encrypt=false;master=false";
@@ -94,6 +94,16 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 	private final List<TimeValuePair> distanceRightShortList = new ArrayList<>();
 	private final List<TimeValuePair> tapeList = new ArrayList<>();
 	private final List<TimeValuePair> controlErrorList = new ArrayList<>();
+	
+	private List<TimeValuePair> distanceLeftShortPausedList = new ArrayList<>();
+	private List<TimeValuePair> distanceLeftLongPausedList = new ArrayList<>();
+	private List<TimeValuePair> distanceForwardLeftPausedList = new ArrayList<>();
+	private List<TimeValuePair> distanceForwardCenterPausedList = new ArrayList<>();
+	private List<TimeValuePair> distanceForwardRightPausedList = new ArrayList<>();
+	private List<TimeValuePair> distanceRightLongPausedList = new ArrayList<>();
+	private List<TimeValuePair> distanceRightShortPausedList = new ArrayList<>();
+	private List<TimeValuePair> tapePausedList = new ArrayList<>();
+	private List<TimeValuePair> controlErrorPausedList = new ArrayList<>();
 
 	public static void main(String[] args) {
 		launch(args);
@@ -241,7 +251,11 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 	private void updateLineChart() {
 		SelectedToggleButton stb = chartSelectorPad.getSelected();
 		GetFromSelStruct gfsrp = getFromSel(stb);
-		setLineChartData(gfsrp.data, gfsrp.title, gfsrp.unsigned, gfsrp.yText);
+		if (paused) {
+			setLineChartData(gfsrp.pausedData, gfsrp.title, gfsrp.unsigned, gfsrp.yText);
+		} else {
+			setLineChartData(gfsrp.data, gfsrp.title, gfsrp.unsigned, gfsrp.yText);
+		}
 	}
 
 	public void start(Stage primaryStage) {
@@ -390,9 +404,20 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 				paused = !paused;
 				if (paused) {
 					pauseButton.setText(RESUME_TEXT);
+					MainStage.this.distanceLeftShortPausedList = new ArrayList<>(MainStage.this.distanceLeftShortList);
+					MainStage.this.distanceLeftLongPausedList = new ArrayList<>(MainStage.this.distanceLeftLongList);
+					MainStage.this.distanceForwardLeftPausedList = new ArrayList<>(MainStage.this.distanceForwardLeftList);
+					MainStage.this.distanceForwardCenterPausedList = new ArrayList<>(MainStage.this.distanceForwardCenterList);
+					MainStage.this.distanceForwardRightPausedList = new ArrayList<>(MainStage.this.distanceForwardRightList);
+					MainStage.this.distanceRightLongPausedList = new ArrayList<>(MainStage.this.distanceRightLongList);
+					MainStage.this.distanceRightShortPausedList = new ArrayList<>(MainStage.this.distanceRightShortList);
+					MainStage.this.tapePausedList = new ArrayList<>(MainStage.this.tapeList);
+					MainStage.this.controlErrorPausedList = new ArrayList<>(MainStage.this.controlErrorList);
 				} else {
 					pauseButton.setText(PAUSE_TEXT);
 					maxSlider.setValue(1.0);
+					
+					updateLineChart();
 				}
 			}
 		});
@@ -440,6 +465,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 		public String title;
 		public String yText;
 		public List<TimeValuePair> data;
+		public List<TimeValuePair> pausedData;
 	}
 
 	private GetFromSelStruct getFromSel(ChartSelectorPad.SelectedToggleButton stb) {
@@ -452,54 +478,63 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 			gfsrp.title = "Distance left, short";
 			gfsrp.yText = "Distance (cm)";
 			gfsrp.data = distanceLeftShortList;
+			gfsrp.pausedData = distanceLeftShortPausedList;
 			break;
 		case DISTANCE_LEFT_LONG:
 			gfsrp.unsigned = true;
 			gfsrp.title = "Distance left, long";
 			gfsrp.yText = "Distance (cm)";
 			gfsrp.data = distanceLeftLongList;
+			gfsrp.pausedData = distanceLeftLongPausedList;
 			break;
 		case DISTANCE_FORWARD_CENTER:
 			gfsrp.unsigned = true;
 			gfsrp.title = "Distance forward, center";
 			gfsrp.yText = "Distance (cm)";
 			gfsrp.data = distanceForwardCenterList;
+			gfsrp.pausedData = distanceForwardCenterPausedList;
 			break;
 		case DISTANCE_FORWARD_LEFT:
 			gfsrp.unsigned = true;
 			gfsrp.title = "Distance forward, left";
 			gfsrp.yText = "Distance (cm)";
 			gfsrp.data = distanceForwardLeftList;
+			gfsrp.pausedData = distanceForwardLeftPausedList;
 			break;
 		case DISTANCE_FORWARD_RIGHT:
 			gfsrp.unsigned = true;
 			gfsrp.title = "Distance forward, right";
 			gfsrp.yText = "Distance (cm)";
 			gfsrp.data = distanceForwardRightList;
+			gfsrp.pausedData = distanceForwardRightPausedList;
 			break;
 		case DISTANCE_RIGHT_LONG:
 			gfsrp.unsigned = true;
 			gfsrp.title = "Distance right, long";
 			gfsrp.yText = "Distance (cm)";
 			gfsrp.data = distanceRightLongList;
+			gfsrp.pausedData = distanceRightLongPausedList;
 			break;
 		case DISTANCE_RIGHT_SHORT:
 			gfsrp.unsigned = true;
 			gfsrp.title = "Distance right, short";
 			gfsrp.yText = "Distance (cm)";
 			gfsrp.data = distanceRightShortList;
+			gfsrp.pausedData = distanceRightShortPausedList;
 			break;
 		case TAPE:
 			gfsrp.unsigned = true;
 			gfsrp.title = "Tape width";
 			gfsrp.yText = "Time spent on tape";
 			gfsrp.data = tapeList;
+			gfsrp.pausedData = tapePausedList;
 			break;
 		case CONTROL_ERROR:
 			gfsrp.unsigned = false;
 			gfsrp.title = "Control error";
 			gfsrp.yText = "Control error";
 			gfsrp.data = controlErrorList;
+			gfsrp.pausedData = controlErrorPausedList;
 			break;
 		default:
 			// Should not happen
@@ -544,10 +579,10 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 		TimeValuePair tvp = new TimeValuePair((System.currentTimeMillis() - startTime) / 100, newData);
 		l.add(tvp);
 		if (! paused) {
-			if (l.size() > MAX_CHART_SIZE) {
-				l.subList(0, l.size() - MAX_CHART_SIZE).clear();
-			}
 			if (chartSelectorPad.getSelected() == stb) {
+				if (l.size() > MAX_CHART_SIZE) {
+					l.subList(0, l.size() - MAX_CHART_SIZE).clear();
+				}
 				addLineChartData(tvp);
 			}
 		}

@@ -3,7 +3,6 @@ package application;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
 import java.util.Random;
 
 import javax.microedition.io.Connector;
@@ -77,6 +76,12 @@ public class BluetoothAdapter {
 					receiver.communicationLost();
 				}
 			}
+		} else {
+			System.out.print("Sent: [0x");
+			System.out.print(header & 0xFF);
+			System.out.print(", 0x");
+			System.out.print(data & 0xFF);
+			System.out.println("]");
 		}
 	}
 
@@ -173,7 +178,11 @@ public class BluetoothAdapter {
 					throw new IOException();
 				}
 			}
-			System.out.println("Received: " + Arrays.toString(ret));
+			System.out.print("Received: [0x");
+			System.out.print(ret[0]);
+			System.out.print(", 0x");
+			System.out.print(ret[1]);
+			System.out.println("]");
 
 			return ret;
 		}
@@ -186,7 +195,11 @@ public class BluetoothAdapter {
 	 */
 	private void sendMessageToDevice(int[] message) throws IOException {
 		synchronized (sendLock) {
-			System.out.println("Sent: " + Arrays.toString(message));
+			System.out.print("Sent: [0x");
+			System.out.print(message[0]);
+			System.out.print(", 0x");
+			System.out.print(message[1]);
+			System.out.println("]");
 			for (int i = 0; i < message.length; i++) {
 				os.write(message[i]);
 			}

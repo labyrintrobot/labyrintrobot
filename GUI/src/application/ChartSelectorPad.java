@@ -101,7 +101,7 @@ public class ChartSelectorPad extends VBox {
 
 	private ToggleButton generateButton(String text) {
 		ToggleButton b = new ToggleButton(text);
-		b.setStyle("-fx-font: 26 arial;");
+		b.setStyle("-fx-font: 20 arial;");
 		
 		setFocusTraversable(false);
 		

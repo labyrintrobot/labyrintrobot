@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
+import application.NumericUpDown.ICallback;
 import application.SelStruct.TimeValuePair;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -73,6 +74,13 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 
 	// true if the paused button is in paused mode
 	private boolean paused = false;
+	
+	// Selecting P in PD regulation
+	private final NumericUpDown pSelector;
+	// Selecting D in PD regulation
+	private final NumericUpDown dSelector;
+	// Selecting robot speed
+	private final NumericUpDown speedSelector;
 
 	public static void main(String[] args) {
 		launch(args);
@@ -103,6 +111,35 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 				updateLineChart();
 			}
 		});
+		
+		final int PD_MAX = 65535;
+		final int SPEED_MAX = 255;
+		
+		this.pSelector = new NumericUpDown("P", new ICallback() {
+			
+			@Override
+			public void valueChanged(int newValue) {
+				MainStage.this.bluetoothAdapter.sendMessage(0x0E, newValue >> 8);
+				MainStage.this.bluetoothAdapter.sendMessage(0x0F, newValue);
+			}
+		}, PD_MAX/2, 0, PD_MAX);
+		
+		this.dSelector = new NumericUpDown("D", new ICallback() {
+			
+			@Override
+			public void valueChanged(int newValue) {
+				MainStage.this.bluetoothAdapter.sendMessage(0x10, newValue >> 8);
+				MainStage.this.bluetoothAdapter.sendMessage(0x11, newValue);
+			}
+		}, PD_MAX/2, 0, PD_MAX);
+		
+		this.speedSelector = new NumericUpDown("Speed", new ICallback() {
+			
+			@Override
+			public void valueChanged(int newValue) {
+				MainStage.this.bluetoothAdapter.sendMessage(0x12, newValue);
+			}
+		}, SPEED_MAX / 2, 0, SPEED_MAX);
 
 		this.errorLog = new TextArea();
 	}
@@ -274,9 +311,9 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 		southBox.setAlignment(Pos.BOTTOM_CENTER);
 		buttonBox.setAlignment(Pos.CENTER);
 		
-		northBox.getChildren().addAll(minSlider, minSliderLabel, maxSliderLabel, maxSlider, buttonBox);
-		buttonBox.getChildren().addAll(progressIndicator, pauseButton, clearButton);
-		southBox.getChildren().addAll(errorLog, controlPad, chartSelectorPad);
+		northBox.getChildren().addAll(this.minSlider, this.minSliderLabel, this.maxSliderLabel, this.maxSlider, buttonBox);
+		buttonBox.getChildren().addAll(this.progressIndicator, this.pauseButton, this.clearButton);
+		southBox.getChildren().addAll(this.errorLog, this.controlPad, this.chartSelectorPad, this.pSelector, this.dSelector, this.speedSelector);
 		
 		BorderPane root = new BorderPane();
 		root.setTop(northBox);

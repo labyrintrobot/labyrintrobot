@@ -95,29 +95,29 @@ void forward_regulated()
 	{
 		PORTB = 0x03;
 		signed u, Kp, Kd;
-		Kp = 2;
+		Kp = 20;
 		Kd = 11; // (Kd = 1) / (deltaT = 0.1)
 		u = Kp*e + Kd*(e - e_last); // Kd-regulator
 	
-		if(u > 0x40) // Max-värde
+		if(u > 0x70) // Max-värde
 		{
-			u = 0x40;
+			u = 0x70;
 		}
-		if(u < -0x40) // Min-värde 
+		if(u < -0x70) // Min-värde 
 		{
-			u = -0x40;
+			u = -0x70;
 		}
 	
 		// Reglera beroende på u 
 		if(u > 0) // turn right
 		{
-			OCR1BL = 0x80 - u; // Right side
-			OCR1AL = 0x80; // left side
+			OCR1BL = 0x80; // Right side
+			OCR1AL = 0x80 + u; // left side
 		}
 		else if(u < 0) // turn left
 		{
-			OCR1BL = 0x80; //right side
-			OCR1AL = 0x80 + u; // Left side
+			OCR1BL = 0x80 - u; //right side
+			OCR1AL = 0x80; // Left side
 		}
 		else if(u == 0) // Don't turn, keep going
 		{

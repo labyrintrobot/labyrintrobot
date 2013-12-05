@@ -99,7 +99,7 @@ void mainfunction() {
 			int twi_send_err = 0;
 			
 			// Send to right instance depending on header
-			if (header == 0x00) {
+			if (header == 0x00 || (header >= 0x0E && header <= 0x12) ) {
 				// FireFly is sending control commands. Relay to control module.
 				
 				twi_send_err = TWI_master_send_message(TWI_CONTROL_MODULE_ADDRESS, header, data);

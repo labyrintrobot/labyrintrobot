@@ -13,16 +13,19 @@ bool goal_detected(int tape_value);
 void get_target(void);
 bool start_detected(void);
 void store_data(uint8_t header, uint8_t data);
+
+// NYYY som kollar om någon tejp har körts över, typ, 
+// kan kanske bara ha en funktion som hittar och avgör vad för tejp det är? 
+// read_tape gör väl inget vettigt egentligen?
+bool tape_detected(int tape); 
 bool read_tape(int tape_value);
+
 void turn(int direction);
 void return_to_start(void);
 void turn_back(int direction);
 
 int		direction_array[50];
 int		i = 0;
-
-
-
 
 
 // Returnerar True när den hittat en korsning eller sväng
@@ -82,12 +85,10 @@ int marked_intersection_choice(int tape, int left_, int forward_, int right_)
 
 
 
-
-
 // Kör framåt i en korridor (labyrinten) med hjälp av PD-reglering
 void forward_regulated()
 {
-	if(forward_center_s < 15) // säkerhetsstannar
+	if(forward_center_s < 15) // Säkerhetsstannar
 	{
 		stop();
 	}
@@ -96,7 +97,7 @@ void forward_regulated()
 		PORTB = 0x03;
 		signed u, Kp, Kd;
 		Kp = 20;
-		Kd = 11; // (Kd = 1) / (deltaT = 0.1)
+		Kd = 1; // (Kd = 1) / (deltaT = 0.1)
 		u = Kp*e + Kd*(e - e_last); // Kd-regulator
 	
 		if(u > 0x70) // Max-värde
@@ -109,31 +110,61 @@ void forward_regulated()
 		}
 	
 		// Reglera beroende på u 
-		if(u > 0) // turn right
+		if(u > 0) // Turn right
 		{
-			OCR1BL = 0x80; // Right side
-			OCR1AL = 0x80 + u; // left side
+			OCR1BL = speed;		// Right side
+			OCR1AL = speed + u; // left side
 		}
-		else if(u < 0) // turn left
+		else if(u < 0) // Turn left
 		{
-			OCR1BL = 0x80 - u; //right side
-			OCR1AL = 0x80; // Left side
+			OCR1BL = speed - u; // Right side
+			OCR1AL = speed;		// Left side
 		}
 		else if(u == 0) // Don't turn, keep going
 		{
-			OCR1BL = 0x80; // Right side
-			OCR1AL = 0x80; // Left side
+			OCR1BL = speed; // Right side
+			OCR1AL = speed; // Left side
 		}
 	}
 }
 
 
+// Detekterar tejpmarkeringar, inte vad det är för slags dock. Det får read_tape göra?
+bool tape_detected(int tape)
+{
+	return (tape > 0); // "Tejptiden" överstiger 0 sek, alltså någon slags tejp
+}
+
+
+
+//-------------------------------------------------------------------------------------
+// Döpa om till "tape_detected" istället???
+// Göra en ny read_tape som returnerar vad det är för slags markering: START, MÅL osv...
+//-------------------------------------------------------------------------------------
+// Läser av tejpen, returnerar true om den hittar en tejp, nollställer sedan tejpen
+// tape = 0x02 = right, tape = 0x01 = left
+bool read_tape(int tape)
+{
+	if(tape == 0x01 || tape == 0x02)
+	{
+		//
+		tape_value = 0x00; // Nollställ senaste tejpavläsningen
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
 
 
 // Returnerar True när den hittat startmarkeringen 
+// START = Två tjocka tejpmarkeringar (TT)
+// En viss tid för smal tejp, och en annan för tjock tejp
+// Beror hastigheten på roboten?
 bool start_detected()
 {
-	return true; // tills vidare
+	return true; // Tills vidare
 }
 
  // Kör framåt tills startmarkeringen hittas
@@ -145,21 +176,7 @@ void find_start()
 	}
 }
 
-// Läser av tejpen
-// tape = 0x02 = right, tape = 0x01 = left
-bool read_tape(int tape)
-{
-	if(tape == 0x01 || tape == 0x02)
-	{
-		//
-		tape_value = 0x00; // Nollställ senaste tejpavläsningen
-		return true;
-	} 
-	else
-	{
-		return false;
-	}
-}
+
 
 // Returnerar True när den hittat målmarkeringen 
 bool goal_detected(int tape)
@@ -182,13 +199,13 @@ void turn(int direction)
 	switch(direction){
 		case 0x00: // turn_left
 			rotate_left90();
-			forward(0xA0);
+			forward(0xA0); 
 			_delay_ms(800); // Kör ut ur korsningen
 			stop();
 			break;
 		case 0x01: // go_forward
 			forward(0xA0);
-			_delay_ms(800); //Kör ut ur korsningen
+			_delay_ms(1000); //Kör ut ur korsningen
 			stop();
 			break;
 		case 0x02: // turn_right

@@ -36,11 +36,17 @@
 
 //Sensordata 
 uint8_t control_command = 0x06, left_short_s, right_short_s, left_long_s, right_long_s, 
-		forward_left_s, forward_right_s, forward_center_s, tape_value;
-signed e; //reglerfelet
-signed int e_last = 0; //sparade reglerfelet
+		forward_left_s, forward_right_s, forward_center_s, tape_value, speed;
 
-//header och data som sänds och tas emot
+//-------- PD-reglering --------//
+uint8_t Kp_msb, Kp_lsb, Kd_msb, Kd_lsb; // Kp & Kd
+// borde e vara satt i början? 
+// annars blir e_last = e då e inte har något specifikt värde
+signed e; // Reglerfelet, 
+signed int e_last = 0; // Det sparade reglerfelet
+
+
+// Header och data som sänds och tas emot
 volatile uint8_t header_s = 0;
 volatile uint8_t data_s = 0;
 volatile uint8_t header_r = 0;
@@ -58,7 +64,7 @@ uint8_t grip_value = 0; // 0 = öppen griparm
 #include "twi_slave.h" // I2C
 
 
-ISR(INT2_vect) //Avbrott från sensormodulen: sluta rotera
+ISR(INT2_vect) //Avbrott från sensormodulen: sluta rotera, gjort 90 grader
 {
 	keep_turning = 0;
 }
@@ -73,35 +79,28 @@ int main (void)
 	pwm_start_L();
 	pwm_start_R();
 	pwm_start_G();
-	sei();
-	//get_target();
+	
+	sei(); // Avbrott
+
 	while(1)
 	{
 
-		switch_ = PINA & 0x01; // read PortA, pin 0
+		switch_ = (PINA & 0x01); // Läs PortA, pinA0
 		
-		while(switch_ != 0) // man
+		while(switch_ != 0) // Manuella läget
 		{	
-			//if(header_r == 0x00)
-			//{
-				manual_action(control_command);
-			//}
-		switch_ = (PINA & 0x01);
+			manual_action(control_command);
+			switch_ = (PINA & 0x01); // Läs PortA, pinA0
 		}
 		
-		while(switch_ == 0) //autonomt läge
+		while(switch_ == 0) // Autonomt läge
 		{
-			button = PINA & 0x02; // read PortA, pin 1			
+			button = PINA & 0x02; // Läs PortA, pinA0		
 
 			// Kommenterat bort en massamassa test //
 			
-			if(button != 0) //startar autonomt läge
+			if(button != 0) // Startar autonomt läge
 			{
-				/*
-				rotate_left90();
-				_delay_ms(1000);
-				rotate_right90();
-				*/
 				while(1)
 				{
 					while(!intersection_detected(left_long_s, right_long_s))
@@ -118,6 +117,8 @@ int main (void)
 						turn(direction);
 			
 				}
+
+				// Lösningshången i en labyrint
 				//find start
 				//find goal
 				//grab target

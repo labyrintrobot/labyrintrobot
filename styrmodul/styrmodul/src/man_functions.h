@@ -100,7 +100,7 @@ void rotate_left90()
 		OCR1BL = 0x80;			// hastighet vänster sida
 		OCR1AL = 0x80;			// hastighet höger sida
 	}
-	stop();
+	control_command = 0x06; // stop
 }
 
 void rotate_right90()
@@ -112,6 +112,8 @@ void rotate_right90()
 	
 	if(switch_ == 0)
 	{
+		
+		
 		send(0x01, 0x04);
 	}
 		
@@ -120,7 +122,7 @@ void rotate_right90()
 		OCR1BL = 0x80;			// hastighet vänster sida
 		OCR1AL = 0x80;			// hastighet höger sida
 	}
-	stop();
+	control_command = 0x06; // stop
 }
 
 void rotate_left()
@@ -151,7 +153,7 @@ void stop()
 
 void grip_on() //grip helt
 {
-	OCR3AL = 0x09; // 0x12 ca 1.25ms, 0x11 1.2ms, 0x07 0.5ms
+	OCR3AL = 0x0A; // 0x12 ca 1.25ms, 0x11 1.2ms, 0x07 0.5ms
 	data_r = 0x06;
 }
 void grip_off() //öppna helt

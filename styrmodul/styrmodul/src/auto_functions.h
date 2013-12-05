@@ -3,10 +3,10 @@
 #define turn_right 0x02;
 #define stay 0x03;
 
+bool intersection_detected(int left, int right);
 int unmarked_intersection_choice(int left_, int right_, int forward_);
 int marked_intersection_choice(int tape, int left_, int forward_, int right_);
 void forward_regulated(void);
-bool intersection_detected(int left, int right);
 void find_start(void);
 void find_goal(void);
 bool goal_detected(int tape_value);
@@ -26,9 +26,9 @@ int		i = 0;
 
 
 // Returnerar True när den hittat en korsning eller sväng
-bool intersection_detected(int left, int right)
+bool intersection_detected(int left_, int right_)
 {
-	return ((left > 90) || (right > 90));
+	return ((left_ > 90) || (right_ > 90));
 }
 
 
@@ -81,41 +81,53 @@ int marked_intersection_choice(int tape, int left_, int forward_, int right_)
 } 
 
 
+
+
+
 // Kör framåt i en korridor (labyrinten) med hjälp av PD-reglering
 void forward_regulated()
 {
-	PORTB = 0x03;
-	signed u, Kp, Kd;
-	Kp = 2;
-	Kd = 8; // (Kd = 1) / (deltaT = 0.1)
-	u = Kp*e + Kd*(e - e_last); // Kd-regulator
+	if(forward_center_s < 15) // säkerhetsstannar
+	{
+		stop();
+	}
+	else
+	{
+		PORTB = 0x03;
+		signed u, Kp, Kd;
+		Kp = 2;
+		Kd = 11; // (Kd = 1) / (deltaT = 0.1)
+		u = Kp*e + Kd*(e - e_last); // Kd-regulator
 	
-	if(u > 0x60) // Max-värde
-	{
-		u = 0x60;
-	}
-	if(u < -0x60) // Min-värde 
-	{
-		u = -0x60;
-	}
+		if(u > 0x40) // Max-värde
+		{
+			u = 0x40;
+		}
+		if(u < -0x40) // Min-värde 
+		{
+			u = -0x40;
+		}
 	
-	// Reglera beroende på u 
-	if(u > 0) // turn right
-	{
-		OCR1BL = 0xA0 - u; // Right side
-		OCR1AL = 0xA0; // left side
-	}
-	else if(u < 0) // turn left
-	{
-		OCR1BL = 0xA0; //right side
-		OCR1AL = 0xA0 + u; // Left side
-	}
-	else if(u == 0) // Don't turn, keep going
-	{
-		OCR1BL = 0xA0; // Right side
-		OCR1AL = 0xA0; // Left side
+		// Reglera beroende på u 
+		if(u > 0) // turn right
+		{
+			OCR1BL = 0x80 - u; // Right side
+			OCR1AL = 0x80; // left side
+		}
+		else if(u < 0) // turn left
+		{
+			OCR1BL = 0x80; //right side
+			OCR1AL = 0x80 + u; // Left side
+		}
+		else if(u == 0) // Don't turn, keep going
+		{
+			OCR1BL = 0x80; // Right side
+			OCR1AL = 0x80; // Left side
+		}
 	}
 }
+
+
 
 
 // Returnerar True när den hittat startmarkeringen 

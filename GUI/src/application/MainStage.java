@@ -111,35 +111,32 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 				updateLineChart();
 			}
 		});
-
-		final int PD_MAX = 65535;
-		final int SPEED_MAX = 255;
+		
+		final int MAX = 255;
 
 		this.pSelector = new NumericUpDown("P", new ICallback() {
 
 			@Override
 			public void valueChanged(int newValue) {
-				MainStage.this.bluetoothAdapter.sendMessage(Header.P_MSB, newValue >> 8);
-				MainStage.this.bluetoothAdapter.sendMessage(Header.P_LSB, newValue);
+				//MainStage.this.bluetoothAdapter.sendMessage(Header.P_LSB, newValue);
 			}
-		}, PD_MAX/2, 0, PD_MAX);
+		}, 10, 0, MAX);
 
 		this.dSelector = new NumericUpDown("D", new ICallback() {
 
 			@Override
 			public void valueChanged(int newValue) {
-				MainStage.this.bluetoothAdapter.sendMessage(Header.D_MSB, newValue >> 8);
-				MainStage.this.bluetoothAdapter.sendMessage(Header.D_LSB, newValue);
+				//MainStage.this.bluetoothAdapter.sendMessage(Header.D_LSB, newValue);
 			}
-		}, PD_MAX/2, 0, PD_MAX);
+		}, 10, 0, MAX);
 
 		this.speedSelector = new NumericUpDown("Speed", new ICallback() {
 
 			@Override
 			public void valueChanged(int newValue) {
-				MainStage.this.bluetoothAdapter.sendMessage(Header.SPEED, newValue);
+				//MainStage.this.bluetoothAdapter.sendMessage(Header.SPEED, newValue);
 			}
-		}, SPEED_MAX / 2, 0, SPEED_MAX);
+		}, MAX / 2, 0, MAX);
 
 		this.errorLog = new TextArea();
 	}
@@ -445,6 +442,10 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 
 		primaryStage.show();
 
+		Thread st = new Thread(new SendThread(this.bluetoothAdapter, pSelector, dSelector, speedSelector));
+		st.setDaemon(true);
+		st.start();
+		
 		listen();
 	}
 

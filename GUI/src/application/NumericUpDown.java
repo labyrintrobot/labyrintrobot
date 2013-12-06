@@ -95,9 +95,21 @@ public class NumericUpDown extends HBox {
 	private void checkText(int oldVal, int newVal) {
 		newVal = Math.max(min, newVal);
 		newVal = Math.min(max, newVal);
+		NumericUpDown.this.textField.setText("" + newVal);
 		if (oldVal != newVal) {
-			NumericUpDown.this.textField.setText(Integer.toString(newVal));
-			callback.valueChanged(Integer.parseInt(NumericUpDown.this.textField.getText()));
+			callback.valueChanged(newVal);
 		}
+	}
+	
+	public int getVal() {
+		int i;
+		try {
+			i = Integer.parseInt(NumericUpDown.this.textField.getText());
+			i = Math.max(min, i);
+			i = Math.min(max, i);
+		} catch (NumberFormatException e) {
+			i = min;
+		}
+		return i;
 	}
 }

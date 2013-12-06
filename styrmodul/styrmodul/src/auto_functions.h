@@ -100,31 +100,31 @@ void forward_regulated()
 		float u, Kp, Kd, P, D;
 		Kp = Kp_lsb;
 		Kd = Kd_lsb;
-		P=Kp*e;
-		P=P/10;
-		D=Kd*(e-e_last);
+		P=Kp*(float)e;
+		P=P/10.0;
+		D=Kd*(float)(e-e_last);
 		u=P+D;
 		//Kp = 2;
 		//Kd = 10; // (Kd = 1) / (deltaT = 0.1)  // Börja med P-delen först....////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		//u = Kp_lsb*e + Kd_lsb*(e - e_last); // Kd-regulator
 	
-		if(u > 0x40) // Max-värde
+		if(u > 64) // Max-värde 0x40
 		{
-			u = 0x40;
+			u = 64;
 		}
-		if(u < -0x40) // Min-värde 
+		if(u < -64) // Min-värde 
 		{
-			u = -0x40;
+			u = -64;
 		}
 	
 		// Reglera beroende på u 
-		if(u > 0) // Turn right
+		if((int)u > 0) // Turn right
 		{
 			
 			//OCR1AL = 0xF0;
 			//OCR1BL = 0xF0 - (float) u / (float) 0x70 * (float) (0xF0 - 0x40);
-			OCR1BL = speed - u;		// Right side
-			OCR1AL = speed + u;	// left side
+			OCR1BL = (speed - u);		// Right side
+			OCR1AL = (speed + u);	// left side
 			
 					
 			/*OCR1BL = speed;		// Right side
@@ -144,13 +144,16 @@ void forward_regulated()
 			}*/
 			
 		}
-		else if(u < 0) // Turn left
+		else if((int)u < 0) // Turn left
 		{
-			OCR1BL = speed - u; // Right side
-			OCR1AL = speed + u;		// Left side
+			OCR1BL = (speed - u);	// Right side
+			OCR1AL = (speed + u);	// left side
+			
+			//OCR1BL = speed - u; // Right side
+			//OCR1AL = speed + u;		// Left side
 		}
 		
-		else if(u == 0) // Don't turn, keep going
+		else // Don't turn, keep going
 		{
 			OCR1BL = speed; // Right side
 			OCR1AL = speed; // Left side

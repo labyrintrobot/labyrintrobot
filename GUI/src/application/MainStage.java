@@ -40,17 +40,17 @@ import javafx.stage.WindowEvent;
 public class MainStage extends Application implements BluetoothAdapter.IMessageReceiver {
 
 	long startTime = System.currentTimeMillis();
-	
+
 	// Maximum data amount to display on a LineChart
 	private static final int MAX_CHART_SIZE = 1200;
-	
+
 	// Bluetooth string to connect to "our" FireFly
 	private static final String BLUETOOTH_URL = "btspp://00066603A696:1;authenticate=true;encrypt=false;master=false";
-	
+
 	// Button texts
 	private static final String PAUSE_TEXT = "Pause";
 	private static final String RESUME_TEXT = "Resume";
-	
+
 	// Adapters and custom controls
 	private final ControllerAdapter controllerAdapter;
 	private final BluetoothAdapter bluetoothAdapter;
@@ -60,7 +60,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 	// Buttons
 	private final Button pauseButton;
 	private final Button clearButton;
-	
+
 	// Other controls
 	private final LineChart<Number, Number> lineChart;
 	private final Slider minSlider;
@@ -74,7 +74,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 
 	// true if the paused button is in paused mode
 	private boolean paused = false;
-	
+
 	// Selecting P in PD regulation
 	private final NumericUpDown pSelector;
 	// Selecting D in PD regulation
@@ -92,7 +92,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 
 		this.pauseButton = new Button(PAUSE_TEXT);
 		this.clearButton = new Button("Clear");
-		
+
 		this.lineChart = generateRealTimeChart(Diagrams.DISTANCE_FORWARD_CENTER);
 
 		this.minSlider = new Slider(0.0, 1.0, 0.0);
@@ -111,33 +111,33 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 				updateLineChart();
 			}
 		});
-		
+
 		final int PD_MAX = 65535;
 		final int SPEED_MAX = 255;
-		
+
 		this.pSelector = new NumericUpDown("P", new ICallback() {
-			
+
 			@Override
 			public void valueChanged(int newValue) {
-				MainStage.this.bluetoothAdapter.sendMessage(0x0E, newValue >> 8);
-				MainStage.this.bluetoothAdapter.sendMessage(0x0F, newValue);
+				MainStage.this.bluetoothAdapter.sendMessage(Header.P_MSB, newValue >> 8);
+				MainStage.this.bluetoothAdapter.sendMessage(Header.P_LSB, newValue);
 			}
 		}, PD_MAX/2, 0, PD_MAX);
-		
+
 		this.dSelector = new NumericUpDown("D", new ICallback() {
-			
+
 			@Override
 			public void valueChanged(int newValue) {
-				MainStage.this.bluetoothAdapter.sendMessage(0x10, newValue >> 8);
-				MainStage.this.bluetoothAdapter.sendMessage(0x11, newValue);
+				MainStage.this.bluetoothAdapter.sendMessage(Header.D_MSB, newValue >> 8);
+				MainStage.this.bluetoothAdapter.sendMessage(Header.D_LSB, newValue);
 			}
 		}, PD_MAX/2, 0, PD_MAX);
-		
+
 		this.speedSelector = new NumericUpDown("Speed", new ICallback() {
-			
+
 			@Override
 			public void valueChanged(int newValue) {
-				MainStage.this.bluetoothAdapter.sendMessage(0x12, newValue);
+				MainStage.this.bluetoothAdapter.sendMessage(Header.SPEED, newValue);
 			}
 		}, SPEED_MAX / 2, 0, SPEED_MAX);
 
@@ -148,7 +148,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 	 * Generates a LineChart with given properties.
 	 */
 	private LineChart<Number, Number> generateRealTimeChart(Diagrams ss) {
-		
+
 		// Setup
 		NumberAxis xAxis = new NumberAxis(0, 100, 100);
 		NumberAxis yAxis = new NumberAxis(ss.getMin(), ss.getMax(), (ss.getMax() - ss.getMin()) / 8);
@@ -199,7 +199,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 					xAxis.setLowerBound(data.get(lower).time);
 					xAxis.setUpperBound(data.get(upper - 1).time);
 				}
-				
+
 				yAxis.setLabel(yText);
 				yAxis.setLowerBound(yMin);
 				yAxis.setUpperBound(yMax);
@@ -215,7 +215,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 			}
 		});
 	}
-	
+
 	/**
 	 * Adds LineChart data, for effective data insertion.
 	 * @param tvp
@@ -229,14 +229,14 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 
 				series.getData().add(new XYChart.Data<Number, Number>(tvp.time, tvp.value));
 				ObservableList<Data<Number, Number>> data = series.getData();
-				
+
 				if (data.size() > MAX_CHART_SIZE) {
 					data.subList(0, data.size() - MAX_CHART_SIZE).clear();
 				}
-				
+
 				int lower = (int) (minSlider.getValue() * data.size());
 				int upper = (int) (maxSlider.getValue() * data.size());
-				
+
 				NumberAxis xAxis = (NumberAxis) lineChart.getXAxis();
 
 				if (series.getData().size() != 0) {
@@ -246,7 +246,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 			}
 		});
 	}
-	
+
 	/**
 	 * Updates the data for the currently selected LineChart.
 	 */
@@ -298,30 +298,30 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 		} else {
 			this.pauseButton.setText(PAUSE_TEXT);
 		}
-		
+
 		VBox northBox = new VBox();
 		HBox southBox = new HBox();
 		HBox buttonBox = new HBox();
 		VBox controlButtonBox = new VBox();
-		
+
 		northBox.setAlignment(Pos.TOP_CENTER);
 		southBox.setAlignment(Pos.BOTTOM_CENTER);
 		buttonBox.setAlignment(Pos.CENTER);
-		
+
 		buttonBox.getChildren().addAll(this.progressIndicator, this.pauseButton, this.clearButton);
 		controlButtonBox.getChildren().addAll(this.pSelector, this.dSelector, this.speedSelector);
 		northBox.getChildren().addAll(this.minSlider, this.minSliderLabel, this.maxSliderLabel, this.maxSlider, buttonBox);
 		southBox.getChildren().addAll(this.errorLog, this.controlPad, this.chartSelectorPad, controlButtonBox);
-		
+
 		BorderPane root = new BorderPane();
 		root.setTop(northBox);
 		root.setBottom(southBox);
 		root.setCenter(this.lineChart);
 		Scene scene = new Scene(root, 1280, 1024);
 		primaryStage.setScene(scene);
-		
+
 		EventHandler<KeyEvent> pressEvent = new EventHandler<KeyEvent>() {
-			
+
 			@Override
 			public void handle(KeyEvent t) {
 				try {
@@ -360,9 +360,9 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 				}
 			}
 		};
-		
+
 		EventHandler<KeyEvent> releaseEvent = new EventHandler<KeyEvent>() {
-			
+
 			@Override
 			public void handle(KeyEvent t) {
 				try {
@@ -401,7 +401,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 				}
 			}
 		};
-		
+
 		this.pauseButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override public void handle(ActionEvent e) {
 				paused = !paused;
@@ -413,38 +413,38 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 				} else {
 					pauseButton.setText(PAUSE_TEXT);
 					maxSlider.setValue(1.0);
-					
+
 					updateLineChart();
 				}
 			}
 		});
-		
+
 		// Clear the LineChart and log
 		this.clearButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override public void handle(ActionEvent e) {
 				for (Diagrams s : Diagrams.values()) {
 					s.clearData();
 				}
-				
+
 				startTime = System.currentTimeMillis();
 				updateLineChart();
 				MainStage.this.errorLog.setText("");
 			}
 		});
-		
+
 		primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
-			
+
 			@Override
 			public void handle(WindowEvent we) {
 				bluetoothAdapter.exit();
 			}
 		});
-		
+
 		primaryStage.addEventFilter(KeyEvent.KEY_PRESSED, pressEvent);
 		primaryStage.addEventFilter(KeyEvent.KEY_RELEASED, releaseEvent);
-		
+
 		primaryStage.show();
-		
+
 		listen();
 	}
 
@@ -496,14 +496,9 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 	 * Callback function from BluetoothAdapter
 	 */
 	@Override
-	public void receiveMessage(int header, int data) {
+	public void receiveMessage(Header header, int data) {
 		switch (header) {
-
-		case 0x00:
-			log("Unexpected header " + Integer.toHexString(header) + ": 0x" + Integer.toHexString(data));
-			break;
-
-		case 0x01:
+		case CONTROL_SIGNAL:
 			switch (data) {
 
 			case 0x00:
@@ -535,66 +530,49 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 				break;
 
 			default:
-				log("Illegal data received for header 0x" + Integer.toHexString(header) + ": 0x" + Integer.toHexString(data));
+				log("Illegal data received for header 0x" + header.name() + ": 0x" + Integer.toHexString(data));
 				break;
 			}
 			break;
-
-		case 0x02:
-			log("Unexpected header " + Integer.toHexString(header) + ": 0x" + Integer.toHexString(data));
-			break;
-
-		case 0x03:
+		case DISTANCE_LEFT_SHORT:
 			updateLineChartData(data, Diagrams.DISTANCE_LEFT_SHORT);
 			break;
-
-		case 0x04:
+		case DISTANCE_LEFT_LONG:
 			updateLineChartData(data, Diagrams.DISTANCE_LEFT_LONG);
 			break;
-
-		case 0x05:
+		case DISTANCE_FORWARD_LEFT:
 			updateLineChartData(data, Diagrams.DISTANCE_FORWARD_LEFT);
 			break;
-
-		case 0x06:
+		case DISTANCE_FORWARD_CENTER:
 			updateLineChartData(data, Diagrams.DISTANCE_FORWARD_CENTER);
 			break;
-
-		case 0x07:
+		case DISTANCE_FORWARD_RIGHT:
 			updateLineChartData(data, Diagrams.DISTANCE_FORWARD_RIGHT);
 			break;
-
-		case 0x08:
+		case DISTANCE_RIGHT_LONG:
 			updateLineChartData(data, Diagrams.DISTANCE_RIGHT_LONG);
 			break;
-
-		case 0x09:
+		case DISTANCE_RIGHT_SHORT:
 			updateLineChartData(data, Diagrams.DISTANCE_RIGHT_SHORT);
 			break;
-
-		case 0x0A:
-			// Signed
-			updateLineChartData((byte) data, Diagrams.CONTROL_ERROR);
+		case CONTROL_ERROR:
+			updateLineChartData(data, Diagrams.CONTROL_ERROR);
 			break;
-
-		case 0x0B:
+		case TAPE:
 			updateLineChartData(data, Diagrams.TAPE);
 			break;
-
-		case 0x0C:
+		case ERROR:
 			log("Error code 0x" + Integer.toHexString(data));
 			break;
-
-		case 0x0D:
+		case PING:
 			if (data != 0x00) {
 				log("Invalid ping data: 0x" + Integer.toHexString(data));
 			}
 			// Ping. Just respond.
 			bluetoothAdapter.sendMessage(header, 0x00);
 			break;
-
 		default:
-			log("Invalid header: 0x" + Integer.toHexString(header) + ", data: 0x" + Integer.toHexString(data));
+			log("Unexpected but valid header: " + header.name());
 			break;
 		}
 	}
@@ -628,5 +606,10 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 				MainStage.this.progressIndicator.setProgress(-1.0);
 			}
 		});
+	}
+
+	@Override
+	public void receiveInvalidMessage(int header, int data) {
+		log("Invalid header 0x" + Integer.toHexString(header) + ": 0x" + Integer.toHexString(data));
 	}
 }

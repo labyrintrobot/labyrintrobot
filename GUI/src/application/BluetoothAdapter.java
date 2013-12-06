@@ -53,7 +53,8 @@ public class BluetoothAdapter {
 	 * Callback class for users of this class.
 	 */
 	public interface IMessageReceiver {
-		public void receiveMessage(int header, int data);
+		public void receiveMessage(Header header, int data);
+		public void receiveInvalidMessage(int header, int data);
 		public void communicationGained();
 		public void communicationLost();
 	}
@@ -63,10 +64,15 @@ public class BluetoothAdapter {
 	 * @param header The header byte to send
 	 * @param data The data byte to send
 	 */
-	public void sendMessage(int header, int data) {
+	public void sendMessage(Header header, int data) {
+		System.out.print("Sent: [");
+		System.out.print(header.name());
+		System.out.print(", 0x");
+		System.out.print(data & 0xFF);
+		System.out.println("]");
 		if (! DEBUG) {
 			int[] b = new int[2];
-			b[0] = header;
+			b[0] = header.getIndex();
 			b[1] = data;
 			if (isSetup) {
 				try {
@@ -76,12 +82,6 @@ public class BluetoothAdapter {
 					receiver.communicationLost();
 				}
 			}
-		} else {
-			System.out.print("Sent: [0x");
-			System.out.print(header & 0xFF);
-			System.out.print(", 0x");
-			System.out.print(data & 0xFF);
-			System.out.println("]");
 		}
 	}
 
@@ -108,21 +108,19 @@ public class BluetoothAdapter {
 					// Do nothing
 				}
 
-				final byte header = (byte)rng.nextInt(0x0C);
-				final int data;
-				if (header == 0x01) {
+				int headerData = (byte)rng.nextInt(0x0E);
+				int data;
+				if (headerData == 0x01) {
 					data = rng.nextInt(0x07);
 				} else {
 					data = rng.nextInt(0xFF);
 				}
-
-				receiver.receiveMessage(header, data);
+				rec(headerData, data);
 			} else {
 				if (isSetup) {
 					try {
 						final int[] ret = receiveMessage(2);
-
-						receiver.receiveMessage(ret[0], ret[1]);
+						rec(ret[0], ret[1]);
 					} catch (IOException e) {
 						this.teardown();
 						receiver.communicationLost();
@@ -134,10 +132,28 @@ public class BluetoothAdapter {
 						this.teardown();
 					}
 				}
-
 			}
 		}
 		this.teardown();
+	}
+	
+	private void rec(int headerData, int data) {
+		Header h = Header.fromInt(headerData);
+		if (h == null) {
+			System.out.print("Received: [0x");
+			System.out.print(headerData);
+			System.out.print(", 0x");
+			System.out.print(data & 0xFF);
+			System.out.println("]");
+			receiver.receiveInvalidMessage(headerData, data);
+		} else {
+			System.out.print("Received: [");
+			System.out.print(h.name());
+			System.out.print(", 0x");
+			System.out.print(data);
+			System.out.println("]");
+			receiver.receiveMessage(h, data);
+		}
 	}
 
 	/**
@@ -178,11 +194,6 @@ public class BluetoothAdapter {
 					throw new IOException();
 				}
 			}
-			System.out.print("Received: [0x");
-			System.out.print(ret[0]);
-			System.out.print(", 0x");
-			System.out.print(ret[1]);
-			System.out.println("]");
 
 			return ret;
 		}
@@ -195,11 +206,6 @@ public class BluetoothAdapter {
 	 */
 	private void sendMessageToDevice(int[] message) throws IOException {
 		synchronized (sendLock) {
-			System.out.print("Sent: [0x");
-			System.out.print(message[0]);
-			System.out.print(", 0x");
-			System.out.print(message[1]);
-			System.out.println("]");
 			for (int i = 0; i < message.length; i++) {
 				os.write(message[i]);
 			}

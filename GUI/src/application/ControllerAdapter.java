@@ -79,10 +79,9 @@ public class ControllerAdapter {
 	}
 
 	public void pressC() throws IOException {
-		final byte header = 0x02;
 		final byte data = 0x00;
 
-		bluetoothAdapter.sendMessage(header, data);
+		bluetoothAdapter.sendMessage(Header.CALIBRATION, data);
 	}
 
 	public void releaseC() {
@@ -90,7 +89,6 @@ public class ControllerAdapter {
 	}
 	
 	public void pressQ() {
-		final byte header = 0x00;
 		final byte data;
 		if (openArm) {
 			System.out.println("Open arm");
@@ -99,7 +97,7 @@ public class ControllerAdapter {
 			System.out.println("Close arm");
 			data = 0x0A;
 		}
-		bluetoothAdapter.sendMessage(header, data);
+		bluetoothAdapter.sendMessage(Header.CONTROL_COMMAND, data);
 		openArm = !openArm;
 	}
 
@@ -108,9 +106,8 @@ public class ControllerAdapter {
 	}
 	
 	public void pressW() {
-		final byte header = 0x00;
 		final byte data = 0x05;
-		bluetoothAdapter.sendMessage(header, data);
+		bluetoothAdapter.sendMessage(Header.CONTROL_COMMAND, data);
 	}
 
 	public void releaseW() {
@@ -118,9 +115,8 @@ public class ControllerAdapter {
 	}
 	
 	public void pressE() {
-		final byte header = 0x00;
 		final byte data = 0x04;
-		bluetoothAdapter.sendMessage(header, data);
+		bluetoothAdapter.sendMessage(Header.CONTROL_COMMAND, data);
 	}
 
 	public void releaseE() {
@@ -128,7 +124,6 @@ public class ControllerAdapter {
 	}
 
 	private void revalidateButtons() throws IOException {
-		final byte header = 0x00;
 		final byte data;
 
 		if (upPressed) {
@@ -162,6 +157,6 @@ public class ControllerAdapter {
 			}
 		}
 
-		bluetoothAdapter.sendMessage(header, data);
+		bluetoothAdapter.sendMessage(Header.CONTROL_COMMAND, data);
 	}
 }

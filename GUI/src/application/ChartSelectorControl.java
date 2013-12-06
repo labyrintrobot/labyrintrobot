@@ -17,13 +17,13 @@ import javafx.scene.layout.VBox;
  * @author Emil Berg
  *
  */
-public class ChartSelectorPad extends VBox {
+public class ChartSelectorControl extends VBox {
 	
 	public interface ToggleCallback {
 		public void callback();
 	}
 	
-	private final Map<Toggle, SelStruct> map;
+	private final Map<Toggle, Diagrams> map;
 
 	final ToggleGroup group;
 
@@ -37,7 +37,7 @@ public class ChartSelectorPad extends VBox {
 	private final ToggleButton tape;
 	private final ToggleButton controlError;
 
-	public ChartSelectorPad(final ToggleCallback callback) {
+	public ChartSelectorControl(final ToggleCallback callback) {
 
 		this.setAlignment(Pos.CENTER);
 
@@ -49,15 +49,15 @@ public class ChartSelectorPad extends VBox {
 		r2.setAlignment(Pos.CENTER);
 		r3.setAlignment(Pos.BOTTOM_CENTER);
 
-		distanceLeftShort = generateButton(SelStruct.DISTANCE_LEFT_SHORT.getButtonText());
-		distanceLeftLong = generateButton(SelStruct.DISTANCE_LEFT_LONG.getButtonText());
-		distanceForwardLeft = generateButton(SelStruct.DISTANCE_FORWARD_LEFT.getButtonText());
-		distanceForwardCenter = generateButton(SelStruct.DISTANCE_FORWARD_CENTER.getButtonText());
-		distanceForwardRight = generateButton(SelStruct.DISTANCE_FORWARD_RIGHT.getButtonText());
-		distanceRightShort = generateButton(SelStruct.DISTANCE_RIGHT_SHORT.getButtonText());
-		distanceRightLong = generateButton(SelStruct.DISTANCE_RIGHT_LONG.getButtonText());
-		tape = generateButton(SelStruct.TAPE.getButtonText());
-		controlError = generateButton(SelStruct.CONTROL_ERROR.getButtonText());
+		distanceLeftShort = generateButton(Diagrams.DISTANCE_LEFT_SHORT.getButtonText());
+		distanceLeftLong = generateButton(Diagrams.DISTANCE_LEFT_LONG.getButtonText());
+		distanceForwardLeft = generateButton(Diagrams.DISTANCE_FORWARD_LEFT.getButtonText());
+		distanceForwardCenter = generateButton(Diagrams.DISTANCE_FORWARD_CENTER.getButtonText());
+		distanceForwardRight = generateButton(Diagrams.DISTANCE_FORWARD_RIGHT.getButtonText());
+		distanceRightShort = generateButton(Diagrams.DISTANCE_RIGHT_SHORT.getButtonText());
+		distanceRightLong = generateButton(Diagrams.DISTANCE_RIGHT_LONG.getButtonText());
+		tape = generateButton(Diagrams.TAPE.getButtonText());
+		controlError = generateButton(Diagrams.CONTROL_ERROR.getButtonText());
 
 		group = new ToggleGroup();
 		distanceLeftShort.setToggleGroup(group);
@@ -79,22 +79,26 @@ public class ChartSelectorPad extends VBox {
 		distanceForwardCenter.setSelected(true);
 		
 		map = new HashMap<>();
-		map.put(distanceLeftShort, SelStruct.DISTANCE_LEFT_SHORT);
-		map.put(distanceLeftLong, SelStruct.DISTANCE_LEFT_LONG);
-		map.put(distanceForwardLeft, SelStruct.DISTANCE_FORWARD_LEFT);
-		map.put(distanceForwardCenter, SelStruct.DISTANCE_FORWARD_CENTER);
-		map.put(distanceForwardRight, SelStruct.DISTANCE_FORWARD_RIGHT);
-		map.put(distanceRightLong, SelStruct.DISTANCE_RIGHT_LONG);
-		map.put(distanceRightShort, SelStruct.DISTANCE_RIGHT_SHORT);
-		map.put(tape, SelStruct.TAPE);
-		map.put(controlError, SelStruct.CONTROL_ERROR);
+		map.put(distanceLeftShort, Diagrams.DISTANCE_LEFT_SHORT);
+		map.put(distanceLeftLong, Diagrams.DISTANCE_LEFT_LONG);
+		map.put(distanceForwardLeft, Diagrams.DISTANCE_FORWARD_LEFT);
+		map.put(distanceForwardCenter, Diagrams.DISTANCE_FORWARD_CENTER);
+		map.put(distanceForwardRight, Diagrams.DISTANCE_FORWARD_RIGHT);
+		map.put(distanceRightLong, Diagrams.DISTANCE_RIGHT_LONG);
+		map.put(distanceRightShort, Diagrams.DISTANCE_RIGHT_SHORT);
+		map.put(tape, Diagrams.TAPE);
+		map.put(controlError, Diagrams.CONTROL_ERROR);
 		
 		group.selectedToggleProperty().addListener(new ChangeListener<Toggle>() {
 
 			@Override
 			public void changed(ObservableValue<? extends Toggle> arg0,
 					Toggle arg1, Toggle arg2) {
-				callback.callback();
+				if (arg2 == null) {
+					arg1.setSelected(true);
+				} else {
+					callback.callback();
+				}
 			}
 		});
 	}
@@ -111,7 +115,7 @@ public class ChartSelectorPad extends VBox {
 	/**
 	 * @return The type of LineChart that should be used.
 	 */
-	public SelStruct getSelected() {
+	public Diagrams getSelected() {
 		return map.get(group.getSelectedToggle());
 	}
 }

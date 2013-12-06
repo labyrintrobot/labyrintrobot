@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 import application.NumericUpDown.ICallback;
-import application.SelStruct.TimeValuePair;
+import application.Diagrams.TimeValuePair;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
@@ -55,7 +55,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 	private final ControllerAdapter controllerAdapter;
 	private final BluetoothAdapter bluetoothAdapter;
 	private final ControlPad controlPad;
-	private final ChartSelectorPad chartSelectorPad;
+	private final ChartSelectorControl chartSelectorPad;
 
 	// Buttons
 	private final Button pauseButton;
@@ -93,7 +93,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 		this.pauseButton = new Button(PAUSE_TEXT);
 		this.clearButton = new Button("Clear");
 		
-		this.lineChart = generateRealTimeChart("Forward left, short", "Distance (cm)", 256);
+		this.lineChart = generateRealTimeChart(Diagrams.DISTANCE_FORWARD_CENTER);
 
 		this.minSlider = new Slider(0.0, 1.0, 0.0);
 		this.maxSlider = new Slider(0.0, 1.0, 1.0);
@@ -104,7 +104,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 
 		this.controllerAdapter = new ControllerAdapter(bluetoothAdapter);
 		this.controlPad = new ControlPad();
-		this.chartSelectorPad = new ChartSelectorPad(new ChartSelectorPad.ToggleCallback() {
+		this.chartSelectorPad = new ChartSelectorControl(new ChartSelectorControl.ToggleCallback() {
 
 			@Override
 			public void callback() {
@@ -147,13 +147,22 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 	/**
 	 * Generates a LineChart with given properties.
 	 */
-	private LineChart<Number, Number> generateRealTimeChart(String name, String yAxisText, int maxY) {
+	private LineChart<Number, Number> generateRealTimeChart(Diagrams ss) {
 		
 		// Setup
 		NumberAxis xAxis = new NumberAxis(0, 100, 10);
-		NumberAxis yAxis = new NumberAxis(0, maxY, maxY/8);
+		int minY;
+		int maxY;
+		if (ss.isUnsigned()) {
+			minY = 0;
+			maxY = 256;
+		} else {
+			minY = -128;
+			maxY = 128;
+		}
+		NumberAxis yAxis = new NumberAxis(minY, maxY, maxY/8);
 		xAxis.setLabel("Time");
-		yAxis.setLabel(yAxisText);
+		yAxis.setLabel(ss.getyText());
 		xAxis.setForceZeroInRange(false);
 
 		LineChart<Number, Number> lc = new LineChart<>(xAxis, yAxis);
@@ -161,7 +170,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 		lc.setAnimated(false);
 		lc.setCreateSymbols(false);
 
-		lc.setTitle(name);
+		lc.setTitle(ss.getTitle());
 		lc.setLegendVisible(false);
 
 		Set<Node> lookupAll = lc.lookupAll(".series0");
@@ -255,7 +264,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 	 * Updates the data for the currently selected LineChart.
 	 */
 	private void updateLineChart() {
-		SelStruct stb = chartSelectorPad.getSelected();
+		Diagrams stb = chartSelectorPad.getSelected();
 		if (paused) {
 			setLineChartData(stb.getPausedData(), stb.getTitle(), stb.isUnsigned(), stb.getyText());
 		} else {
@@ -411,7 +420,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 				paused = !paused;
 				if (paused) {
 					pauseButton.setText(RESUME_TEXT);
-					for (SelStruct s : SelStruct.values()) {
+					for (Diagrams s : Diagrams.values()) {
 						s.savePausedData();
 					}
 				} else {
@@ -426,7 +435,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 		// Clear the LineChart and log
 		this.clearButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override public void handle(ActionEvent e) {
-				for (SelStruct s : SelStruct.values()) {
+				for (Diagrams s : Diagrams.values()) {
 					s.clearData();
 				}
 				
@@ -483,7 +492,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 	/**
 	 * Helper function for receiveMessage.
 	 */
-	private void updateLineChartData(int newData, SelStruct ss) {
+	private void updateLineChartData(int newData, Diagrams ss) {
 		TimeValuePair tvp = new TimeValuePair((System.currentTimeMillis() - startTime) / 100, newData);
 		ss.getCurrentData().add(tvp);
 		if (! paused) {
@@ -549,40 +558,40 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 			break;
 
 		case 0x03:
-			updateLineChartData(data, SelStruct.DISTANCE_LEFT_SHORT);
+			updateLineChartData(data, Diagrams.DISTANCE_LEFT_SHORT);
 			break;
 
 		case 0x04:
-			updateLineChartData(data, SelStruct.DISTANCE_LEFT_LONG);
+			updateLineChartData(data, Diagrams.DISTANCE_LEFT_LONG);
 			break;
 
 		case 0x05:
-			updateLineChartData(data, SelStruct.DISTANCE_FORWARD_LEFT);
+			updateLineChartData(data, Diagrams.DISTANCE_FORWARD_LEFT);
 			break;
 
 		case 0x06:
-			updateLineChartData(data, SelStruct.DISTANCE_FORWARD_CENTER);
+			updateLineChartData(data, Diagrams.DISTANCE_FORWARD_CENTER);
 			break;
 
 		case 0x07:
-			updateLineChartData(data, SelStruct.DISTANCE_FORWARD_RIGHT);
+			updateLineChartData(data, Diagrams.DISTANCE_FORWARD_RIGHT);
 			break;
 
 		case 0x08:
-			updateLineChartData(data, SelStruct.DISTANCE_RIGHT_LONG);
+			updateLineChartData(data, Diagrams.DISTANCE_RIGHT_LONG);
 			break;
 
 		case 0x09:
-			updateLineChartData(data, SelStruct.DISTANCE_RIGHT_SHORT);
+			updateLineChartData(data, Diagrams.DISTANCE_RIGHT_SHORT);
 			break;
 
 		case 0x0A:
 			// Signed
-			updateLineChartData((byte) data, SelStruct.CONTROL_ERROR);
+			updateLineChartData((byte) data, Diagrams.CONTROL_ERROR);
 			break;
 
 		case 0x0B:
-			updateLineChartData(data, SelStruct.TAPE);
+			updateLineChartData(data, Diagrams.TAPE);
 			break;
 
 		case 0x0C:

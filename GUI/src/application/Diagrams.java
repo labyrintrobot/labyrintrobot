@@ -3,7 +3,7 @@ package application;
 import java.util.ArrayList;
 import java.util.List;
 
-public enum SelStruct {
+public enum Diagrams {
 	
 	DISTANCE_LEFT_SHORT (true, "Distance left, short", "Distance (cm)", "1.2"),
 	DISTANCE_LEFT_LONG (true, "Distance left, long", "Distance (cm)", "2.1"),
@@ -13,9 +13,9 @@ public enum SelStruct {
 	DISTANCE_RIGHT_LONG (true, "Distance right, long", "Distance (cm)", "2.4"),
 	DISTANCE_RIGHT_SHORT (true, "Distance right, short", "Distance (cm)", "1.3"),
 	TAPE (true, "Tape", "Time", "Tape"),
-	CONTROL_ERROR (false, "Control error", "y", "Cerr");
+	CONTROL_ERROR (false, "Control error", "Difference", "Cerr");
 	
-	private SelStruct(boolean unsigned, String title, String yText, String buttonText) {
+	private Diagrams(boolean unsigned, String title, String yText, String buttonText) {
 		this.unsigned = unsigned;
 		this.title = title;
 		this.yText = yText;

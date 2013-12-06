@@ -150,17 +150,8 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 	private LineChart<Number, Number> generateRealTimeChart(Diagrams ss) {
 		
 		// Setup
-		NumberAxis xAxis = new NumberAxis(0, 100, 10);
-		int minY;
-		int maxY;
-		if (ss.isUnsigned()) {
-			minY = 0;
-			maxY = 256;
-		} else {
-			minY = -128;
-			maxY = 128;
-		}
-		NumberAxis yAxis = new NumberAxis(minY, maxY, maxY/8);
+		NumberAxis xAxis = new NumberAxis(0, 100, 100);
+		NumberAxis yAxis = new NumberAxis(ss.getMin(), ss.getMax(), (ss.getMax() - ss.getMin()) / 8);
 		xAxis.setLabel("Time");
 		yAxis.setLabel(ss.getyText());
 		xAxis.setForceZeroInRange(false);
@@ -184,7 +175,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 	/**
 	 * Changes LineChart data completely.
 	 */
-	private void setLineChartData(final List<TimeValuePair> data, final String title, final boolean unsigned, final String yText) {
+	private void setLineChartData(final List<TimeValuePair> data, final String title, final int yMin, final int yMax, final String yText) {
 		Platform.runLater(new Runnable() {
 
 			@Override
@@ -210,13 +201,9 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 				}
 				
 				yAxis.setLabel(yText);
-				if (unsigned) {
-					yAxis.setLowerBound(0);
-					yAxis.setUpperBound(256);
-				} else {
-					yAxis.setLowerBound(-128);
-					yAxis.setUpperBound(128);
-				}
+				yAxis.setLowerBound(yMin);
+				yAxis.setUpperBound(yMax);
+				yAxis.setTickUnit((yMax - yMin) / 8);
 
 				lineChart.getData().clear();
 				lineChart.getData().add(series);
@@ -266,9 +253,9 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 	private void updateLineChart() {
 		Diagrams stb = chartSelectorPad.getSelected();
 		if (paused) {
-			setLineChartData(stb.getPausedData(), stb.getTitle(), stb.isUnsigned(), stb.getyText());
+			setLineChartData(stb.getPausedData(), stb.getTitle(), stb.getMin(), stb.getMax(), stb.getyText());
 		} else {
-			setLineChartData(stb.getCurrentData(), stb.getTitle(), stb.isUnsigned(), stb.getyText());
+			setLineChartData(stb.getCurrentData(), stb.getTitle(), stb.getMin(), stb.getMax(), stb.getyText());
 		}
 	}
 

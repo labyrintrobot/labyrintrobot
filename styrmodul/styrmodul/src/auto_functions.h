@@ -26,6 +26,8 @@ void turn_back(int direction);
 
 int		direction_array[50];
 int		i = 0;
+uint8_t test_speed = 0x70;
+
 
 
 // Returnerar True när den hittat en korsning eller sväng
@@ -88,38 +90,66 @@ int marked_intersection_choice(int tape, int left_, int forward_, int right_)
 // Kör framåt i en korridor (labyrinten) med hjälp av PD-reglering
 void forward_regulated()
 {
-	if(forward_center_s < 15) // Säkerhetsstannar
+	if(forward_center_s < 25) // Säkerhetsstannar
 	{
 		stop();
 	}
 	else
 	{
 		PORTB = 0x03;
-		signed u, Kp, Kd;
-		Kp = 20;
-		Kd = 1; // (Kd = 1) / (deltaT = 0.1)
-		u = Kp*e + Kd*(e - e_last); // Kd-regulator
+		float u, Kp, Kd, P, D;
+		Kp = Kp_lsb;
+		Kd = Kd_lsb;
+		P=Kp*e;
+		P=P/10;
+		D=Kd*(e-e_last);
+		u=P+D;
+		//Kp = 2;
+		//Kd = 10; // (Kd = 1) / (deltaT = 0.1)  // Börja med P-delen först....////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//u = Kp_lsb*e + Kd_lsb*(e - e_last); // Kd-regulator
 	
-		if(u > 0x70) // Max-värde
+		if(u > 0x40) // Max-värde
 		{
-			u = 0x70;
+			u = 0x40;
 		}
-		if(u < -0x70) // Min-värde 
+		if(u < -0x40) // Min-värde 
 		{
-			u = -0x70;
+			u = -0x40;
 		}
 	
 		// Reglera beroende på u 
 		if(u > 0) // Turn right
 		{
-			OCR1BL = speed;		// Right side
-			OCR1AL = speed + u; // left side
+			
+			//OCR1AL = 0xF0;
+			//OCR1BL = 0xF0 - (float) u / (float) 0x70 * (float) (0xF0 - 0x40);
+			OCR1BL = speed - u;		// Right side
+			OCR1AL = speed + u;	// left side
+			
+					
+			/*OCR1BL = speed;		// Right side
+			
+			int diff = (int) speed + u - 0xF0;
+			if (diff > 0) {
+				OCR1BL = speed - (uint8_t) diff;
+				OCR1AL = 0xF0;
+			} else {
+				OCR1BL = speed;
+				OCR1AL = speed + u;
+			}
+			if ((int) speed + u > 255) {
+				OCR1AL = 255; // left side
+			} else {
+				OCR1AL = speed + u; // left side
+			}*/
+			
 		}
 		else if(u < 0) // Turn left
 		{
 			OCR1BL = speed - u; // Right side
-			OCR1AL = speed;		// Left side
+			OCR1AL = speed + u;		// Left side
 		}
+		
 		else if(u == 0) // Don't turn, keep going
 		{
 			OCR1BL = speed; // Right side

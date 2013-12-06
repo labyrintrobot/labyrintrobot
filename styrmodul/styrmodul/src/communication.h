@@ -27,13 +27,11 @@ enum header_t
 	right_short_sensor = 0x09,
 	regulation_error = 0x0A,
 	tape_mark = 0x0B,
-	reg_speed = 0x12
-	
-	// PD-regleringsdata
-	// P_msb = 0x0E,
-	// P_lsb = 0x0F,
-	// D_msb = 0x10,
-	// D_lsb = 0x11
+	P_msb = 0x0E,
+	P_lsb = 0x0F,
+	D_msb = 0x10,
+	D_lsb = 0x11,
+    reg_speed = 0x12
 };
 
 
@@ -95,7 +93,7 @@ ISR(TWI_vect)
 		case tape_mark:
 			tape_value = data_r;
 			break;
-		/*// PD-regleringsdata
+		// PD-regleringsdata
 		case P_msb:
 			Kp_msb = data_r;
 			break;
@@ -108,7 +106,7 @@ ISR(TWI_vect)
 		case D_lsb:
 			Kd_lsb = data_r;
 			break;
-		*/
+		
 		case reg_speed:
 			speed = data_r;
 			break;

@@ -36,13 +36,11 @@
 
 //Sensordata 
 uint8_t control_command = 0x06, left_short_s, right_short_s, left_long_s, right_long_s, 
-		forward_left_s, forward_right_s, forward_center_s, tape_value, speed;
+		forward_left_s, forward_right_s, forward_center_s, tape_value, speed = 0x7F;
 
 //-------- PD-reglering --------//
-uint8_t Kp_msb, Kp_lsb, Kd_msb, Kd_lsb; // Kp & Kd
-// borde e vara satt i början? 
-// annars blir e_last = e då e inte har något specifikt värde
-signed e; // Reglerfelet, 
+uint8_t Kp_msb, Kp_lsb = 10, Kd_msb, Kd_lsb = 5; // Kp & Kd
+signed e = 0; // Reglerfelet, 
 signed int e_last = 0; // Det sparade reglerfelet
 
 
@@ -81,7 +79,10 @@ int main (void)
 	pwm_start_G();
 	
 	sei(); // Avbrott
-
+//uint8_t test2 = 0;
+//float test = 25;
+//test = test/10;
+//test2 = test; 
 	while(1)
 	{
 
@@ -103,11 +104,13 @@ int main (void)
 			{
 				while(1)
 				{
-					while(!intersection_detected(left_long_s, right_long_s))
+					forward_regulated();
+					/*while(!intersection_detected(left_long_s, right_long_s))
 					{
 						forward_regulated();
 					}
-				
+					
+					
 					// Kommit till en korsning eller sväng!
 						forward(0x80);
 						_delay_ms(250);
@@ -115,7 +118,7 @@ int main (void)
 						_delay_ms(1000);
 						int direction = unmarked_intersection_choice(left_long_s, right_long_s, forward_left_s);
 						turn(direction);
-			
+					*/ 
 				}
 
 				// Lösningshången i en labyrint

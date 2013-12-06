@@ -97,9 +97,6 @@ void forward_left() // int speed_
 	PORTB = 0x03; 
 	OCR1BL = 0xF0; // right side
 	OCR1AL = 0x50; // left side
-	// kanske använda globala speed:
-	// OCR1BL = speed; // right side
-	// OCR1AL = speed/2; // left side
 }
 
 void forward_right()
@@ -171,11 +168,11 @@ void stop()
 	PORTB = 0x00;	// hjulens rotationsriktning (stilla)
 	OCR1BL = 0x00;	// vänster sida
 	OCR1AL = 0x00;	// höger sida
-	
+/*	
 	if(switch_ == 0)
 	{
 		send(0x01, 0x06);
-	}
+	}*/
 }
 
 void grip_on() // stäng så att roboten kan hålla i en festis (lite för hårt nu)

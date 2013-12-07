@@ -3,6 +3,9 @@ package application;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Random;
 
 import javax.microedition.io.Connector;
@@ -17,6 +20,8 @@ public class BluetoothAdapter {
 
 	// true to generate data
 	private static final boolean DEBUG = false;
+	
+	private static final DateFormat hourMinuteSecond = new SimpleDateFormat("HH:mm:ss");
 
 	private final Object recLock = new Object();
 	private final Object sendLock = new Object();
@@ -65,7 +70,8 @@ public class BluetoothAdapter {
 	 * @param data The data byte to send
 	 */
 	public void sendMessage(Header header, int data) {
-		System.out.print("Sent: [");
+		System.out.print(hourMinuteSecond.format(new Date()));
+		System.out.print(": Sent: [");
 		System.out.print(header.name());
 		System.out.print(", 0x");
 		System.out.print(data & 0xFF);
@@ -103,7 +109,7 @@ public class BluetoothAdapter {
 				}
 				
 				try {
-					Thread.sleep(100);
+					Thread.sleep(10);
 				} catch (InterruptedException e) {
 					// Do nothing
 				}
@@ -139,15 +145,16 @@ public class BluetoothAdapter {
 	
 	private void rec(int headerData, int data) {
 		Header h = Header.fromInt(headerData);
+		System.out.print(hourMinuteSecond.format(new Date()));
 		if (h == null) {
-			System.out.print("Received: [0x");
+			System.out.print(": Received: [0x");
 			System.out.print(headerData);
 			System.out.print(", 0x");
 			System.out.print(data & 0xFF);
 			System.out.println("]");
 			receiver.receiveInvalidMessage(headerData, data);
 		} else {
-			System.out.print("Received: [");
+			System.out.print(": Received: [");
 			System.out.print(h.name());
 			System.out.print(", 0x");
 			System.out.print(data);

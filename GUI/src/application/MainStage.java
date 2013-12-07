@@ -1,6 +1,9 @@
 package application;
 
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -46,6 +49,8 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 
 	// Bluetooth string to connect to "our" FireFly
 	private static final String BLUETOOTH_URL = "btspp://00066603A696:1;authenticate=true;encrypt=false;master=false";
+	
+	private static final DateFormat hourMinuteSecond = new SimpleDateFormat("HH:mm:ss");
 
 	// Button texts
 	private static final String PAUSE_TEXT = "Pause";
@@ -468,11 +473,17 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 	 * Logs in "terminal"
 	 */
 	private void log(final String text) {
+		final StringBuilder sb = new StringBuilder();
+		sb.append(errorLog.getText());
+		sb.append(hourMinuteSecond.format(new Date()));
+		sb.append(": ");
+		sb.append(text);
+		sb.append('\n');
 		Platform.runLater(new Runnable() {
 
 			@Override
 			public void run() {
-				MainStage.this.errorLog.setText(MainStage.this.errorLog.getText() + text + '\n');
+				MainStage.this.errorLog.setText(sb.toString());
 				MainStage.this.errorLog.positionCaret(MainStage.this.errorLog.getText().length()); // Scroll to end
 			}
 		});
@@ -532,7 +543,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 				break;
 
 			default:
-				log("Illegal data received for header " + header.name() + ": 0x" + Integer.toHexString(data));
+				log("Illegal header or data received for " + header.name() + ": 0x" + Integer.toHexString(data));
 				break;
 			}
 			break;
@@ -574,7 +585,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 			bluetoothAdapter.sendMessage(header, 0x00);
 			break;
 		default:
-			log("Unexpected but valid header: " + header.name());
+			log("Unexpected but valid header received: " + header.name());
 			break;
 		}
 	}

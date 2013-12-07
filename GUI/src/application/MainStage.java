@@ -460,6 +460,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 
 			@Override
 			public void run() {
+				bluetoothAdapter.setup();
 				bluetoothAdapter.receiveMessages();
 			}
 

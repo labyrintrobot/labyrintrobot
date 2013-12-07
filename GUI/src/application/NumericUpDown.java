@@ -19,7 +19,6 @@ public class NumericUpDown extends HBox {
 	
 	private final Label label;
 	private final VBox rightBox;
-	private final VBox leftBox;
 	private final Button up;
 	private final Button down;
 	private final TextField textField;
@@ -28,7 +27,7 @@ public class NumericUpDown extends HBox {
 		public void valueChanged(int newValue);
 	}
 	
-	public NumericUpDown(String title, final ICallback callback, int value, final int min, final int max) {
+	public NumericUpDown(String text, final ICallback callback, int value, final int min, final int max) {
 		
 		if (value < min || value > max) {
 			throw new IllegalArgumentException();
@@ -38,23 +37,20 @@ public class NumericUpDown extends HBox {
 		this.min = min;
 		this.max = max;
 		
-		this.leftBox = new VBox();
 		this.rightBox = new VBox();
 		
+		this.textField = new TextField(Integer.toString(value));
 		this.up = new Button("↑");
 		this.down = new Button("↓");
 		
-		this.label = new Label(title);
-		//this.label.textAlignmentProperty().set(TextAlignment.CENTER);
-		this.textField = new TextField(Integer.toString(value));
-		//this.textField.setEditable(false);
+		this.label = new Label(text);
+		this.label.setMinWidth(42);
 		this.textField.setAlignment(Pos.CENTER_LEFT);
 		
-		this.leftBox.getChildren().addAll(this.label, this.textField);
 		this.rightBox.getChildren().addAll(up, down);
 		this.textField.setAlignment(Pos.CENTER_RIGHT);
 		
-		this.getChildren().addAll(this.leftBox, this.rightBox);
+		this.getChildren().addAll(this.label, this.textField, this.rightBox);
 		
 		this.textField.textProperty().addListener(new ChangeListener<String>() {
 
@@ -95,7 +91,7 @@ public class NumericUpDown extends HBox {
 	private void checkText(int oldVal, int newVal) {
 		newVal = Math.max(min, newVal);
 		newVal = Math.min(max, newVal);
-		NumericUpDown.this.textField.setText("" + newVal);
+		NumericUpDown.this.textField.setText(Integer.toString(newVal));
 		if (oldVal != newVal) {
 			callback.valueChanged(newVal);
 		}

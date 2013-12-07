@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Set;
 
 import application.NumericUpDown.ICallback;
-import application.Diagrams.TimeValuePair;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
@@ -13,6 +12,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -114,7 +114,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 		
 		final int MAX = 255;
 
-		this.pSelector = new NumericUpDown("P", new ICallback() {
+		this.pSelector = new NumericUpDown("P:", new ICallback() {
 
 			@Override
 			public void valueChanged(int newValue) {
@@ -122,7 +122,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 			}
 		}, 10, 0, MAX);
 
-		this.dSelector = new NumericUpDown("D", new ICallback() {
+		this.dSelector = new NumericUpDown("D:", new ICallback() {
 
 			@Override
 			public void valueChanged(int newValue) {
@@ -130,7 +130,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 			}
 		}, 10, 0, MAX);
 
-		this.speedSelector = new NumericUpDown("Speed", new ICallback() {
+		this.speedSelector = new NumericUpDown("Speed:", new ICallback() {
 
 			@Override
 			public void valueChanged(int newValue) {
@@ -172,7 +172,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 	/**
 	 * Changes LineChart data completely.
 	 */
-	private void setLineChartData(final List<TimeValuePair> data, final String title, final int yMin, final int yMax, final String yText) {
+	private void setLineChartData(final List<XYChart.Data<Number, Number>> data, final String title, final int yMin, final int yMax, final String yText) {
 		Platform.runLater(new Runnable() {
 
 			@Override
@@ -184,17 +184,14 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 				int lower = (int) (minSlider.getValue() * data.size());
 				int upper = (int) (maxSlider.getValue() * data.size());
 
-				for (int i = lower; i < upper; i++) {
-					TimeValuePair tvp = data.get(i);
-					series.getData().add(new XYChart.Data<Number, Number>(tvp.time, tvp.value));
-				}
+				series.getData().addAll(data.subList(lower, upper));
 
 				NumberAxis xAxis = (NumberAxis) lineChart.getXAxis();
 				NumberAxis yAxis = (NumberAxis) lineChart.getYAxis();
 
 				if (data.size() != 0) {
-					xAxis.setLowerBound(data.get(lower).time);
-					xAxis.setUpperBound(data.get(upper - 1).time);
+					xAxis.setLowerBound(data.get(lower).getXValue().doubleValue());
+					xAxis.setUpperBound(data.get(upper - 1).getXValue().doubleValue());
 				}
 
 				yAxis.setLabel(yText);
@@ -217,14 +214,14 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 	 * Adds LineChart data, for effective data insertion.
 	 * @param tvp
 	 */
-	private void addLineChartData(final TimeValuePair tvp) {
+	private void addLineChartData(final XYChart.Data<Number, Number> newData) {
 		Platform.runLater(new Runnable() {
 
 			@Override
 			public void run() {
 				XYChart.Series<Number, Number> series = lineChart.getData().get(0);
 
-				series.getData().add(new XYChart.Data<Number, Number>(tvp.time, tvp.value));
+				series.getData().add(newData);
 				ObservableList<Data<Number, Number>> data = series.getData();
 
 				if (data.size() > MAX_CHART_SIZE) {
@@ -305,10 +302,14 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 		southBox.setAlignment(Pos.BOTTOM_CENTER);
 		buttonBox.setAlignment(Pos.CENTER);
 
-		buttonBox.getChildren().addAll(this.progressIndicator, this.pauseButton, this.clearButton);
+		buttonBox.getChildren().addAll(this.pauseButton,this.progressIndicator, this.clearButton);
 		controlButtonBox.getChildren().addAll(this.pSelector, this.dSelector, this.speedSelector);
-		northBox.getChildren().addAll(this.minSlider, this.minSliderLabel, this.maxSliderLabel, this.maxSlider, buttonBox);
+		northBox.getChildren().addAll(buttonBox, this.minSlider, this.minSliderLabel, this.maxSlider, this.maxSliderLabel);
 		southBox.getChildren().addAll(this.errorLog, this.controlPad, this.chartSelectorPad, controlButtonBox);
+		
+		buttonBox.setSpacing(16);
+		southBox.setSpacing(16);
+		northBox.setPadding(new Insets(16));
 
 		BorderPane root = new BorderPane();
 		root.setTop(northBox);
@@ -481,14 +482,14 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 	 * Helper function for receiveMessage.
 	 */
 	private void updateLineChartData(int newData, Diagrams ss) {
-		TimeValuePair tvp = new TimeValuePair((System.currentTimeMillis() - startTime) / 100, newData);
-		ss.getCurrentData().add(tvp);
+		XYChart.Data<Number, Number> data = new XYChart.Data<Number, Number>((System.currentTimeMillis() - startTime) / 100, newData);
+		ss.getCurrentData().add(data);
 		if (! paused) {
 			if (chartSelectorPad.getSelected() == ss) {
 				if (ss.getCurrentData().size() > MAX_CHART_SIZE) {
 					ss.getCurrentData().subList(0, ss.getCurrentData().size() - MAX_CHART_SIZE).clear();
 				}
-				addLineChartData(tvp);
+				addLineChartData(data);
 			}
 		}
 	}
@@ -531,7 +532,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 				break;
 
 			default:
-				log("Illegal data received for header 0x" + header.name() + ": 0x" + Integer.toHexString(data));
+				log("Illegal data received for header " + header.name() + ": 0x" + Integer.toHexString(data));
 				break;
 			}
 			break;

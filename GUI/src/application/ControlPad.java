@@ -64,7 +64,7 @@ public class ControlPad extends VBox {
 	private ToggleButton generateButton(String text) {
 		ToggleButton b = new ToggleButton(text);
 		b.setDisable(true);
-		b.setStyle("-fx-font: 26 arial;");
+		b.setStyle("-fx-font: 22 arial;");
 		
 		setFocusTraversable(false);
 		

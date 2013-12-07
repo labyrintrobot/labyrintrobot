@@ -74,7 +74,7 @@ public class BluetoothAdapter {
 		System.out.print(": Sent: [");
 		System.out.print(header.name());
 		System.out.print(", 0x");
-		System.out.print(data & 0xFF);
+		System.out.print(Integer.toHexString(data));
 		System.out.println("]");
 		if (! DEBUG) {
 			int[] b = new int[2];
@@ -117,7 +117,7 @@ public class BluetoothAdapter {
 				int headerData = (byte)rng.nextInt(0x0E);
 				int data;
 				if (headerData == 0x01) {
-					data = rng.nextInt(0x07);
+					data = rng.nextInt(0x0B);
 				} else {
 					data = rng.nextInt(0xFF);
 				}
@@ -150,14 +150,14 @@ public class BluetoothAdapter {
 			System.out.print(": Received: [0x");
 			System.out.print(headerData);
 			System.out.print(", 0x");
-			System.out.print(data & 0xFF);
+			System.out.print(Integer.toHexString(data));
 			System.out.println("]");
 			receiver.receiveInvalidMessage(headerData, data);
 		} else {
 			System.out.print(": Received: [");
 			System.out.print(h.name());
 			System.out.print(", 0x");
-			System.out.print(data);
+			System.out.print(Integer.toHexString(data));
 			System.out.println("]");
 			receiver.receiveMessage(h, data);
 		}

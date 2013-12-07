@@ -541,6 +541,22 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 			case 0x06:
 				controlPad.pressStop();
 				break;
+				
+			case 0x07:
+				controlPad.pressLeftForward();
+				break;
+
+			case 0x08:
+				controlPad.pressRotateRight();
+				break;
+				
+			case 0x09:
+				controlPad.pressOpenArm();
+				break;
+
+			case 0x0A:
+				controlPad.pressCloseArm();
+				break;
 
 			default:
 				log("Illegal header or data received for " + header.name() + ": 0x" + Integer.toHexString(data));

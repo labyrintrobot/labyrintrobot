@@ -15,6 +15,8 @@ public class ControlPad extends VBox {
 
 	final ToggleGroup group;
 
+	private final ToggleButton openArm;
+	private final ToggleButton closeArm;
 	private final ToggleButton leftForward;
 	private final ToggleButton forward;
 	private final ToggleButton rightForward;
@@ -30,39 +32,37 @@ public class ControlPad extends VBox {
 		HBox r1 = new HBox();
 		HBox r2 = new HBox();
 		HBox r3 = new HBox();
+		HBox r4 = new HBox();
 
 		r1.setAlignment(Pos.TOP_CENTER);
 		r2.setAlignment(Pos.CENTER);
-		r3.setAlignment(Pos.BOTTOM_CENTER);
+		r3.setAlignment(Pos.CENTER);
+		r4.setAlignment(Pos.BOTTOM_CENTER);
 
-		leftForward = generateButton("↖");
-		forward = generateButton("↑");
-		rightForward = generateButton("↗");
-		rotateLeft = generateButton("↺");
-		stop = generateButton("↥");
-		rotateRight = generateButton("↻");
-		backwards = generateButton("↓");
+		this.group = new ToggleGroup();
+		this.openArm = generateButton("V");
+		this.closeArm = generateButton("||");
+		this.leftForward = generateButton("↖");
+		this.forward = generateButton("↑");
+		this.rightForward = generateButton("↗");
+		this.rotateLeft = generateButton("↺");
+		this.stop = generateButton("↥");
+		this.rotateRight = generateButton("↻");
+		this.backwards = generateButton("↓");
 
-		group = new ToggleGroup();
-		leftForward.setToggleGroup(group);
-		forward.setToggleGroup(group);
-		rightForward.setToggleGroup(group);
-		rotateLeft.setToggleGroup(group);
-		stop.setToggleGroup(group);
-		rotateRight.setToggleGroup(group);
-		backwards.setToggleGroup(group);
+		r1.getChildren().addAll(this.openArm, this.closeArm);
+		r2.getChildren().addAll(this.leftForward, this.forward, this.rightForward);
+		r3.getChildren().addAll(this.rotateLeft, this.stop, this.rotateRight);
+		r4.getChildren().addAll(this.backwards);
 
-		r1.getChildren().addAll(leftForward, forward, rightForward);
-		r2.getChildren().addAll(rotateLeft, stop, rotateRight);
-		r3.getChildren().addAll(backwards);
-
-		this.getChildren().addAll(r1, r2, r3);
+		this.getChildren().addAll(r1, r2, r3, r4);
 		
-		leftForward.setSelected(true);
+		this.stop.setSelected(true);
 	}
 
 	private ToggleButton generateButton(String text) {
 		ToggleButton b = new ToggleButton(text);
+		b.setToggleGroup(group);
 		b.setDisable(true);
 		b.setStyle("-fx-font: 22 arial;");
 		
@@ -91,5 +91,11 @@ public class ControlPad extends VBox {
 	}
 	public void pressBackwards() {
 		backwards.setSelected(true);
+	}
+	public void pressOpenArm() {
+		openArm.setSelected(true);
+	}
+	public void pressCloseArm() {
+		closeArm.setSelected(true);
 	}
 }

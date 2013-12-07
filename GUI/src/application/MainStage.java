@@ -516,46 +516,57 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 
 			case 0x00:
 				controlPad.pressForward();
+				log("Signal - Forward");
 				break;
 
 			case 0x01:
 				controlPad.pressBackwards();
+				log("Signal - Backwards");
 				break;
 
 			case 0x02:
 				controlPad.pressRightForward();
+				log("Signal - Turning right");
 				break;
 
 			case 0x03:
 				controlPad.pressLeftForward();
+				log("Signal - Turning left 90 deg");
 				break;
 
 			case 0x04:
 				controlPad.pressRotateRight();
+				log("Signal - Rotating right 90 deg");
 				break;
 
 			case 0x05:
 				controlPad.pressRotateLeft();
+				log("Signal - Rotating left");
 				break;
 
 			case 0x06:
 				controlPad.pressStop();
+				log("Signal - Stop");
 				break;
 				
 			case 0x07:
-				controlPad.pressLeftForward();
+				controlPad.pressRotateRight();
+				log("Signal - Rotate right");
 				break;
 
 			case 0x08:
-				controlPad.pressRotateRight();
+				controlPad.pressRotateLeft();
+				log("Signal - Rotate left");
 				break;
 				
 			case 0x09:
 				controlPad.pressOpenArm();
+				log("Signal - Open arm");
 				break;
 
 			case 0x0A:
 				controlPad.pressCloseArm();
+				log("Signal - Close arm");
 				break;
 
 			default:

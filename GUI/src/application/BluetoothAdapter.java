@@ -44,20 +44,14 @@ public class BluetoothAdapter {
 	/**
 	 * Setups a Bluetooth connection.
 	 */
-	public void setup() {
-		while (!isSetup) {
-			try {
-				if (! DEBUG) {
-					conn = (StreamConnection) Connector.open(this.bluetoothUrl);
-					os = new DataOutputStream(conn.openOutputStream());
-					is = conn.openDataInputStream();
-				}
-				isSetup = true;
-				receiver.communicationGained();
-			} catch (IOException e) {
-				// Do nothing. Just try again.
-			}
+	private void setup() throws IOException {
+		if (! DEBUG) {
+			conn = (StreamConnection) Connector.open(this.bluetoothUrl);
+			os = new DataOutputStream(conn.openOutputStream());
+			is = conn.openDataInputStream();
 		}
+		isSetup = true;
+		receiver.communicationGained();
 	}
 
 	/**
@@ -76,26 +70,22 @@ public class BluetoothAdapter {
 	 * @param data The data byte to send
 	 */
 	public void sendMessage(Header header, int data) {
-		
-		if (isSetup) {
-			System.out.print(hourMinuteSecond.format(new Date()));
-			System.out.print(": Sent: [");
-			System.out.print(header.name());
-			System.out.print(", 0x");
-			System.out.print(Integer.toHexString(data));
-			System.out.println("]");
-			if (! DEBUG) {
-				int[] b = new int[2];
-				b[0] = header.getIndex();
-				b[1] = data;
-				while (true) {
-					try {
-						sendMessageToDevice(b);
-						receiver.communicationGained();
-						break;
-					} catch (IOException e) {
-						receiver.communicationLost();
-					}
+		System.out.print(hourMinuteSecond.format(new Date()));
+		System.out.print(": Sent: [");
+		System.out.print(header.name());
+		System.out.print(", 0x");
+		System.out.print(Integer.toHexString(data));
+		System.out.println("]");
+		if (! DEBUG) {
+			int[] b = new int[2];
+			b[0] = header.getIndex();
+			b[1] = data;
+			if (isSetup) {
+				try {
+					sendMessageToDevice(b);
+				} catch (IOException e) {
+					this.teardown();
+					receiver.communicationLost();
 				}
 			}
 		}
@@ -106,14 +96,17 @@ public class BluetoothAdapter {
 	 * Tries to reconnect if the connection was lost.
 	 */
 	public void receiveMessages() {
-		
-		if (!isSetup) {
-			throw new IllegalStateException();
-		}
-		
 		while (running) {
 			// Generate fake data if debug
 			if (DEBUG) {
+				
+				if (!isSetup) {
+					try {
+						this.setup();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
 				
 				try {
 					Thread.sleep(10);
@@ -130,12 +123,20 @@ public class BluetoothAdapter {
 				}
 				rec(headerData, data);
 			} else {
-				try {
-					final int[] ret = receiveMessage(2);
-					receiver.communicationGained();
-					rec(ret[0], ret[1]);
-				} catch (IOException e) {
-					receiver.communicationLost();
+				if (isSetup) {
+					try {
+						final int[] ret = receiveMessage(2);
+						rec(ret[0], ret[1]);
+					} catch (IOException e) {
+						this.teardown();
+						receiver.communicationLost();
+					}
+				} else {
+					try {
+						this.setup();
+					} catch (IOException e) {
+						this.teardown();
+					}
 				}
 			}
 		}
@@ -173,12 +174,7 @@ public class BluetoothAdapter {
 	 * Cleanup.
 	 */
 	private void teardown() {
-		
-		if (!isSetup) {
-			throw new IllegalStateException();
-		}
-		
-		if (! DEBUG) {
+		if (! DEBUG && isSetup) {
 			try {
 				os.close();
 				is.close();

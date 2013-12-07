@@ -18,7 +18,7 @@ void enable_timer(void);
 int TWI_master_init_slaves(void);
 
 // Define to enable ping
-//#define USE_PING
+#define USE_PING
 
 // Global variables
 volatile bool control_module_interrupt = false;
@@ -28,7 +28,7 @@ volatile uint8_t firefly_data = 0xFF;
 volatile bool firefly_received_data = false;
 #ifdef USE_PING
 volatile bool ping_received = false;
-volatile int32_t ping_counter = 0;//<0 timed out
+volatile int32_t ping_counter = 250000;//<0 timed out
 #endif
 
 //Firefly interrupt routine
@@ -143,7 +143,7 @@ void mainfunction() {
 		}
 		#ifdef USE_PING
 		else if (ping_counter<0) {
-			ping_counter=1<<16;
+			ping_counter=250000;
 			
 			cli();
 			USART_transmit(0x0D , 0x00);

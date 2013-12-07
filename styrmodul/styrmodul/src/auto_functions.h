@@ -3,6 +3,9 @@
 #define turn_right 0x02;
 #define stay 0x03;
 
+bool inside_corridor(void);
+bool intersection_stop(void);
+void get_into_intersection(void);
 bool intersection_detected(int left, int right);
 int unmarked_intersection_choice(int left_, int right_, int forward_);
 int marked_intersection_choice(int tape, int left_, int forward_, int right_);
@@ -23,32 +26,89 @@ bool read_tape(int tape_value);
 void turn(int direction);
 void return_to_start(void);
 void turn_back(int direction);
+uint8_t max(uint8_t value1 , uint8_t value2 , uint8_t value3);
+
 
 int		direction_array[50];
 int		i = 0;
 uint8_t test_speed = 0x70;
 
 
+uint8_t max(uint8_t value1 , uint8_t value2 , uint8_t value3){
+	
+	if(value1<value2)
+	value1=value2;
+	
+	if(value1<value3)
+	value1=value3;
+	
+	return value1;
+}
+
+
+bool inside_corridor()
+{
+	if(left_long_s < 70 && right_long_s < 70)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+//returnera true när roboten befinner sig mitt i 80x80-biten i en sväng eller en korsning med en vägg rakt fram.
+bool intersection_stop()
+{
+	if(max(forward_left_s , forward_right_s , forward_center_s)<31)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+void get_into_intersection() // Kör in till mitten av korsningen, om det är en vägg framför: kör på avståndet, om det saknas vägg: kör på tid
+{
+	if( max(forward_left_s   , forward_right_s  , 0)<100) //Om det är en vägg framför
+	{
+		while(!intersection_stop()) //Kör tills det är 30 cm kvar till väggen
+		{
+			forward(0x50);
+		}
+		stop();
+	}
+	else //Annars om det inte är en vägg framför
+	{
+		forward(0x50); //kör framåt
+		_delay_ms(450);//en viss tid
+		_delay_ms(450);
+		stop();
+	}
+}
 
 // Returnerar True när den hittat en korsning eller sväng
 bool intersection_detected(int left_, int right_)
 {
-	return ((left_ > 90) || (right_ > 90));
+	return ((left_ > 120) || (right_ > 120));
 }
 
 
 // Svänger vänster som förstaval
 int unmarked_intersection_choice(int left_, int right_, int forward_)
 {
-	if(left_ > 150) // vänster håll öppet
+	if(left_ > 120) // vänster håll öppet
 	{
 		return turn_left;
 	}
-	else if(right_ > 150) // höger öppet
+	else if(right_ > 120) // höger öppet
 	{
 		return turn_right;
 	}
-	else if(forward_ > 150)// forward
+	else if(forward_ > 120)// forward
 	{
 		return go_forward;	
 	}
@@ -90,9 +150,15 @@ int marked_intersection_choice(int tape, int left_, int forward_, int right_)
 // Kör framåt i en korridor (labyrinten) med hjälp av PD-reglering
 void forward_regulated()
 {
-	if(forward_center_s < 25) // Säkerhetsstannar
+	if(forward_center_s < 20)
+	//if(forward_left_s == 0 && forward_right_s == 0) // Säkerhetsstannar
 	{
-		stop();
+		rotate_right90();
+	
+		_delay_ms(200);
+		rotate_right90();
+		
+		_delay_ms(200);
 	}
 	else
 	{
@@ -114,7 +180,7 @@ void forward_regulated()
 		}
 		if(u < -64) // Min-värde 
 		{
-			u = -64;
+			u = -64; 
 		}
 	
 		// Reglera beroende på u 
@@ -232,19 +298,30 @@ void turn(int direction)
 	switch(direction){
 		case 0x00: // turn_left
 			rotate_left90();
-			forward(0xA0); 
-			_delay_ms(800); // Kör ut ur korsningen
 			stop();
+			while(!inside_corridor()) // Kör ut ur korsningen
+			{
+				forward(0x70);
+			}
+			//_delay_ms(200);
+			stop();	
 			break;
 		case 0x01: // go_forward
-			forward(0xA0);
-			_delay_ms(1000); //Kör ut ur korsningen
+			while(!inside_corridor()) // Kör ut ur korsningen
+			{
+				forward(0x70);
+			}
+			//_delay_ms(200);
 			stop();
 			break;
 		case 0x02: // turn_right
 			rotate_right90();
-			forward(0xA0);
-			_delay_ms(800); // Kör ut ur korsningen
+			stop();
+			while(!inside_corridor()) // Kör ut ur korsningen
+			{
+				forward(0x70);
+			}
+			//_delay_ms(200);
 			stop();
 			break;
 		case 0x03: // stay

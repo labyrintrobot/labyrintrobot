@@ -75,10 +75,10 @@ void forward(int speed_)
 	PORTB = 0x03; 
 	OCR1BL = speed_; // right side
 	OCR1AL = speed_; // left side
-	if(switch_ == 0)
+/*	if(switch_ == 0)
 	{
 		send(0x01, 0x00);
-	}
+	}*/
 }
 
 void backward(int speed_)
@@ -86,10 +86,10 @@ void backward(int speed_)
 	PORTB = 0x00;
 	OCR1BL = speed_; // right side
 	OCR1AL = speed_; // left side
-	if(switch_ == 0)
+/*	if(switch_ == 0)
 	{
 		send(0x01, 0x01);
-	}	
+	}	*/
 }
 
 void forward_left() // int speed_
@@ -124,6 +124,7 @@ void rotate_left90()
 		OCR1BL = 0x80;			// hastighet vänster sida
 		OCR1AL = 0x80;			// hastighet höger sida
 	}
+	stop();
 	control_command = 0x06; // stop
 }
 
@@ -146,6 +147,7 @@ void rotate_right90()
 		OCR1BL = 0x80;			// hastighet vänster sida
 		OCR1AL = 0x80;			// hastighet höger sida
 	}
+	stop();
 	control_command = 0x06; // stop
 }
 

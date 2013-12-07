@@ -36,10 +36,10 @@
 
 //Sensordata 
 uint8_t control_command = 0x06, left_short_s, right_short_s, left_long_s, right_long_s, 
-		forward_left_s, forward_right_s, forward_center_s, tape_value, speed = 0x7F;
+		forward_left_s, forward_right_s, forward_center_s, tape_value, speed = 0x70;
 
 //-------- PD-reglering --------//
-uint8_t Kp_msb, Kp_lsb = 10, Kd_msb, Kd_lsb = 5; // Kp & Kd
+uint8_t Kp_msb, Kp_lsb = 11, Kd_msb, Kd_lsb = 25; // Kp & Kd
 signed e = 0; // Reglerfelet, 
 signed int e_last = 0; // Det sparade reglerfelet
 
@@ -71,7 +71,6 @@ ISR(INT2_vect) //Avbrott från sensormodulen: sluta rotera, gjort 90 grader
 int main (void)
 {
 	board_init();
-
 	TWI_slave_initialize(TWI_CONTROL_MODULE_ADDRESS);
 	
 	pwm_start_L();
@@ -102,24 +101,40 @@ int main (void)
 			
 			if(button != 0) // Startar autonomt läge
 			{
+			/*	//============================TEST========================
 				while(1)
 				{
 					forward_regulated();
-					/*while(!intersection_detected(left_long_s, right_long_s))
+					
+				}
+				//========================================================*/
+				
+				while(1)
+				{
+					//forward_regulated();
+					while(!intersection_detected(left_long_s, right_long_s))//reglera till korsning
 					{
 						forward_regulated();
 					}
 					
-					
-					// Kommit till en korsning eller sväng!
+					stop();
+					//_delay_ms(500);
+					get_into_intersection(); // Kör in i korsningen
+					//_delay_ms(500);
+					int direction = unmarked_intersection_choice(left_long_s, right_long_s,forward_left_s); // välj väg
+					turn(direction); // ta den valda vägen
+					//_delay_ms(500);
+
+				}
+				/*	// Kommit till en korsning eller sväng!
 						forward(0x80);
 						_delay_ms(250);
 						stop();
 						_delay_ms(1000);
 						int direction = unmarked_intersection_choice(left_long_s, right_long_s, forward_left_s);
 						turn(direction);
-					*/ 
-				}
+					
+			}*/
 
 				// Lösningshången i en labyrint
 				//find start

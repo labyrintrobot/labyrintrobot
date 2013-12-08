@@ -2,7 +2,7 @@
 * communication.c
 *
 * Created: 11/26/2013 5:43:02 PM
-*  Author: kribo852
+*  Author: kribo852, Emibe...
 */
 
 #include <asf.h>
@@ -18,7 +18,7 @@ void enable_timer(void);
 int TWI_master_init_slaves(void);
 
 // Define to enable ping
-#define USE_PING
+//#define USE_PING
 
 // Global variables
 volatile bool control_module_interrupt = false;
@@ -28,19 +28,19 @@ volatile uint8_t firefly_data = 0xFF;
 volatile bool firefly_received_data = false;
 #ifdef USE_PING
 volatile bool ping_received = false;
-volatile int32_t ping_counter = 250000;//<0 timed out
+volatile int32_t ping_counter = 0;//<0 timed out
 #endif
 
 //Firefly interrupt routine
 ISR(USART0_RX_vect) {
-	cli();
+		EIFR &=(~(1 << INTF0) | (1 << INTF1));
 	uint8_t header;
 	uint8_t data;
 	USART_receive(&header, &data);
 	firefly_header = header;
 	firefly_data = data;
 	firefly_received_data = true;
-	sei();
+		EIFR |=(1 << INTF0) | (1 << INTF1);
 }
 
 // INT0 interrupts from control module
@@ -64,9 +64,7 @@ ISR(INT1_vect) {
 }
 
 inline void send_error(uint8_t error_code) {
-	cli();
 	USART_transmit(0x0C, error_code);
-	sei();
 }
 
 // Interrupt init
@@ -101,28 +99,20 @@ void mainfunction() {
 			// Send to right instance depending on header
 			if (header == 0x00 || (header >= 0x0E && header <= 0x12) ) {
 				// FireFly is sending control commands. Relay to control module.
-				
 				twi_send_err = TWI_master_send_message(TWI_CONTROL_MODULE_ADDRESS, header, data);
-				
 			} else if (header == 0x01) {
 				// Control module is sending. Relay to firefly
-				cli();
 				USART_transmit(header, data);
-				sei();
 			} else if (header == 0x02) {
 				// FireFly is sending a calibration command. Relay to sensor module.
-				twi_send_err = TWI_master_send_message(TWI_SENSOR_MODULE_ADDRESS, header, data);	
+				twi_send_err = TWI_master_send_message(TWI_SENSOR_MODULE_ADDRESS, header, data);
 			} else if (header >= 0x03 && header <= 0x0B) {
 				// Sensor module is sending. Relay to control module and FireFly.
 				twi_send_err = TWI_master_send_message(TWI_CONTROL_MODULE_ADDRESS, header, data);
-				cli();
 				USART_transmit(header, data);
-				sei();
 			} else if (header == 0x0C) {
 				// Error. Relay to FireFly.
-				cli();
 				USART_transmit(header, data);
-				sei();
 				//
 			} else if(header==0x0D) {
 				#ifdef USE_PING
@@ -143,14 +133,12 @@ void mainfunction() {
 		}
 		#ifdef USE_PING
 		else if (ping_counter<0) {
-			ping_counter=250000;
+			ping_counter=1<<16;
 			
-			cli();
 			USART_transmit(0x0D , 0x00);
-			sei();
-			
-			if(!ping_received)
+			if(!ping_received){
 				TWI_master_send_message(TWI_CONTROL_MODULE_ADDRESS , 0x00 , 0x06);
+			}	
 			
 			ping_received=0;
 		}
@@ -171,12 +159,12 @@ void mainfunction() {
 			received_data = true;
 		} else if (firefly_received_data) {
 			
-			cli();
+			EIFR &=(~(1 << INTF0) | (1 << INTF1));
 			header = firefly_header;
 			data = firefly_data;
 			firefly_received_data = false;
 			received_data = true;
-			sei();
+			EIFR |=(1 << INTF0) | (1 << INTF1);
 			
 		}
 		if (twi_rec_err) {

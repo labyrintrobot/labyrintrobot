@@ -61,7 +61,7 @@ bool inside_corridor()
 //returnera true när roboten befinner sig mitt i 80x80-biten i en sväng eller en korsning med en vägg rakt fram.
 bool intersection_stop()
 {
-	if(max(forward_left_s , forward_right_s , forward_center_s)<31)
+	if(forward_right_s<31)
 	{
 		return true;
 	}
@@ -73,7 +73,19 @@ bool intersection_stop()
 
 void get_into_intersection() // Kör in till mitten av korsningen, om det är en vägg framför: kör på avståndet, om det saknas vägg: kör på tid
 {
-	if( max(forward_left_s   , forward_right_s  , 0)<100) //Om det är en vägg framför
+	forward(0x50); //kör framåt
+	_delay_ms(250);//en viss tid(500)
+	
+	//uint8_t forward=max(forward_left_s   , forward_right_s  , 0);
+	//uint8_t forward_center=forward+10;
+	
+	//forward_center+=10;
+	
+	//forward_center=forward_center%80;
+	 
+	 //run until ( max(forward_left_s   , forward_right_s  , 0)<forward-forward_center)
+	
+	if(forward_right_s < 80) //Om det är en vägg framför
 	{
 		while(!intersection_stop()) //Kör tills det är 30 cm kvar till väggen
 		{
@@ -83,9 +95,8 @@ void get_into_intersection() // Kör in till mitten av korsningen, om det är en v
 	}
 	else //Annars om det inte är en vägg framför
 	{
-		forward(0x50); //kör framåt
-		_delay_ms(450);//en viss tid
-		_delay_ms(450);
+
+		_delay_ms(400);
 		stop();
 	}
 }
@@ -155,10 +166,10 @@ void forward_regulated()
 	{
 		rotate_right90();
 	
-		_delay_ms(200);
+		_delay_ms(100);
 		rotate_right90();
 		
-		_delay_ms(200);
+		_delay_ms(100);
 	}
 	else
 	{
@@ -433,4 +444,67 @@ void return_to_start()
 		forward_regulated();
 	}
 	stop();
+}
+
+
+void narrowpath()
+{
+	bool direction;
+	uint16_t length_to_box;
+	
+	if(forward_left_s < 40 && forward_right_s > 80)
+	{
+		length_to_box = forward_left_s + 10; //lägg på skillnaden i längd mellan sensorn och mitten på roboten
+		direction = false;
+	}
+	else if(forward_right_s < 40 && forward_left_s > 80)
+	{
+		length_to_box = forward_right_s + 10;
+		direction = true;
+	}
+	else
+		return;
+	
+	uint16_t  zsquare = 1600 + (length_to_box * length_to_box); // 1600=40^2
+	
+	while(true)
+	{	
+		uint16_t length_to_wall = (forward_left_s + forward_right_s + 20) / 2;
+		
+		if((length_to_wall * length_to_wall < zsquare) && ((direction && forward_right_s > forward_left_s) || (!direction && forward_right_s < forward_left_s)))
+			break;
+		
+		if(direction)
+			rotate_left();
+		else	
+			rotate_right();
+	}
+	//svängdelen klar, lås med while(1) vid testning 
+	
+	while(true)
+	{		
+		uint16_t lengthtowall = (forward_left_s + forward_right_s + 20)/2;
+		
+		if(4 * lengthtowall * lengthtowall < zsquare)
+		{
+			break;		
+		}	
+		forward(0x80);
+	}
+	
+	//har kört frammåt
+	
+	if(direction)
+	{
+		while(left_long_s + 10 > 60 && right_short_s + 10 > 20)
+			rotate_right();
+	}
+	else
+	{
+		while(right_long_s + 10 > 60 && left_short_s + 10 > 20)
+			rotate_right();
+	}
+	
+	//har roterat tillbaka
+	
 }

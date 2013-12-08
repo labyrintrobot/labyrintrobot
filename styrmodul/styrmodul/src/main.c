@@ -36,10 +36,10 @@
 
 //Sensordata 
 uint8_t control_command = 0x06, left_short_s, right_short_s, left_long_s, right_long_s, 
-		forward_left_s, forward_right_s, forward_center_s, tape_value, speed = 0x70;
+		forward_left_s, forward_right_s, forward_center_s, tape_value, speed = 0x80;
 
 //-------- PD-reglering --------//
-uint8_t Kp_msb, Kp_lsb = 11, Kd_msb, Kd_lsb = 25; // Kp & Kd
+uint8_t Kp_msb, Kp_lsb = 15, Kd_msb, Kd_lsb = 20; // Kp & Kd
 signed e = 0; // Reglerfelet, 
 signed int e_last = 0; // Det sparade reglerfelet
 
@@ -101,6 +101,11 @@ int main (void)
 			
 			if(button != 0) // Startar autonomt läge
 			{
+				//while(forward_center_s > 30)
+				//{
+				//	forward_regulated();
+				//}
+				//stop();
 			/*	//============================TEST========================
 				while(1)
 				{
@@ -121,7 +126,7 @@ int main (void)
 					//_delay_ms(500);
 					get_into_intersection(); // Kör in i korsningen
 					//_delay_ms(500);
-					int direction = unmarked_intersection_choice(left_long_s, right_long_s,forward_left_s); // välj väg
+					int direction = unmarked_intersection_choice(left_long_s, right_long_s,forward_right_s); // välj väg
 					turn(direction); // ta den valda vägen
 					//_delay_ms(500);
 
@@ -132,11 +137,11 @@ int main (void)
 						stop();
 						_delay_ms(1000);
 						int direction = unmarked_intersection_choice(left_long_s, right_long_s, forward_left_s);
-						turn(direction);
+						turn(direction);*/
 					
-			}*/
+			
 
-				// Lösningshången i en labyrint
+				// Lösningsgången i en labyrint
 				//find start
 				//find goal
 				//grab target

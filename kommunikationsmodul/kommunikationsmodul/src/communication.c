@@ -2,7 +2,7 @@
 * communication.c
 *
 * Created: 11/26/2013 5:43:02 PM
-*  Author: kribo852, Emibe...
+*  Author: Kristoffer Borg, Emil Berg
 */
 
 #include <asf.h>
@@ -28,7 +28,7 @@ volatile uint8_t firefly_data = 0xFF;
 volatile bool firefly_received_data = false;
 #ifdef USE_PING
 volatile bool ping_received = false;
-volatile int32_t ping_counter = 0;//<0 timed out
+volatile int32_t ping_counter = 400000;//<0 timed out
 #endif
 
 //Firefly interrupt routine
@@ -133,7 +133,7 @@ void mainfunction() {
 		}
 		#ifdef USE_PING
 		else if (ping_counter<0) {
-			ping_counter=1<<16;
+			ping_counter=400000;
 			
 			USART_transmit(0x0D , 0x00);
 			if(!ping_received){

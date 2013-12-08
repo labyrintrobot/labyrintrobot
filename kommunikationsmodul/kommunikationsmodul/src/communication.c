@@ -74,7 +74,7 @@ void enable_irqs() {
 	EICRA |= (1 << ISC00) | (1 << ISC01); // Interrupt irq0 on rising edge
 	EICRA |= (1 << ISC10) | (1 << ISC11); // Interrupt irq1 on rising edge
 	EIMSK |= (1 << INT0) | (1 << INT1); // Enable INT0 and INT1
-	EIFR |= (1 << INTF0) | (1 << INTF1);
+	EIFR |= (1 << INTF0) | (1 << INTF1); //firefly
 	#ifdef USE_PING
 	TIMSK1 |= (1<<TOIE1); // Enable timer 1
 	#endif
@@ -164,7 +164,7 @@ void mainfunction() {
 			data = firefly_data;
 			firefly_received_data = false;
 			received_data = true;
-			EIFR |=(1 << INTF0) | (1 << INTF1);
+			EIFR |=(1 << INTF0) | (1 << INTF1); 
 			
 		}
 		if (twi_rec_err) {

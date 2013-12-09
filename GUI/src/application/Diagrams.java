@@ -5,6 +5,11 @@ import java.util.List;
 
 import javafx.scene.chart.XYChart;
 
+/**
+ * A GUI control that displays what the control module is doing to the user.
+ * @author Emil Berg
+ *
+ */
 public enum Diagrams {
 	
 	DISTANCE_LEFT_SHORT (0, 40, "Distance left, short", "Distance (cm)", "1.2"),

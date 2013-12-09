@@ -1,7 +1,9 @@
 package application;
 
 /**
- * The different types of headers used for communication
+ * The different types of headers used for communication.
+ * @author Emil Berg
+ * 
  */
 public enum Header {
 	CONTROL_COMMAND(0x00),

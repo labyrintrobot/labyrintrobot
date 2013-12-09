@@ -11,6 +11,11 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
+/**
+ * A simple numeric up down control (spinner). Since this control doesn't exist yet in JavaFX.
+ * @author Emil Berg
+ *
+ */
 public class NumericUpDown extends HBox {
 	
 	private final int min;

@@ -1,5 +1,10 @@
 package application;
 
+/**
+ * A simple thread that periodically sends messages to the robot.
+ * @author Emil Berg
+ *
+ */
 public class SendThread implements Runnable {
 
 	private final BluetoothAdapter bluetoothAdapter;

@@ -1,9 +1,9 @@
 ﻿/*
-* communication.c
-*
-* Created: 11/26/2013 5:43:02 PM
-*  Author: Kristoffer Borg, Emil Berg
-*/
+ * communication.c
+ * Functionality for receiving and sending both TWI and Bluetooth messages.
+ * Created: 11/26/2013 5:43:02 PM
+ *  Author: Kristoffer Borg, Emil Berg
+ */
 
 #include <asf.h>
 #include <avr/interrupt.h>

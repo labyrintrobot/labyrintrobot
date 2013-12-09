@@ -1,3 +1,9 @@
+/*
+ * main.c
+ * Starting point of the application.
+ *  Author: Kristoffer Borg, Emil Berg
+ */
+
 #define F_CPU 14.7456E6
 
 #include <asf.h>

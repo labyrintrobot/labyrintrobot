@@ -133,7 +133,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 			public void valueChanged(int newValue) {
 				//MainStage.this.bluetoothAdapter.sendMessage(Header.D_LSB, newValue);
 			}
-		}, 10, 0, MAX);
+		}, 25, 0, MAX);
 
 		this.speedSelector = new NumericUpDown("Speed:", new ICallback() {
 
@@ -141,7 +141,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 			public void valueChanged(int newValue) {
 				//MainStage.this.bluetoothAdapter.sendMessage(Header.SPEED, newValue);
 			}
-		}, MAX / 2, 0, MAX);
+		}, 112, 0, MAX);
 
 		this.errorLog = new TextArea();
 	}

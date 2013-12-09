@@ -31,7 +31,8 @@ enum header_t
 	P_lsb = 0x0F,
 	D_msb = 0x10,
 	D_lsb = 0x11,
-    reg_speed = 0x12
+    reg_speed = 0x12,
+	target_fetched = 0x13
 };
 
 
@@ -106,7 +107,6 @@ ISR(TWI_vect)
 		case D_lsb:
 			Kd_lsb = data_r;
 			break;
-		
 		case reg_speed:
 			speed = data_r;
 			break;

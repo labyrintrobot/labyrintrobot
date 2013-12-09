@@ -36,7 +36,7 @@
 
 //Sensordata 
 uint8_t control_command = 0x06, left_short_s, right_short_s, left_long_s, right_long_s, 
-		forward_left_s, forward_right_s, forward_center_s, tape_value, speed = 0x80;
+		forward_left_s, forward_right_s, forward_center_s, tape_value = 0x04, speed = 0x80;
 
 //-------- PD-reglering --------//
 uint8_t Kp_msb, Kp_lsb = 15, Kd_msb, Kd_lsb = 20; // Kp & Kd
@@ -48,7 +48,7 @@ signed int e_last = 0; // Det sparade reglerfelet
 volatile uint8_t header_s = 0;
 volatile uint8_t data_s = 0;
 volatile uint8_t header_r = 0;
-volatile uint8_t data_r = 0x06;
+volatile uint8_t data_r = 0x06; // Stop
 
 //startknapp och switch
 uint8_t button, switch_;
@@ -84,7 +84,6 @@ int main (void)
 //test2 = test; 
 	while(1)
 	{
-
 		switch_ = (PINA & 0x01); // Läs PortA, pinA0
 		
 		while(switch_ != 0) // Manuella läget
@@ -101,60 +100,21 @@ int main (void)
 			
 			if(button != 0) // Startar autonomt läge
 			{
-				//while(forward_center_s > 30)
+				//while(!goal_detected())	
 				//{
-				//	forward_regulated();
+				//	forward(0x70);	
 				//}
-				//stop();
-			/*	//============================TEST========================
-				while(1)
+				uint8_t grip_switch = 4;
+				while(grip_switch == 4)
 				{
-					forward_regulated();
-					
+					grip_switch = PINA & 0x04;
+					goal_regulated();
 				}
-				//========================================================*/
-				
-				while(1)
-				{
-					//forward_regulated();
-					while(!intersection_detected(left_long_s, right_long_s))//reglera till korsning
-					{
-						forward_regulated();
-					}
-					
-					stop();
-					//_delay_ms(500);
-					get_into_intersection(); // Kör in i korsningen
-					//_delay_ms(500);
-					int direction = unmarked_intersection_choice(left_long_s, right_long_s,forward_right_s); // välj väg
-					turn(direction); // ta den valda vägen
-					//_delay_ms(500);
-
-				}
-				/*	// Kommit till en korsning eller sväng!
-						forward(0x80);
-						_delay_ms(250);
-						stop();
-						_delay_ms(1000);
-						int direction = unmarked_intersection_choice(left_long_s, right_long_s, forward_left_s);
-						turn(direction);*/
-					
-			
-
-				// Lösningsgången i en labyrint
-				//find start
-				//find goal
-				//grab target
-				//return to start
-				//stop
-			
+				stop();			
 			}
 			
 			switch_ = PINA & 0x01;
 		}
-
 	}
-	
-	// Insert application code here, after the board has been initialized.
 }
 

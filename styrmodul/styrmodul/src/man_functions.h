@@ -137,8 +137,6 @@ void rotate_right90()
 	
 	if(switch_ == 0)
 	{
-		
-		
 		send(0x01, 0x04);
 	}
 		

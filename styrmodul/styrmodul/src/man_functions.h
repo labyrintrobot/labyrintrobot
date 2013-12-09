@@ -29,8 +29,8 @@ void forward(int speed_);
 void backward(int speed_);
 void rotate_left(void);
 void rotate_right(void);
-void rotate_left90(void);
-void rotate_right90(void);
+void rotate_left90(int speed);
+void rotate_right90(int speed);
 void forward_right(void);
 void forward_left(void);
 void stop(void);
@@ -95,19 +95,19 @@ void backward(int speed_)
 void forward_left() // int speed_
 {
 	PORTB = 0x03; 
-	OCR1BL = 0xF0; // right side
-	OCR1AL = 0x50; // left side
+	OCR1BL = 0xF8; // right side
+	OCR1AL = 0x20; // left side
 }
 
 void forward_right()
 {
 	PORTB = 0x03;
-	OCR1BL = 0x50; // right side
-	OCR1AL = 0xF0; // left side
+	OCR1BL = 0x20; // right side
+	OCR1AL = 0xF8; // left side
 }
 
 
-void rotate_left90()
+void rotate_left90(int speed_)
 {
 	PORTB = 0x08;		// skicka avbrott till sensormodulen
 	_delay_ms(1);		// vänta
@@ -121,14 +121,14 @@ void rotate_left90()
 	
 	while(keep_turning == 1)	// rotera tills avbrott 
 	{
-		OCR1BL = 0x80;			// hastighet vänster sida
-		OCR1AL = 0x80;			// hastighet höger sida
+		OCR1BL = speed_;			// hastighet vänster sida
+		OCR1AL = speed_;			// hastighet höger sida
 	}
 	stop();
 	control_command = 0x06; // stop
 }
 
-void rotate_right90()
+void rotate_right90(int speed_)
 {
 	PORTB = 0x08;		// skicka avbrott till sensormodulen
 	_delay_ms(1);		// vänta
@@ -142,8 +142,8 @@ void rotate_right90()
 		
 	while(keep_turning == 1)	// rotera tills avbrott
 	{
-		OCR1BL = 0x80;			// hastighet vänster sida
-		OCR1AL = 0x80;			// hastighet höger sida
+		OCR1BL = speed_;			// hastighet vänster sida
+		OCR1AL = speed_;			// hastighet höger sida
 	}
 	stop();
 	control_command = 0x06; // stop
@@ -152,15 +152,15 @@ void rotate_right90()
 void rotate_left()
 {
 	PORTB = 0x01;	// hjulens rotationsriktning
-	OCR1BL = 0xF0;	// vänster sida
-	OCR1AL = 0xF0;	// höger sida
+	OCR1BL = 0xF8;	// vänster sida
+	OCR1AL = 0xF8;	// höger sida
 }
 
 void rotate_right()
 {
 	PORTB = 0x02;	// hjulens rotationsriktning
-	OCR1BL = 0xF0;	// vänster sida
-	OCR1AL = 0xF0;	// höger sida
+	OCR1BL = 0xF8;	// vänster sida
+	OCR1AL = 0xF8;	// höger sida
 }
 
 void stop()
@@ -223,10 +223,10 @@ void manual_action(uint8_t control_command_)
 		forward_left();
 		break;
 	case 0x04:
-		rotate_right90();
+		rotate_right90(0xF8);
 		break;
 	case 0x05:
-		rotate_left90();
+		rotate_left90(0xF8);
 		break;
 	case 0x06:
 		stop();

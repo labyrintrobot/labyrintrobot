@@ -149,10 +149,10 @@ void forward_regulated()
 	if(forward_center_s < 20)
 	//if(forward_left_s == 0 && forward_right_s == 0) // Säkerhetsstannar
 	{
-		rotate_right90();
+		rotate_right90(0x90);
 	
 		_delay_ms(100);
-		rotate_right90();
+		rotate_right90(0x90);
 		
 		_delay_ms(100);
 	}
@@ -230,7 +230,7 @@ void turn(int direction)
 {
 	switch(direction){
 		case 0x00: // turn_left
-			rotate_left90();
+			rotate_left90(0x90);
 			stop();
 			while(!inside_corridor()) // Kör ut ur korsningen
 			{
@@ -246,7 +246,7 @@ void turn(int direction)
 			stop();
 			break;
 		case 0x02: // turn_right
-			rotate_right90();
+			rotate_right90(0x90);
 			stop();
 			while(!inside_corridor()) // Kör ut ur korsningen
 			{
@@ -265,7 +265,7 @@ void turn_back(int direction)
 {
 	switch(direction){
 		case 0x00: //turn_left
-		rotate_right90();
+		rotate_right90(0x90);
 		forward(0xA0);
 		_delay_ms(200); //Kör ut ur korsningen
 		stop();
@@ -276,7 +276,7 @@ void turn_back(int direction)
 		stop();
 		break;
 		case 0x02: //turn_right
-		rotate_left90();
+		rotate_left90(0x90);
 		forward(0xA0);
 		_delay_ms(200); //Kör ut ur korsningen
 		stop();
@@ -354,9 +354,9 @@ void get_target()
 	backward(0x50);
 	_delay_ms(500);
 	stop();
-	rotate_right90();
+	rotate_right90(0x90);
 	_delay_ms(100);
-	rotate_right90();
+	rotate_right90(0x90);
 }
 
 

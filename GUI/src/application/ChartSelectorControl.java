@@ -34,7 +34,6 @@ public class ChartSelectorControl extends VBox {
 	private final ToggleButton distanceForwardRight;
 	private final ToggleButton distanceRightLong;
 	private final ToggleButton distanceRightShort;
-	private final ToggleButton tape;
 	private final ToggleButton controlError;
 
 	public ChartSelectorControl(final ToggleCallback callback) {
@@ -56,7 +55,6 @@ public class ChartSelectorControl extends VBox {
 		distanceForwardRight = generateButton(Diagram.DISTANCE_FORWARD_RIGHT.getButtonText());
 		distanceRightShort = generateButton(Diagram.DISTANCE_RIGHT_SHORT.getButtonText());
 		distanceRightLong = generateButton(Diagram.DISTANCE_RIGHT_LONG.getButtonText());
-		tape = generateButton(Diagram.TAPE.getButtonText());
 		controlError = generateButton(Diagram.CONTROL_ERROR.getButtonText());
 
 		group = new ToggleGroup();
@@ -67,12 +65,11 @@ public class ChartSelectorControl extends VBox {
 		distanceForwardRight.setToggleGroup(group);
 		distanceRightShort.setToggleGroup(group);
 		distanceRightLong.setToggleGroup(group);
-		tape.setToggleGroup(group);
 		controlError.setToggleGroup(group);
 		
 		r1.getChildren().addAll(distanceForwardLeft, distanceForwardCenter, distanceForwardRight);
-		r2.getChildren().addAll(distanceLeftLong, tape, distanceRightLong);
-		r3.getChildren().addAll(distanceLeftShort, controlError, distanceRightShort);
+		r2.getChildren().addAll(distanceLeftLong, controlError, distanceRightLong);
+		r3.getChildren().addAll(distanceLeftShort, distanceRightShort);
 
 		this.getChildren().addAll(r1, r2, r3);
 		
@@ -86,7 +83,6 @@ public class ChartSelectorControl extends VBox {
 		map.put(distanceForwardRight, Diagram.DISTANCE_FORWARD_RIGHT);
 		map.put(distanceRightLong, Diagram.DISTANCE_RIGHT_LONG);
 		map.put(distanceRightShort, Diagram.DISTANCE_RIGHT_SHORT);
-		map.put(tape, Diagram.TAPE);
 		map.put(controlError, Diagram.CONTROL_ERROR);
 		
 		group.selectedToggleProperty().addListener(new ChangeListener<Toggle>() {

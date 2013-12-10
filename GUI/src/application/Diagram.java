@@ -19,7 +19,6 @@ public enum Diagram {
 	DISTANCE_FORWARD_RIGHT (0, 256, true, "Distance forward, right", "Distance (cm)", "2.3"),
 	DISTANCE_RIGHT_LONG (0, 256, true, "Distance right, long", "Distance (cm)", "2.4"),
 	DISTANCE_RIGHT_SHORT (0, 40, true, "Distance right, short", "Distance (cm)", "1.3"),
-	TAPE (0, 8, true, "Tape", "Signal", "Tape"),
 	CONTROL_ERROR (-128, 128, false, "Control error", "Difference", "Cerr");
 	
 	private Diagram(int min, int max, boolean unsigned, String title, String yText, String buttonText) {

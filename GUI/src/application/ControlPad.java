@@ -41,12 +41,11 @@ public class ControlPad extends VBox {
 	public ControlPad() {
 
 		this.setAlignment(Pos.CENTER);
-		//this.setSpacing(10);
 
 		VBox sigMainBox = new VBox();
 		VBox tapeMainBox = new VBox();
 		
-		this.armLabel = new Label("Arm");
+		this.armLabel = new Label("Arm signals");
 		this.sigLabel = new Label("Control signals");
 		this.tapeLabel = new Label("Tape signals");
 		

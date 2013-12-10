@@ -125,7 +125,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 			public void valueChanged(int newValue) {
 				//MainStage.this.bluetoothAdapter.sendMessage(Header.P_LSB, newValue);
 			}
-		}, 10, 0, MAX);
+		}, 15, 0, MAX);
 
 		this.dSelector = new NumericUpDown("D:", new ICallback() {
 
@@ -133,7 +133,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 			public void valueChanged(int newValue) {
 				//MainStage.this.bluetoothAdapter.sendMessage(Header.D_LSB, newValue);
 			}
-		}, 25, 0, MAX);
+		}, 20, 0, MAX);
 
 		this.speedSelector = new NumericUpDown("Speed:", new ICallback() {
 
@@ -141,7 +141,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 			public void valueChanged(int newValue) {
 				//MainStage.this.bluetoothAdapter.sendMessage(Header.SPEED, newValue);
 			}
-		}, 112, 0, MAX);
+		}, 115, 0, MAX);
 
 		this.errorLog = new TextArea();
 	}
@@ -607,7 +607,6 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 			updateLineChartData(data, Diagram.CONTROL_ERROR);
 			break;
 		case TAPE:
-			updateLineChartData(data, Diagram.TAPE);
 			switch (data) {
 			
 			case 0x00:

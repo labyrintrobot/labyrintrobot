@@ -10,7 +10,7 @@ import javafx.scene.chart.XYChart;
  * @author Emil Berg
  *
  */
-public enum Diagrams {
+public enum Diagram {
 	
 	DISTANCE_LEFT_SHORT (0, 40, true, "Distance left, short", "Distance (cm)", "1.2"),
 	DISTANCE_LEFT_LONG (0, 256, true, "Distance left, long", "Distance (cm)", "2.1"),
@@ -22,7 +22,7 @@ public enum Diagrams {
 	TAPE (0, 8, true, "Tape", "Signal", "Tape"),
 	CONTROL_ERROR (-128, 128, false, "Control error", "Difference", "Cerr");
 	
-	private Diagrams(int min, int max, boolean unsigned, String title, String yText, String buttonText) {
+	private Diagram(int min, int max, boolean unsigned, String title, String yText, String buttonText) {
 		this.min = min;
 		this.max = max;
 		this.unsigned = unsigned;

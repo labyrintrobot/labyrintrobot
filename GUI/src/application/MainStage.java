@@ -98,7 +98,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 		this.pauseButton = new Button(PAUSE_TEXT);
 		this.clearButton = new Button("Clear");
 
-		this.lineChart = generateRealTimeChart(Diagrams.DISTANCE_FORWARD_CENTER);
+		this.lineChart = generateRealTimeChart(Diagram.DISTANCE_FORWARD_CENTER);
 
 		this.minSlider = new Slider(0.0, 1.0, 0.0);
 		this.maxSlider = new Slider(0.0, 1.0, 1.0);
@@ -149,7 +149,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 	/**
 	 * Generates a LineChart with given properties.
 	 */
-	private LineChart<Number, Number> generateRealTimeChart(Diagrams dia) {
+	private LineChart<Number, Number> generateRealTimeChart(Diagram dia) {
 
 		// Setup
 		NumberAxis xAxis = new NumberAxis(0, 100, 100);
@@ -177,7 +177,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 	/**
 	 * Changes LineChart data completely.
 	 */
-	private void setLineChartData(final Diagrams dia, final boolean paused) {
+	private void setLineChartData(final Diagram dia, final boolean paused) {
 		Platform.runLater(new Runnable() {
 
 			@Override
@@ -258,7 +258,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 	 * Updates the data for the currently selected LineChart.
 	 */
 	private void updateLineChart() {
-		Diagrams dia = chartSelectorPad.getSelected();
+		Diagram dia = chartSelectorPad.getSelected();
 		setLineChartData(dia, this.paused);
 	}
 
@@ -414,7 +414,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 				paused = !paused;
 				if (paused) {
 					pauseButton.setText(RESUME_TEXT);
-					for (Diagrams s : Diagrams.values()) {
+					for (Diagram s : Diagram.values()) {
 						s.savePausedData();
 					}
 				} else {
@@ -429,7 +429,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 		// Clear the LineChart and log
 		this.clearButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override public void handle(ActionEvent e) {
-				for (Diagrams s : Diagrams.values()) {
+				for (Diagram s : Diagram.values()) {
 					s.clearData();
 				}
 
@@ -496,16 +496,16 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 	/**
 	 * Helper function for receiveMessage.
 	 */
-	private void updateLineChartData(int newData, Diagrams ss) {
-		if (! ss.isUnsigned()) {
+	private void updateLineChartData(int newData, Diagram dia) {
+		if (! dia.isUnsigned()) {
 			newData = (byte) newData;
 		}
 		XYChart.Data<Number, Number> data = new XYChart.Data<Number, Number>((System.currentTimeMillis() - startTime) / 100, newData);
-		ss.getCurrentData().add(data);
+		dia.getCurrentData().add(data);
 		if (! paused) {
-			if (chartSelectorPad.getSelected() == ss) {
-				if (ss.getCurrentData().size() > MAX_CHART_SIZE) {
-					ss.getCurrentData().subList(0, ss.getCurrentData().size() - MAX_CHART_SIZE).clear();
+			if (chartSelectorPad.getSelected() == dia) {
+				if (dia.getCurrentData().size() > MAX_CHART_SIZE) {
+					dia.getCurrentData().subList(0, dia.getCurrentData().size() - MAX_CHART_SIZE).clear();
 				}
 				addLineChartData(data);
 			}
@@ -582,31 +582,31 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 			}
 			break;
 		case DISTANCE_LEFT_SHORT:
-			updateLineChartData(data, Diagrams.DISTANCE_LEFT_SHORT);
+			updateLineChartData(data, Diagram.DISTANCE_LEFT_SHORT);
 			break;
 		case DISTANCE_LEFT_LONG:
-			updateLineChartData(data, Diagrams.DISTANCE_LEFT_LONG);
+			updateLineChartData(data, Diagram.DISTANCE_LEFT_LONG);
 			break;
 		case DISTANCE_FORWARD_LEFT:
-			updateLineChartData(data, Diagrams.DISTANCE_FORWARD_LEFT);
+			updateLineChartData(data, Diagram.DISTANCE_FORWARD_LEFT);
 			break;
 		case DISTANCE_FORWARD_CENTER:
-			updateLineChartData(data, Diagrams.DISTANCE_FORWARD_CENTER);
+			updateLineChartData(data, Diagram.DISTANCE_FORWARD_CENTER);
 			break;
 		case DISTANCE_FORWARD_RIGHT:
-			updateLineChartData(data, Diagrams.DISTANCE_FORWARD_RIGHT);
+			updateLineChartData(data, Diagram.DISTANCE_FORWARD_RIGHT);
 			break;
 		case DISTANCE_RIGHT_LONG:
-			updateLineChartData(data, Diagrams.DISTANCE_RIGHT_LONG);
+			updateLineChartData(data, Diagram.DISTANCE_RIGHT_LONG);
 			break;
 		case DISTANCE_RIGHT_SHORT:
-			updateLineChartData(data, Diagrams.DISTANCE_RIGHT_SHORT);
+			updateLineChartData(data, Diagram.DISTANCE_RIGHT_SHORT);
 			break;
 		case CONTROL_ERROR:
-			updateLineChartData(data, Diagrams.CONTROL_ERROR);
+			updateLineChartData(data, Diagram.CONTROL_ERROR);
 			break;
 		case TAPE:
-			updateLineChartData(data, Diagrams.TAPE);
+			updateLineChartData(data, Diagram.TAPE);
 			switch (data) {
 			
 			case 0x00:

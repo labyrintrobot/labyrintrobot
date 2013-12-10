@@ -23,7 +23,7 @@ public class ChartSelectorControl extends VBox {
 		public void callback();
 	}
 	
-	private final Map<Toggle, Diagrams> map;
+	private final Map<Toggle, Diagram> map;
 
 	final ToggleGroup group;
 
@@ -49,15 +49,15 @@ public class ChartSelectorControl extends VBox {
 		r2.setAlignment(Pos.CENTER);
 		r3.setAlignment(Pos.BOTTOM_CENTER);
 
-		distanceLeftShort = generateButton(Diagrams.DISTANCE_LEFT_SHORT.getButtonText());
-		distanceLeftLong = generateButton(Diagrams.DISTANCE_LEFT_LONG.getButtonText());
-		distanceForwardLeft = generateButton(Diagrams.DISTANCE_FORWARD_LEFT.getButtonText());
-		distanceForwardCenter = generateButton(Diagrams.DISTANCE_FORWARD_CENTER.getButtonText());
-		distanceForwardRight = generateButton(Diagrams.DISTANCE_FORWARD_RIGHT.getButtonText());
-		distanceRightShort = generateButton(Diagrams.DISTANCE_RIGHT_SHORT.getButtonText());
-		distanceRightLong = generateButton(Diagrams.DISTANCE_RIGHT_LONG.getButtonText());
-		tape = generateButton(Diagrams.TAPE.getButtonText());
-		controlError = generateButton(Diagrams.CONTROL_ERROR.getButtonText());
+		distanceLeftShort = generateButton(Diagram.DISTANCE_LEFT_SHORT.getButtonText());
+		distanceLeftLong = generateButton(Diagram.DISTANCE_LEFT_LONG.getButtonText());
+		distanceForwardLeft = generateButton(Diagram.DISTANCE_FORWARD_LEFT.getButtonText());
+		distanceForwardCenter = generateButton(Diagram.DISTANCE_FORWARD_CENTER.getButtonText());
+		distanceForwardRight = generateButton(Diagram.DISTANCE_FORWARD_RIGHT.getButtonText());
+		distanceRightShort = generateButton(Diagram.DISTANCE_RIGHT_SHORT.getButtonText());
+		distanceRightLong = generateButton(Diagram.DISTANCE_RIGHT_LONG.getButtonText());
+		tape = generateButton(Diagram.TAPE.getButtonText());
+		controlError = generateButton(Diagram.CONTROL_ERROR.getButtonText());
 
 		group = new ToggleGroup();
 		distanceLeftShort.setToggleGroup(group);
@@ -79,15 +79,15 @@ public class ChartSelectorControl extends VBox {
 		distanceForwardCenter.setSelected(true);
 		
 		map = new HashMap<>();
-		map.put(distanceLeftShort, Diagrams.DISTANCE_LEFT_SHORT);
-		map.put(distanceLeftLong, Diagrams.DISTANCE_LEFT_LONG);
-		map.put(distanceForwardLeft, Diagrams.DISTANCE_FORWARD_LEFT);
-		map.put(distanceForwardCenter, Diagrams.DISTANCE_FORWARD_CENTER);
-		map.put(distanceForwardRight, Diagrams.DISTANCE_FORWARD_RIGHT);
-		map.put(distanceRightLong, Diagrams.DISTANCE_RIGHT_LONG);
-		map.put(distanceRightShort, Diagrams.DISTANCE_RIGHT_SHORT);
-		map.put(tape, Diagrams.TAPE);
-		map.put(controlError, Diagrams.CONTROL_ERROR);
+		map.put(distanceLeftShort, Diagram.DISTANCE_LEFT_SHORT);
+		map.put(distanceLeftLong, Diagram.DISTANCE_LEFT_LONG);
+		map.put(distanceForwardLeft, Diagram.DISTANCE_FORWARD_LEFT);
+		map.put(distanceForwardCenter, Diagram.DISTANCE_FORWARD_CENTER);
+		map.put(distanceForwardRight, Diagram.DISTANCE_FORWARD_RIGHT);
+		map.put(distanceRightLong, Diagram.DISTANCE_RIGHT_LONG);
+		map.put(distanceRightShort, Diagram.DISTANCE_RIGHT_SHORT);
+		map.put(tape, Diagram.TAPE);
+		map.put(controlError, Diagram.CONTROL_ERROR);
 		
 		group.selectedToggleProperty().addListener(new ChangeListener<Toggle>() {
 
@@ -115,7 +115,7 @@ public class ChartSelectorControl extends VBox {
 	/**
 	 * @return The type of LineChart that should be used.
 	 */
-	public Diagrams getSelected() {
+	public Diagram getSelected() {
 		return map.get(group.getSelectedToggle());
 	}
 }

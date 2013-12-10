@@ -211,10 +211,10 @@ void manual_action(uint8_t control_command_)
 	switch (control_command_) //Kommandon från laptopen
 	{
 	case 0x00:
-		forward(0xF0);
+		forward(0x80);
 		break;
 	case 0x01:
-		backward(0xF0);
+		backward(0x80);
 		break;
 	case 0x02:
 		forward_right();

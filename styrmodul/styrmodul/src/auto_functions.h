@@ -288,17 +288,11 @@ void turn_back(int direction)
 // Returnerar True när den hittat målmarkeringen
 bool goal_detected()
 {
-	if(tape_value == 0x03)
-	{
-		//tape_value = 0x04; // "Nollställ" senaste tejpavläsningen
-		return true;
-	}
-	else
-		return false;
+	return tape_value == 0x03;
 }
 
 
-// Reglerar fram till målet
+// Reglerar fram till målet längs en linje
 void goal_regulated()
 {
 	PORTB = 0x03;
@@ -336,7 +330,8 @@ void goal_regulated()
 }
 
 
-// Hämtar objektet
+// Efter att roboten hittat målmarkeringen (i find_goal()) 
+// reglerar den fram, tar föremålet och vänder sig om
 void get_target()
 {
 	uint8_t grip_switch = 4;

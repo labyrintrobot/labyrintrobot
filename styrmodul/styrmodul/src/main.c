@@ -96,7 +96,6 @@ int main (void)
 		{
 			button = PINA & 0x02; // Läs PortA, pinA0		
 
-			// Kommenterat bort en massamassa test //
 			
 			if(button != 0) // Startar autonomt läge
 			{

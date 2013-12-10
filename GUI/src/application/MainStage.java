@@ -1,5 +1,9 @@
 package application;
 
+import indicators.ArmSignalIndicator;
+import indicators.ControlSignalIndicator;
+import indicators.TapeSignalIndicator;
+
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -7,7 +11,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-import application.NumericUpDown.ICallback;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
@@ -34,6 +37,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import application.NumericUpDown.ICallback;
 
 /**
  * The main stage shown. Currently too big for its own good.
@@ -59,7 +63,9 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 	// Adapters and custom controls
 	private final ControllerAdapter controllerAdapter;
 	private final BluetoothAdapter bluetoothAdapter;
-	private final ControlPad controlPad;
+	private final ArmSignalIndicator armSingnalIndicator;
+	private final ControlSignalIndicator controlSignalIndicator;
+	private final TapeSignalIndicator tapeSignalIndicator;
 	private final ChartSelectorControl chartSelectorPad;
 
 	// Buttons
@@ -108,7 +114,9 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 		this.progressIndicator = new ProgressIndicator(-1.0);
 
 		this.controllerAdapter = new ControllerAdapter(bluetoothAdapter);
-		this.controlPad = new ControlPad();
+		this.armSingnalIndicator = new ArmSignalIndicator();
+		this.controlSignalIndicator = new ControlSignalIndicator();
+		this.tapeSignalIndicator = new TapeSignalIndicator();
 		this.chartSelectorPad = new ChartSelectorControl(new ChartSelectorControl.ToggleCallback() {
 
 			@Override
@@ -304,22 +312,30 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 		VBox northBox = new VBox();
 		HBox southBox = new HBox();
 		HBox buttonBox = new HBox();
-		VBox controlButtonBox = new VBox();
+		VBox southChildBox1 = new VBox();
+		VBox southChildBox2 = new VBox();
+		VBox southChildBox3 = new VBox();
 
 		northBox.setAlignment(Pos.TOP_CENTER);
 		southBox.setAlignment(Pos.BOTTOM_CENTER);
 		buttonBox.setAlignment(Pos.CENTER);
-		controlButtonBox.setAlignment(Pos.CENTER);
+		southChildBox1.setAlignment(Pos.CENTER);
+		southChildBox2.setAlignment(Pos.CENTER);
+		southChildBox3.setAlignment(Pos.CENTER);
 
+		southChildBox1.getChildren().addAll(this.armSingnalIndicator, this.controlSignalIndicator);
+		southChildBox2.getChildren().addAll(this.chartSelectorPad, this.tapeSignalIndicator);
+		southChildBox3.getChildren().addAll(this.pSelector, this.dSelector, this.speedSelector);
 		buttonBox.getChildren().addAll(this.pauseButton,this.progressIndicator, this.clearButton);
-		controlButtonBox.getChildren().addAll(this.pSelector, this.dSelector, this.speedSelector);
 		northBox.getChildren().addAll(buttonBox, this.minSlider, this.minSliderLabel, this.maxSlider, this.maxSliderLabel);
-		southBox.getChildren().addAll(this.errorLog, this.controlPad, this.chartSelectorPad, controlButtonBox);
+		southBox.getChildren().addAll(this.errorLog, southChildBox1, southChildBox2, southChildBox3);
 		
 		buttonBox.setSpacing(16);
 		southBox.setSpacing(16);
 		northBox.setPadding(new Insets(16));
-		controlButtonBox.setSpacing(16);
+		southChildBox1.setSpacing(16);
+		southChildBox2.setSpacing(16);
+		southChildBox3.setSpacing(16);
 
 		BorderPane root = new BorderPane();
 		root.setTop(northBox);
@@ -523,57 +539,57 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 			switch (data) {
 
 			case 0x00:
-				controlPad.pressForward();
+				this.controlSignalIndicator.pressForward();
 				log("Signal - Forward");
 				break;
 
 			case 0x01:
-				controlPad.pressBackwards();
+				this.controlSignalIndicator.pressBackwards();
 				log("Signal - Backwards");
 				break;
 
 			case 0x02:
-				controlPad.pressRightForward();
+				this.controlSignalIndicator.pressRightForward();
 				log("Signal - Turning right");
 				break;
 
 			case 0x03:
-				controlPad.pressLeftForward();
+				this.controlSignalIndicator.pressLeftForward();
 				log("Signal - Turning left 90 deg");
 				break;
 
 			case 0x04:
-				controlPad.pressRotateRight();
+				this.controlSignalIndicator.pressRotateRight();
 				log("Signal - Rotating right 90 deg");
 				break;
 
 			case 0x05:
-				controlPad.pressRotateLeft();
+				this.controlSignalIndicator.pressRotateLeft();
 				log("Signal - Rotating left");
 				break;
 
 			case 0x06:
-				controlPad.pressStop();
+				this.controlSignalIndicator.pressStop();
 				log("Signal - Stop");
 				break;
 				
 			case 0x07:
-				controlPad.pressRotateRight();
+				this.controlSignalIndicator.pressRotateRight();
 				log("Signal - Rotate right");
 				break;
 
 			case 0x08:
-				controlPad.pressRotateLeft();
+				this.controlSignalIndicator.pressRotateLeft();
 				log("Signal - Rotate left");
 				break;
 				
 			case 0x09:
-				controlPad.pressOpenArm();
+				this.armSingnalIndicator.pressOpenArm();
 				log("Signal - Open arm");
 				break;
 
 			case 0x0A:
-				controlPad.pressCloseArm();
+				this.armSingnalIndicator.pressCloseArm();
 				log("Signal - Close arm");
 				break;
 
@@ -610,22 +626,22 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 			switch (data) {
 			
 			case 0x00:
-				controlPad.pressTapeRight();
+				this.tapeSignalIndicator.pressTapeRight();
 				log("Tape signal - Right");
 				break;
 				
 			case 0x01:
-				controlPad.pressTapeLeft();
+				this.tapeSignalIndicator.pressTapeLeft();
 				log("Tape signal - Left");
 				break;
 				
 			case 0x02:
-				controlPad.pressTapeStart();
+				this.tapeSignalIndicator.pressTapeStart();
 				log("Tape signal - Start");
 				break;
 				
 			case 0x03:
-				controlPad.pressTapeFinish();
+				this.tapeSignalIndicator.pressTapeFinish();
 				log("Tape signal - Finish");
 				break;
 				

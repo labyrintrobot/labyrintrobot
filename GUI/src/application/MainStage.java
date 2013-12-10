@@ -149,13 +149,13 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 	/**
 	 * Generates a LineChart with given properties.
 	 */
-	private LineChart<Number, Number> generateRealTimeChart(Diagrams ss) {
+	private LineChart<Number, Number> generateRealTimeChart(Diagrams dia) {
 
 		// Setup
 		NumberAxis xAxis = new NumberAxis(0, 100, 100);
-		NumberAxis yAxis = new NumberAxis(ss.getMin(), ss.getMax(), (ss.getMax() - ss.getMin()) / 8);
+		NumberAxis yAxis = new NumberAxis(dia.getMin(), dia.getMax(), (dia.getMax() - dia.getMin()) / 8);
 		xAxis.setLabel("Time");
-		yAxis.setLabel(ss.getyText());
+		yAxis.setLabel(dia.getyText());
 		xAxis.setForceZeroInRange(false);
 
 		LineChart<Number, Number> lc = new LineChart<>(xAxis, yAxis);
@@ -163,7 +163,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 		lc.setAnimated(false);
 		lc.setCreateSymbols(false);
 
-		lc.setTitle(ss.getTitle());
+		lc.setTitle(dia.getTitle());
 		lc.setLegendVisible(false);
 
 		Set<Node> lookupAll = lc.lookupAll(".series0");
@@ -177,14 +177,22 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 	/**
 	 * Changes LineChart data completely.
 	 */
-	private void setLineChartData(final List<XYChart.Data<Number, Number>> data, final String title, final int yMin, final int yMax, final String yText) {
+	private void setLineChartData(final Diagrams dia, final boolean paused) {
 		Platform.runLater(new Runnable() {
 
 			@Override
 			public void run() {
+				
+				List<XYChart.Data<Number, Number>> data;
+				if (paused) {
+					data = dia.getPausedData();
+				} else {
+					data = dia.getPausedData();
+				}
+				
 				XYChart.Series<Number, Number> series = new XYChart.Series<>();
 
-				lineChart.setTitle(title);
+				lineChart.setTitle(dia.getTitle());
 
 				int lower = (int) (minSlider.getValue() * data.size());
 				int upper = (int) (maxSlider.getValue() * data.size());
@@ -199,10 +207,10 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 					xAxis.setUpperBound(data.get(upper - 1).getXValue().doubleValue());
 				}
 
-				yAxis.setLabel(yText);
-				yAxis.setLowerBound(yMin);
-				yAxis.setUpperBound(yMax);
-				yAxis.setTickUnit((yMax - yMin) / 8);
+				yAxis.setLabel(dia.getyText());
+				yAxis.setLowerBound(dia.getMin());
+				yAxis.setUpperBound(dia.getMax());
+				yAxis.setTickUnit((dia.getMax() - dia.getMin()) / 8);
 
 				lineChart.getData().clear();
 				lineChart.getData().add(series);
@@ -250,12 +258,8 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 	 * Updates the data for the currently selected LineChart.
 	 */
 	private void updateLineChart() {
-		Diagrams stb = chartSelectorPad.getSelected();
-		if (paused) {
-			setLineChartData(stb.getPausedData(), stb.getTitle(), stb.getMin(), stb.getMax(), stb.getyText());
-		} else {
-			setLineChartData(stb.getCurrentData(), stb.getTitle(), stb.getMin(), stb.getMax(), stb.getyText());
-		}
+		Diagrams dia = chartSelectorPad.getSelected();
+		setLineChartData(dia, this.paused);
 	}
 
 	public void start(Stage primaryStage) {
@@ -320,7 +324,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 		root.setTop(northBox);
 		root.setBottom(southBox);
 		root.setCenter(this.lineChart);
-		Scene scene = new Scene(root, 1280, 1024);
+		Scene scene = new Scene(root, 1280, 720);
 		primaryStage.setScene(scene);
 
 		EventHandler<KeyEvent> pressEvent = new EventHandler<KeyEvent>() {
@@ -493,6 +497,9 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 	 * Helper function for receiveMessage.
 	 */
 	private void updateLineChartData(int newData, Diagrams ss) {
+		if (! ss.isUnsigned()) {
+			newData = (byte) newData;
+		}
 		XYChart.Data<Number, Number> data = new XYChart.Data<Number, Number>((System.currentTimeMillis() - startTime) / 100, newData);
 		ss.getCurrentData().add(data);
 		if (! paused) {

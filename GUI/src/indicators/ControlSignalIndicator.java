@@ -60,6 +60,10 @@ public class ControlSignalIndicator extends SignalIndicatorParent {
 		this.getChildren().addAll(this.sigLabel, sigBox1, sigBox2, sigBox3);
 	}
 	
+	public void clear() {
+		this.dirSignalsGroup.getSelectedToggle().setSelected(false);
+	}
+	
 	public void pressLeftForward() {
 		this.leftForward.setSelected(true);
 	}

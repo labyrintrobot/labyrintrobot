@@ -453,6 +453,10 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 				startTime = System.currentTimeMillis();
 				updateLineChart();
 				MainStage.this.errorLog.setText("");
+				
+				armSingnalIndicator.clear();
+				controlSignalIndicator.clear();
+				tapeSignalIndicator.clear();
 			}
 		});
 

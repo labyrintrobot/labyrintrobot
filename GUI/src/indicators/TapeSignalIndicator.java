@@ -2,6 +2,7 @@ package indicators;
 
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
+import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.HBox;
@@ -54,6 +55,13 @@ public class TapeSignalIndicator extends SignalIndicatorParent {
 		tapeMainBox.getChildren().addAll(this.tapeLabel, tapeBox1, tapeBox2);
 
 		this.getChildren().addAll(armMainBox, sigMainBox, tapeMainBox);
+	}
+	
+	public void clear() {
+		Toggle sel = this.tapeGroup.getSelectedToggle();
+		if (sel != null) {
+			sel.setSelected(false);
+		}
 	}
 	
 	public void pressTapeLeft() {

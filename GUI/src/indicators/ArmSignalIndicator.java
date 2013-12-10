@@ -7,7 +7,7 @@ import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.HBox;
 
 /**
- * A GUI control that displays to the user the actions of the arms of the robot.
+ * A GUI control that displays the actions of the robot's arms.
  * @author Emil Berg
  *
  */
@@ -38,6 +38,10 @@ public class ArmSignalIndicator extends SignalIndicatorParent {
 		armBox.getChildren().addAll(this.openArm, this.closeArm);
 		
 		this.getChildren().addAll(this.armLabel, armBox);
+	}
+	
+	public void clear() {
+		this.armSignalsGroup.getSelectedToggle().setSelected(false);
 	}
 
 	public void pressOpenArm() {

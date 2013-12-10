@@ -11,6 +11,8 @@ import javafx.scene.layout.VBox;
  */
 public abstract class SignalIndicatorParent extends VBox {
 
+	public abstract void clear();
+	
 	protected ToggleButton generateButton(String text, ToggleGroup group) {
 		ToggleButton b = new ToggleButton(text);
 		b.setToggleGroup(group);

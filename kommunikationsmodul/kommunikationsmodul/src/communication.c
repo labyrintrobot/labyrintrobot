@@ -80,11 +80,11 @@ void mainfunction() {
 				cli();
 				twi_send_err = TWI_master_send_message(TWI_CONTROL_MODULE_ADDRESS, header, data);
 				sei();
-			} else if (header == 0x01) {
-				// Control module is sending. Relay to firefly
+			} else if (header == 0x01 || header == 0x0C) {
+				// Control module is sending, or error
 				USART_transmit(header, data);
-			} else if (header == 0x02) {
-				// FireFly is sending a calibration command. Relay to sensor module.
+			} else if (header == 0x02 || header == 0x13) {
+				// Calibration command or item picked up signal
 				cli();
 				twi_send_err = TWI_master_send_message(TWI_SENSOR_MODULE_ADDRESS, header, data);
 				sei();
@@ -94,11 +94,7 @@ void mainfunction() {
 				twi_send_err = TWI_master_send_message(TWI_CONTROL_MODULE_ADDRESS, header, data);
 				sei();
 				USART_transmit(header, data);
-			} else if (header == 0x0C) {
-				// Error. Relay to FireFly.
-				USART_transmit(header, data);
-				//
-			} else if(header==0x0D) {
+			} else if (header == 0x0D) {
 				// TODO: Ping
 			} else {
 				// Invalid header. Send error message
@@ -148,7 +144,7 @@ void mainfunction() {
 	}
 }
 
-// function to tell the slaves that it is ready to handle their interrupts
+// Function to tell the slaves that it is ready to handle their interrupts. Currently unused.
 int TWI_master_init_slaves() {
 	
 	uint8_t init_header;

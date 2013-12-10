@@ -291,8 +291,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 				}
 			}
 		});
-
-		this.controlPad.pressStop();
+		
 		this.errorLog.setEditable(false);
 
 		primaryStage.setTitle("Labyrintrobot");
@@ -320,6 +319,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 		buttonBox.setSpacing(16);
 		southBox.setSpacing(16);
 		northBox.setPadding(new Insets(16));
+		controlButtonBox.setSpacing(16);
 
 		BorderPane root = new BorderPane();
 		root.setTop(northBox);

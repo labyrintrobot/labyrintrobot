@@ -45,8 +45,10 @@ public class NumericUpDown extends HBox {
 		this.rightBox = new VBox();
 		
 		this.textField = new TextField(Integer.toString(value));
-		this.up = new Button("↑");
-		this.down = new Button("↓");
+		//this.up = new Button("↑");
+		//this.down = new Button("↓");
+		this.up = new Button("+");
+		this.down = new Button("-");
 		
 		this.label = new Label(text);
 		this.label.setMinWidth(42);
@@ -91,6 +93,13 @@ public class NumericUpDown extends HBox {
 				checkText(val, val - 1);
 			}
 		});
+		
+		this.up.setStyle("-fx-font: 8 arial;");
+		this.down.setStyle("-fx-font: 8 arial;");
+		this.up.setMaxHeight(this.textField.getHeight() / 2);
+		this.down.setMaxHeight(this.textField.getHeight() / 2);
+		this.up.setMinWidth(24);
+		this.down.setMinWidth(24);
 	}
 	
 	private void checkText(int oldVal, int newVal) {

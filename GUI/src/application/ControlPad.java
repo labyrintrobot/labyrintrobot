@@ -41,7 +41,9 @@ public class ControlPad extends VBox {
 	public ControlPad() {
 
 		this.setAlignment(Pos.CENTER);
+		this.setSpacing(10);
 
+		VBox armMainBox = new VBox();
 		VBox sigMainBox = new VBox();
 		VBox tapeMainBox = new VBox();
 		
@@ -56,6 +58,10 @@ public class ControlPad extends VBox {
 		HBox tapeBox1 = new HBox();
 		HBox tapeBox2 = new HBox();
 
+		armMainBox.setAlignment(Pos.CENTER);
+		sigMainBox.setAlignment(Pos.CENTER);
+		tapeMainBox.setAlignment(Pos.CENTER);
+		
 		armBox.setAlignment(Pos.CENTER);
 		
 		sigBox1.setAlignment(Pos.TOP_CENTER);
@@ -92,10 +98,11 @@ public class ControlPad extends VBox {
 		tapeBox1.getChildren().addAll(this.tapeStart);
 		tapeBox2.getChildren().addAll(this.tapeLeft, this.tapeFinish, this.tapeRight);
 		
-		sigMainBox.getChildren().addAll(sigBox1, sigBox2, sigBox3);
-		tapeMainBox.getChildren().addAll(tapeBox1, tapeBox2);
+		armMainBox.getChildren().addAll(this.armLabel, armBox);
+		sigMainBox.getChildren().addAll(this.sigLabel, sigBox1, sigBox2, sigBox3);
+		tapeMainBox.getChildren().addAll(this.tapeLabel, tapeBox1, tapeBox2);
 
-		this.getChildren().addAll(armLabel, armBox, sigLabel, sigMainBox, tapeLabel, tapeMainBox);
+		this.getChildren().addAll(armMainBox, sigMainBox, tapeMainBox);
 	}
 
 	private ToggleButton generateButton(String text, ToggleGroup group) {

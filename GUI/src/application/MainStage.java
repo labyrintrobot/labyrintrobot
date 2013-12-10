@@ -607,9 +607,31 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 			break;
 		case TAPE:
 			updateLineChartData(data, Diagrams.TAPE);
+			switch (data) {
+			
+			case 0x00:
+				log("Tape signal - Right");
+				break;
+				
+			case 0x01:
+				log("Tape signal - Left");
+				break;
+				
+			case 0x02:
+				log("Tape signal - Start");
+				break;
+				
+			case 0x03:
+				log("Tape signal - Finish");
+				break;
+				
+			default:
+				log("Illegal tape data received: 0x" + Integer.toHexString(data));
+				break;
+			}
 			break;
 		case ERROR:
-			log("Error code 0x" + Integer.toHexString(data));
+			log("Error: 0x" + Integer.toHexString(data));
 			break;
 		case PING:
 			if (data != 0x00) {

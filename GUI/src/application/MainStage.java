@@ -310,6 +310,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 		northBox.setAlignment(Pos.TOP_CENTER);
 		southBox.setAlignment(Pos.BOTTOM_CENTER);
 		buttonBox.setAlignment(Pos.CENTER);
+		controlButtonBox.setAlignment(Pos.CENTER);
 
 		buttonBox.getChildren().addAll(this.pauseButton,this.progressIndicator, this.clearButton);
 		controlButtonBox.getChildren().addAll(this.pSelector, this.dSelector, this.speedSelector);
@@ -477,16 +478,16 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 	 * Logs in "terminal"
 	 */
 	private void log(final String text) {
-		final StringBuilder sb = new StringBuilder();
-		sb.append(errorLog.getText());
-		sb.append(hourMinuteSecond.format(new Date()));
-		sb.append(": ");
-		sb.append(text);
-		sb.append('\n');
 		Platform.runLater(new Runnable() {
 
 			@Override
 			public void run() {
+				final StringBuilder sb = new StringBuilder();
+				sb.append(errorLog.getText());
+				sb.append(hourMinuteSecond.format(new Date()));
+				sb.append(": ");
+				sb.append(text);
+				sb.append('\n');
 				MainStage.this.errorLog.setText(sb.toString());
 				MainStage.this.errorLog.positionCaret(MainStage.this.errorLog.getText().length()); // Scroll to end
 			}
@@ -610,18 +611,22 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 			switch (data) {
 			
 			case 0x00:
+				controlPad.pressTapeRight();
 				log("Tape signal - Right");
 				break;
 				
 			case 0x01:
+				controlPad.pressTapeLeft();
 				log("Tape signal - Left");
 				break;
 				
 			case 0x02:
+				controlPad.pressTapeStart();
 				log("Tape signal - Start");
 				break;
 				
 			case 0x03:
+				controlPad.pressTapeFinish();
 				log("Tape signal - Finish");
 				break;
 				

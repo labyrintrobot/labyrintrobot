@@ -8,7 +8,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
 /**
- * A GUI control that displays to the user what the control module is doing.
+ * A GUI control that displays the actions the robot takes depending on tapes.
  * @author Emil Berg
  *
  */

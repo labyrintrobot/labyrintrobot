@@ -7,7 +7,7 @@ import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.HBox;
 
 /**
- * A GUI control that displays to the user what the control module is doing.
+ * A GUI control that displays to the user the actions of the arms of the robot.
  * @author Emil Berg
  *
  */

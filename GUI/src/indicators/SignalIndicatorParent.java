@@ -5,7 +5,7 @@ import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.VBox;
 
 /**
- * A GUI control that displays to the user what the control module is doing.
+ * Parent for a GUI control that displays to the user what the robot is doing.
  * @author Emil Berg
  *
  */

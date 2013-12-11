@@ -2,6 +2,7 @@
  * communication.c
  * Functionality for receiving and sending both TWI and Bluetooth messages.
  * Created: 11/26/2013 5:43:02 PM
+ * Version 1.1
  *  Author: Kristoffer Borg, Emil Berg
  */
 

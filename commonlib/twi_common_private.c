@@ -1,6 +1,8 @@
 /*
  * twi_common_private.c
- *
+ * Common files for TWI. Shared between master and slave.
+ * Version 1.1
+ * 
  *  Author: Emil Berg, Kristoffer Borg
  */ 
 

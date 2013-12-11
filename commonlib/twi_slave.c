@@ -1,6 +1,7 @@
 ﻿/*
  * twi_slave.c
- *
+ * TWI code for slave.
+ * Version: 1.1
  * Created: 11/14/2013 5:47:41 PM
  *  Author: Emil Berg, Kristoffer Borg
  */ 

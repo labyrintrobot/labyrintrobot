@@ -1,6 +1,7 @@
 /*
  * twi_common_private.h
  *
+ * Version 1.1
  *  Author: Emil Berg, Kristoffer Borg
  */ 
 

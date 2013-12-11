@@ -1,3 +1,9 @@
+/*
+ * USART.h
+ *
+ * Version: 1.0
+ *  Author: Kristoffer Borg, Emil Berg
+ */ 
 #ifndef USART_H_
 #define USART_H_
 

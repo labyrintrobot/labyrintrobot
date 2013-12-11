@@ -1,6 +1,7 @@
 ﻿/*
  * twi_master.h
  *
+ * Version: 1.1
  * Created: 11/14/2013 6:00:15 PM
  *  Author: Emil Berg, Kristoffer Borg
  */

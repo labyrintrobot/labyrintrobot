@@ -2,6 +2,7 @@
  * communication.h
  *
  * Created: 11/27/2013 2:31:49 PM
+ * Version 1.0
  *  Author: Kristoffer Borg
  */ 
 

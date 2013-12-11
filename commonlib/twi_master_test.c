@@ -1,6 +1,7 @@
 ﻿/*
  * twi_master_test.c
- *
+ * Test code for master TWI.
+ * Version: 1.1
  * Created: 11/25/2013 10:09:26 AM
  *  Author: emibe709
  */

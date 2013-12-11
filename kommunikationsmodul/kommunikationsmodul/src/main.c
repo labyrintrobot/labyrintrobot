@@ -1,6 +1,7 @@
 /*
  * main.c
  * Starting point of the application.
+ * Version 1.0
  *  Author: Kristoffer Borg, Emil Berg
  */
 

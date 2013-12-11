@@ -1,8 +1,9 @@
 ﻿/*
  * USART.c
- *
+ * Code for USART FireFly communication.
+ * Version: 1.1
  * Created: 11/21/2013 1:36:47 PM
- *  Author: kribo852
+ *  Author: Kristoffer Borg, Emil Berg
  */ 
 
 #include "USART.h"

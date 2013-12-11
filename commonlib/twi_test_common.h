@@ -1,6 +1,7 @@
 /*
  * twi_test_common.h
- *
+ * Common file for TWI tests.
+ * Version: 1.0
  *  Author: Emil Berg, Kristoffer Borg
  */
 

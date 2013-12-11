@@ -2,6 +2,7 @@
  * queue.h
  *
  * Created: 11/28/2013 2:31:23 PM
+ * Version 0.1
  *  Author: Emil Berg, Kristoffer Borg
  */ 
 

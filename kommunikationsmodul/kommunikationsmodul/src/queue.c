@@ -1,6 +1,7 @@
 /*
  * queue.c
  * A simple queue implementation. Currently unused.
+ * Version 0.1
  *  Author: Emil Berg, Kristoffer Borg
  */ 
 

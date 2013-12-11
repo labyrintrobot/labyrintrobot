@@ -1,6 +1,7 @@
 /*
  * twi_slave_test.c
- *
+ * TWI code for slave.
+ * Version: 1.1
  *  Author: Emil Berg
  */
 

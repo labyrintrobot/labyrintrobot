@@ -1,15 +1,15 @@
 /*
  * auto_functions.h
  *
- * Created: 2013-12-11
+ * Latest update: 2013-12-11
  * Version: 1.0
  * Authors: Viktoria Nowén, Kim Persson
  *
- * Denna fil borde vara en .c-fil
- * 
- * Innehåller funktioner för att roboten ska kunna gå i autonomt läge
+ * Innehåller funktioner för att roboten ska kunna gå i autonomt läge.
+ * Använder funktionen send för att skicka styrsignaler.
  *
  */ 
+
 #define turn_left 0x00;
 #define go_forward 0x01;
 #define turn_right 0x02;
@@ -34,11 +34,10 @@ void return_to_start(void);
 void turn_back(int direction);
 
 
-int		direction_array[50];
-int		i = 0;
-uint8_t test_speed = 0x70;
+int	direction_array[50];	// En array med sparade vägval
+int	i = 0;					// Indexering för arrayen
 
-
+// Returnera true när roboten kommit in i en korridor
 bool inside_corridor()
 {
 	if(left_long_s < 70 && right_long_s < 70)
@@ -47,36 +46,36 @@ bool inside_corridor()
 	return false;
 }
 
-//returnera true när roboten befinner sig mitt i 80x80-biten i en sväng eller en korsning med en vägg rakt fram.
+// Returnera true när roboten befinner sig mitt i 80x80-biten i en sväng eller en korsning med en vägg rakt fram.
 bool intersection_stop()
 {
-	if(forward_right_s<31)
-	return true;
+	if(forward_center_s < 31)
+		return true;
 	else
-	return false;
+		return false;
 }
 
-void get_into_intersection() // Kör in till mitten av korsningen, om det är en vägg framför: kör på avståndet, om det saknas vägg: kör på tid
+// Kör in till mitten av korsningen, om det är en vägg framför: kör på avståndet, om det saknas vägg: kör på tid
+void get_into_intersection() 
 {
 	send(0x01, 0x00);
-	forward(0x50); //kör framåt
-	_delay_ms(250);//en viss tid(500)
+	forward(0x50);					// Kör framåt
+	_delay_ms(250);					// En viss tid
 
-	if(forward_right_s < 80) //Om det är en vägg framför
+	if(forward_right_s < 80 && forward_left_s < 80)		// Om det är en vägg framför
 	{
-		while(!intersection_stop()) //Kör tills det är 30 cm kvar till väggen
+		while(!intersection_stop()) // Vänta tills det är 30 cm kvar till väggen
 		{
 			forward(0x50);
 		}
-		send(0x01, 0x06);
-		stop();
+		send(0x01, 0x06);			// Skicka att den stannat
+		stop();						// Stanna
 	}
 	else //Annars om det inte är en vägg framför
 	{
-
-		_delay_ms(400);
-		send(0x01, 0x06);
-		stop();
+		_delay_ms(400);				// En viss tid
+		send(0x01, 0x06);			// Skicka att den stannat
+		stop();						// Stanna
 	}
 }
 
@@ -86,19 +85,18 @@ bool intersection_detected()
 	return ((left_long_s > 90) || (right_long_s > 90));
 }
 
-
 // Svänger vänster som förstaval
 int unmarked_intersection_choice()
 {
-	if(left_long_s > 90) // vänster håll öppet
+	if(left_long_s > 90)			// Vänster håll öppet
 	{
 		return turn_left;
 	}
-	else if(right_long_s > 90) // höger öppet
+	else if(right_long_s > 90)		// Höger öppet
 	{
 		return turn_right;
 	}
-	else if(forward_right_s > 90) // forward
+	else if(forward_right_s > 90)	// Framåt
 	{
 		return go_forward;
 	}
@@ -108,11 +106,10 @@ int unmarked_intersection_choice()
 	}
 }
 
-
 // Väljer att svänga beroende på tejpmarkering
 int marked_intersection_choice()
 {
-	//tape: 0x00 = right, tape: 0x01 = left
+	// tape: 0x00 = right, tape: 0x01 = left
 	if((tape_value == 0x00) & (right_long_s < 80))
 	{
 		tape_value = 0x04; // "Nollställ"
@@ -135,60 +132,70 @@ int marked_intersection_choice()
 	}
 }
 
-
-
 // Kör framåt i en korridor (labyrinten) med hjälp av PD-reglering
 void forward_regulated()
 {
-	if(forward_left_s < 30 && forward_right_s < 30)
+	if(forward_left_s < 30 && forward_right_s < 30) //Ifall det kommer en återvändsgränd
 	{
+		send(0x01, 0x04);
 		rotate_right90(0x90);
 		_delay_ms(500);
+		send(0x01, 0x04);
 		rotate_right90(0x90);
 		_delay_ms(500);
 	}
 	
-	else if(forward_right_s < 30 && forward_left_s > 80) // avsmalning åt vänster
+	else if(forward_right_s < 30 && forward_left_s > 80) // Avsmalning åt vänster, kör in till vänster vägg
 	{
+		send(0x01, 0x06);
 		stop();
+		send(0x01, 0x05);
 		rotate_left90(0x90);
 		_delay_ms(250);
+		send(0x01, 0x00);
 		while(forward_center_s > 12)
 		{
 			forward(0x50);
 		}
+		send(0x01, 0x04);
 		rotate_right90(0x90);
+		send(0x01, 0x00);
 		while(right_short_s > 25)
 		{
 			forward(0x80);
 		}
 	}
 	
-	else if(forward_right_s > 80 && forward_left_s < 30) // avsmalning åt höger
+	else if(forward_right_s > 80 && forward_left_s < 30) // Avsmalning åt höger, kör in till höger vägg
 	{
+		send(0x01, 0x06);
 		stop();
+		send(0x01, 0x04);
 		rotate_right90(0x90);
 		_delay_ms(250);
+		send(0x01, 0x00);
 		while(forward_center_s > 12)
 		{
 			forward(0x50);
 		}
+		send(0x01, 0x05);
 		rotate_left90(0x90);
+		send(0x01, 0x00);
 		while(left_short_s > 25)
 		{
 			forward(0x80);
 		}
 	}
-	else
+	else // Reglera som vanligt i korridor
 	{
 		
 		PORTB = 0x03;
 		float u, Kp, Kd, P, D;
 		Kp = Kp_lsb;
 		Kd = Kd_lsb;
-		P = Kp * (float)e;
-		P = P / 10.0;
-		D = Kd * (float)(e- e_last);
+		P = Kp * (float)e; 
+		P = P / 10.0; // Beräkna P-del
+		D = Kd * (float)(e - e_last); // Beräkna D-del
 		u = P + D;
 		
 		if(u > 64) // Max-värde 0x40
@@ -201,30 +208,24 @@ void forward_regulated()
 		}
 		
 		// Reglera beroende på u
-		if((int)u > 0) // Turn right
+		if((int)u > 0) // Styr åt höger
 		{
-			//OCR1AL = 0xF0;
-			//OCR1BL = 0xF0 - (float) u / (float) 0x70 * (float) (0xF0 - 0x40);
-			OCR1BL = (speed - u);		// Right side
-			OCR1AL = (speed + u);	// left side
+			OCR1BL = (speed - u);	// Höger sida
+			OCR1AL = (speed + u);	// Vänster sida
 		}
-		else if((int)u < 0) // Turn left
+		else if((int)u < 0) // Styr åt vänster
 		{
-			OCR1BL = (speed - u);	// Right side
-			OCR1AL = (speed + u);	// left side
+			OCR1BL = (speed - u);	// Höger sida
+			OCR1AL = (speed + u);	// Vänster sida
 		}
 		
-		else // Don't turn, keep going
+		else // Styr rakt fram
 		{
-			OCR1BL = speed; // Right side
-			OCR1AL = speed; // Left side
+			OCR1BL = speed; // Höger sida
+			OCR1AL = speed; // Vänster sida
 		}
 	}
 }
-
-
-
-
 
 // Returnerar True när den hittat startmarkeringen
 // START = Två tjocka tejpmarkeringar (TT), tape = 0x02
@@ -236,60 +237,68 @@ bool start_detected()
 		return true;
 	}
 	else
-	return false;
+		return false;
 }
 
 // Kör framåt tills startmarkeringen hittas
 void find_start()
-{
+{	
+	send(0x01, 0x00);
 	while(!start_detected())
 	{
 		forward(0x80);
 	}
 }
 
-
-
 // I svängar och korsningar, använder sig av direction: turn_left = 0x00, go_forward = 0x01, turn_right = 0x02
 void turn(int direction)
 {
 	switch(direction){
 		case 0x00: // turn_left
-		rotate_left90(0x90);
-		send(0x01, 0x06);
-		stop();
-		send(0x01, 0x00);
-		while(!inside_corridor()) // Kör ut ur korsningen
-		{
-			forward(0x80);
-		}
-		send(0x01, 0x06);
-		stop();
-		break;
+			send(0x01, 0x05);
+			rotate_left90(0x90);
+			send(0x01, 0x06);
+			stop();
+			send(0x01, 0x00);
+			while(!inside_corridor()) // Kör ut ur korsningen
+			{
+				forward(0x80);
+			}
+			e = 0;
+			e_last = 0;
+			send(0x01, 0x06);
+			stop();
+			break;
 		case 0x01: // go_forward
-		send(0x01, 0x00);
-		while(!inside_corridor()) // Kör ut ur korsningen
-		{
-			forward(0x80);
-		}
-		send(0x01, 0x06);
-		stop();
-		break;
+			send(0x01, 0x00);
+			while(!inside_corridor()) // Kör ut ur korsningen
+			{
+				forward(0x80);
+			}
+			e = 0;
+			e_last = 0;
+			send(0x01, 0x06);
+			stop();
+			break;
 		case 0x02: // turn_right
-		rotate_right90(0x90);
-		send(0x01, 0x06);
-		stop();
-		while(!inside_corridor()) // Kör ut ur korsningen
-		{
-			forward(0x80);
-		}
-		send(0x01, 0x06);
-		stop();
-		break;
+			send(0x01, 0x04);
+			rotate_right90(0x90);
+			send(0x01, 0x06);
+			stop();
+			send(0x01, 0x00);			
+			while(!inside_corridor()) // Kör ut ur korsningen
+			{
+				forward(0x80);
+			}
+			e = 0;
+			e_last = 0;			
+			send(0x01, 0x06);
+			stop();
+			break;
 		case 0x03: // stay
-		send(0x01, 0x06);
-		stop();
-		break;
+			send(0x01, 0x06);
+			stop();
+			break;
 	}
 }
 
@@ -298,36 +307,52 @@ void turn_back(int direction)
 {
 	switch(direction){
 		case 0x00: //turn_left
-		rotate_right90(0x90);
-		stop();
-		while(!inside_corridor()) // Kör ut ur korsningen
-		{
-			forward(0x70);
-		}
-		stop();
-		break;
+			send(0x01, 0x04);
+			rotate_right90(0x90);
+			send(0x01, 0x06);
+			stop();
+			send(0x01, 0x00);
+			while(!inside_corridor()) // Kör ut ur korsningen
+			{
+				forward(0x70);
+			}
+			e = 0;
+			e_last = 0;			
+			send(0x01, 0x06);
+			stop();
+			break;
 		case 0x01: // go_forward
-		while(!inside_corridor()) // Kör ut ur korsningen
-		{
-			forward(0x70);
-		}
-		stop();
-		break;
+			send(0x01, 0x00);
+			while(!inside_corridor()) // Kör ut ur korsningen
+			{
+				forward(0x70);
+			}
+			e = 0;
+			e_last = 0;			
+			send(0x01, 0x06);
+			stop();
+			break;
 		case 0x02: // turn_right
-		rotate_left90(0x90);
-		stop();
-		while(!inside_corridor()) // Kör ut ur korsningen
-		{
-			forward(0x70);
-		}
-		stop();
-		break;
+			send(0x01, 0x05);
+			rotate_left90(0x90);
+			send(0x01, 0x06);
+			stop();
+			send(0x01, 0x00);
+			while(!inside_corridor()) // Kör ut ur korsningen
+			{
+				forward(0x70);
+			}
+			e = 0;
+			e_last = 0;			
+			send(0x01, 0x06);
+			stop();
+			break;
 		case 0x03:	// stay
-		stop();
-		break;
+			send(0x01, 0x06);
+			stop();
+			break;
 	}
 }
-
 
 // Returnerar True när den hittat målmarkeringen
 bool goal_detected()
@@ -335,14 +360,13 @@ bool goal_detected()
 	return (tape_value == 0x03);
 }
 
-
 // Reglerar fram till målet längs en linje
 void goal_regulated()
 {
 	PORTB = 0x03;
 	float u, Kp, Kd, P, D;
 	uint8_t u_max = 0x40;
-	Kp = 10;
+	Kp = 5;
 	Kd = 20;
 	P = Kp*(float)e;
 	P = P/10.0;
@@ -376,7 +400,7 @@ void goal_regulated()
 // Kör tills den hittar målet
 void find_goal()
 {
-	int direction;
+	int direction;	// Vägval
 	while(!goal_detected())
 	{
 		send(0x01, 0x00);
@@ -384,22 +408,21 @@ void find_goal()
 		{
 			forward_regulated();
 		}
-		
 		// Kommit till en korsning eller sväng
 		if(tape_value == 0x00 || tape_value == 0x01) // Markerad korsning, håll höger eller vänster
 		{
 			get_into_intersection();
 			direction = marked_intersection_choice();
 			turn(direction);
-			direction_array[i] = direction;
+			direction_array[i] = direction;		// Sparar det senaste vägvalet för att kunna köra tillbaka
 			i++;
 		}
-		else if(tape_value == 0x04)// Omarkerad korsning
+		else if(tape_value == 0x04) // Omarkerad korsning
 		{
 			get_into_intersection();
 			direction = unmarked_intersection_choice();
 			turn(direction);
-			direction_array[i] = direction;
+			direction_array[i] = direction;		// Sparar det senaste vägvalet för att kunna köra tillbaka
 			i++;
 		}
 	}
@@ -416,30 +439,38 @@ void find_goal()
 // reglerar den fram, tar föremålet och vänder sig om
 void get_target()
 {
-	uint8_t grip_switch = 4;
+	uint8_t grip_switch = 4;	// 4 = griparmsswitchen orörd
 	// Kör sakta fram till föremålet längs tejpmarkeringen
 	while(grip_switch == 4)
 	{
-		grip_switch = PINA & 0x04;
-		goal_regulated();
+		grip_switch = PINA & 0x04;	// Kollar switchen på griparmen
+		goal_regulated();			// Reglerar längs linjen fram till föremålet
 	}
 	// Framme vid föremålet
+	send(0x01, 0x06);
 	stop();
+	send(0x01, 0x0A);
 	grip_on();
-	// send(0x13, 1); // Skickar att föremålet är taget
-	backward(0x100);
 	_delay_ms(500);
+	send(0x01, 0x01);
+	backward(0x80);
+	_delay_ms(500);
+	send(0x01, 0x06);
 	stop();
+	send(0x01, 0x04);
 	rotate_left90(0x90);
-	_delay_ms(100);
+	_delay_ms(200);
+	send(0x01, 0x04);
 	rotate_left90(0x90);
+	_delay_ms(500);
 }
 
-// Använder sig av direction_array och går baklänges igenom den
+// Går igenom direction_array för att gå tillbaka till startpositionen i labyrinten
 void return_to_start()
 {
-	for(int x = i-1; x > 0; x--)
+	for(int x = i-1; x >= 0; x--)
 	{
+		send(0x01, 0x00);
 		while(!intersection_detected())
 		{
 			forward_regulated();
@@ -447,9 +478,11 @@ void return_to_start()
 		get_into_intersection();
 		turn_back(direction_array[x]);
 	}
+	send(0x01, 0x00);
 	while(!start_detected())
 	{
 		forward_regulated();
 	}
+	send(0x01, 0x06);
 	stop();
 }

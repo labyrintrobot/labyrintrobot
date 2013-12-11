@@ -1,9 +1,12 @@
 ﻿/*
  * communication.h
  *
- * Created: 2013-12-11
+ * Latest update: 2013-12-11
  * Version: 1.0
  * Authors: Viktoria Nowén, Kim Persson
+ *
+ * Innehåller funktioner för att kunna kommunicera med kommunikationsmodulen
+ *
  */ 
 
 
@@ -13,8 +16,7 @@ void start_sending(void);
 void stop_sending(void);
 void send(uint8_t h, uint8_t d);
 
-
-int err;
+int err;	// Felmeddelande
 
 enum header_t
 {
@@ -28,12 +30,9 @@ enum header_t
 	right_short_sensor = 0x09,
 	regulation_error = 0x0A,
 	tape_mark = 0x0B,
-	P_msb = 0x0E,
 	P_lsb = 0x0F,
-	D_msb = 0x10,
 	D_lsb = 0x11,
-    reg_speed = 0x12,
-	target_fetched = 0x13
+    reg_speed = 0x12
 };
 
 
@@ -46,21 +45,22 @@ void stop_sending()		// TWI avbrott
 	PORTD = 0x00;
 }
 
-
+// Skickar header och data
 void send(uint8_t h, uint8_t d)
 {
 	header_s = h;
 	data_s = d;
-	start_sending();
+	//start_sending();
 }
 
+// Tar emot kommandon, sensordata och reglerparameter
 ISR(TWI_vect)
 {
-	bool receive;
+	bool receive; // Sann om den ska ta emot
 	err = TWI_slave_wait_for_address(&receive);
+	// Styrmodulen tar emot
 	if (receive) {
 		err = TWI_slave_receive_message(&header_r, &data_r);
-		
 		switch(header_r)
 		{
 		case styrkommando:
@@ -89,21 +89,14 @@ ISR(TWI_vect)
 			break;
 		case regulation_error:
 			e_last = e;
-			int8_t to_signed = data_r; // unsigned till signed
+			int8_t to_signed = data_r;		// Unsigned till signed
 			e = to_signed;
 			break;
 		case tape_mark:
 			tape_value = data_r;
 			break;
-		// PD-regleringsdata
-		case P_msb:
-			Kp_msb = data_r;
-			break;
 		case P_lsb:
 			Kp_lsb = data_r;
-			break;
-		case D_msb:
-			Kd_msb = data_r;
 			break;
 		case D_lsb:
 			Kd_lsb = data_r;
@@ -113,13 +106,11 @@ ISR(TWI_vect)
 			break;
 		}
 	} 
+	// Styrmodulen skickar 
 	else 
 	{
-		stop_sending(); // sluta skicka interrupt
+		stop_sending();		// Sluta skicka interrupt
 		err = TWI_slave_send_message(header_s, data_s);
-		
 	}
-	
-
 }
 

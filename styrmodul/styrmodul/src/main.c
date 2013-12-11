@@ -1,29 +1,10 @@
-/**
- * \file
- *
- * \brief Empty user application template
- *
- */
-
-/**
- * \mainpage User Application template doxygen documentation
- *
- * \par Empty user application template
- *
- * Bare minimum empty user application template
- *
- * \par Content
- *
- * -# Include the ASF header files (through asf.h)
- * -# Minimal main function that starts with a call to board_init()
- * -# "Insert application code here" comment
- *
- */
-
 /*
- * Include header files for all drivers that have been imported from
- * Atmel Software Framework (ASF).
- */
+ * manin.c
+ *
+ * Created: 11/20/2013
+ * Authors: kimpe131, vikno623
+ *
+ */ 
 #include <asf.h>
 #include <avr/io.h>
 #include <inttypes.h>
@@ -103,12 +84,14 @@ int main (void)
 				//{
 				//	forward(0x70);	
 				//}
-				uint8_t grip_switch = 4;
-				while(grip_switch == 4)
-				{
-					grip_switch = PINA & 0x04;
-					goal_regulated();
-				}
+				//uint8_t grip_switch = 4;
+				//while(grip_switch == 4)
+				//{
+				//	grip_switch = PINA & 0x04;
+				//	goal_regulated();
+				//}
+				
+				find_goal();
 				stop();			
 			}
 			

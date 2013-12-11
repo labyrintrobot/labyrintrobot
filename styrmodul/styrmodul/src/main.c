@@ -1,8 +1,9 @@
 /*
- * manin.c
+ * main.c
  *
- * Created: 11/20/2013
- * Authors: kimpe131, vikno623
+ * Created: 2013-12-11
+ * Version: 1.0
+ * Authors: Viktoria Nowén, Kim Persson
  *
  */ 
 #include <asf.h>
@@ -59,10 +60,7 @@ int main (void)
 	pwm_start_G();
 	
 	sei(); // Avbrott
-//uint8_t test2 = 0;
-//float test = 25;
-//test = test/10;
-//test2 = test; 
+
 	while(1)
 	{
 		switch_ = (PINA & 0x01); // Läs PortA, pinA0
@@ -80,19 +78,10 @@ int main (void)
 			
 			if(button != 0) // Startar autonomt läge
 			{
-				//while(!goal_detected())	
-				//{
-				//	forward(0x70);	
-				//}
-				//uint8_t grip_switch = 4;
-				//while(grip_switch == 4)
-				//{
-				//	grip_switch = PINA & 0x04;
-				//	goal_regulated();
-				//}
-				
+				find_start();
 				find_goal();
-				stop();			
+				get_target();
+				return_to_start();			
 			}
 			
 			switch_ = PINA & 0x01;

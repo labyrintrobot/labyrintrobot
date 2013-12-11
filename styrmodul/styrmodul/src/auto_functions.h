@@ -1,11 +1,13 @@
 /*
  * auto_functions.h
  *
- * Created: 11/20/2013
- * Authors: kimpe131, vikno623
+ * Created: 2013-12-11
+ * Version: 1.0
+ * Authors: Viktoria Nowén, Kim Persson
  *
  * Denna fil borde vara en .c-fil
  * 
+ * Innehåller funktioner för att roboten ska kunna gå i autonomt läge
  *
  */ 
 #define turn_left 0x00;
@@ -26,36 +28,15 @@ bool goal_detected(void);
 void goal_regulated(void);
 void get_target(void);
 bool start_detected(void);
-void store_data(uint8_t header, uint8_t data);
-void narrowpath(void);
-
-// NYYY som kollar om någon tejp har körts över, typ,
-// kan kanske bara ha en funktion som hittar och avgör vad för tejp det är?
-// read_tape gör väl inget vettigt egentligen?
-bool tape_detected(int tape);
-bool read_tape(int tape_value);
 
 void turn(int direction);
 void return_to_start(void);
 void turn_back(int direction);
-uint8_t max(uint8_t value1 , uint8_t value2 , uint8_t value3);
 
 
 int		direction_array[50];
 int		i = 0;
 uint8_t test_speed = 0x70;
-
-
-uint8_t max(uint8_t value1 , uint8_t value2 , uint8_t value3){
-	
-	if(value1<value2)
-	value1=value2;
-	
-	if(value1<value3)
-	value1=value3;
-	
-	return value1;
-}
 
 
 bool inside_corridor()
@@ -77,6 +58,7 @@ bool intersection_stop()
 
 void get_into_intersection() // Kör in till mitten av korsningen, om det är en vägg framför: kör på avståndet, om det saknas vägg: kör på tid
 {
+	send(0x01, 0x00);
 	forward(0x50); //kör framåt
 	_delay_ms(250);//en viss tid(500)
 
@@ -86,12 +68,14 @@ void get_into_intersection() // Kör in till mitten av korsningen, om det är en v
 		{
 			forward(0x50);
 		}
+		send(0x01, 0x06);
 		stop();
 	}
 	else //Annars om det inte är en vägg framför
 	{
 
 		_delay_ms(400);
+		send(0x01, 0x06);
 		stop();
 	}
 }
@@ -260,7 +244,7 @@ void find_start()
 {
 	while(!start_detected())
 	{
-		forward(0xA0);
+		forward(0x80);
 	}
 }
 
@@ -272,30 +256,38 @@ void turn(int direction)
 	switch(direction){
 		case 0x00: // turn_left
 		rotate_left90(0x90);
+		send(0x01, 0x06);
 		stop();
+		send(0x01, 0x00);
 		while(!inside_corridor()) // Kör ut ur korsningen
 		{
-			forward(0x70);
+			forward(0x80);
 		}
+		send(0x01, 0x06);
 		stop();
 		break;
 		case 0x01: // go_forward
+		send(0x01, 0x00);
 		while(!inside_corridor()) // Kör ut ur korsningen
 		{
-			forward(0x70);
+			forward(0x80);
 		}
+		send(0x01, 0x06);
 		stop();
 		break;
 		case 0x02: // turn_right
 		rotate_right90(0x90);
+		send(0x01, 0x06);
 		stop();
 		while(!inside_corridor()) // Kör ut ur korsningen
 		{
-			forward(0x70);
+			forward(0x80);
 		}
+		send(0x01, 0x06);
 		stop();
 		break;
 		case 0x03: // stay
+		send(0x01, 0x06);
 		stop();
 		break;
 	}
@@ -381,37 +373,13 @@ void goal_regulated()
 	}
 }
 
-
-// Efter att roboten hittat målmarkeringen (i find_goal())
-// reglerar den fram, tar föremålet och vänder sig om
-void get_target()
-{
-	uint8_t grip_switch = 4;
-	// Kör sakta fram till föremålet längs tejpmarkeringen
-	while(grip_switch == 4)
-	{
-		grip_switch = PINA & 0x04;
-		goal_regulated();
-	}
-	// Framme vid föremålet
-	stop();
-	grip_on();
-	// send(0x13, 1); // Skickar att föremålet är taget
-	backward(0x100);
-	_delay_ms(500);
-	stop();
-	rotate_left90(0x90);
-	_delay_ms(100);
-	rotate_left90(0x90);
-}
-
-
 // Kör tills den hittar målet
 void find_goal()
 {
 	int direction;
 	while(!goal_detected())
 	{
+		send(0x01, 0x00);
 		while(!intersection_detected() && !goal_detected()) // Korridor
 		{
 			forward_regulated();
@@ -438,11 +406,34 @@ void find_goal()
 	tape_value = 0x04; // "Nollställ" tejpmarkeringen
 	
 	// Hittat målmarkeringen!
+	send(0x01, 0x06);
 	stop();
 	_delay_ms(500);
-	get_target();
+	
 }
 
+// Efter att roboten hittat målmarkeringen (i find_goal())
+// reglerar den fram, tar föremålet och vänder sig om
+void get_target()
+{
+	uint8_t grip_switch = 4;
+	// Kör sakta fram till föremålet längs tejpmarkeringen
+	while(grip_switch == 4)
+	{
+		grip_switch = PINA & 0x04;
+		goal_regulated();
+	}
+	// Framme vid föremålet
+	stop();
+	grip_on();
+	// send(0x13, 1); // Skickar att föremålet är taget
+	backward(0x100);
+	_delay_ms(500);
+	stop();
+	rotate_left90(0x90);
+	_delay_ms(100);
+	rotate_left90(0x90);
+}
 
 // Använder sig av direction_array och går baklänges igenom den
 void return_to_start()
@@ -461,67 +452,4 @@ void return_to_start()
 		forward_regulated();
 	}
 	stop();
-}
-
-// Vid avsmalning
-void narrowpath()
-{
-	bool direction;
-	uint16_t length_to_box;
-	
-	if(forward_left_s < 40 && forward_right_s > 80)
-	{
-		length_to_box = forward_left_s + 10; //lägg på skillnaden i längd mellan sensorn och mitten på roboten
-		direction = false;
-	}
-	else if(forward_right_s < 40 && forward_left_s > 80)
-	{
-		length_to_box = forward_right_s + 10;
-		direction = true;
-	}
-	else
-	return;
-	
-	uint16_t  zsquare = 1600 + (length_to_box * length_to_box); // 1600=40^2
-	
-	while(true)
-	{
-		uint16_t length_to_wall = (forward_left_s + forward_right_s + 20) / 2;
-		
-		if((length_to_wall * length_to_wall < zsquare) && ((direction && forward_right_s > forward_left_s) || (!direction && forward_right_s < forward_left_s)))
-		break;
-		
-		if(direction)
-		rotate_left();
-		else
-		rotate_right();
-	}
-	// Svängdelen klar, lås med while(1) vid testning
-	
-	while(true)
-	{
-		uint16_t length_to_wall = (forward_left_s + forward_right_s + 20)/2;
-		
-		if(4 * length_to_wall * length_to_wall < zsquare)
-		{
-			break;
-		}
-		forward(0x80);
-	}
-	
-	//har kört frammåt
-	
-	if(direction)
-	{
-		while(left_long_s + 10 > 60 && right_short_s + 10 > 20)
-		rotate_right();
-	}
-	else
-	{
-		while(right_long_s + 10 > 60 && left_short_s + 10 > 20)
-		rotate_right();
-	}
-	
-	//har roterat tillbaka
-	
 }

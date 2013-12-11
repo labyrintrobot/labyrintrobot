@@ -1,8 +1,9 @@
 ﻿/*
  * communication.h
  *
- * Created: 11/27/2013 4:29:52 PM
- *  Authors: kimpe131, vikno623
+ * Created: 2013-12-11
+ * Version: 1.0
+ * Authors: Viktoria Nowén, Kim Persson
  */ 
 
 

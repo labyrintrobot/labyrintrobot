@@ -1,8 +1,9 @@
 /*
  * man_functions.h
  *
- * Created: 11/20/2013
- * Authors: kimpe131, vikno623
+ * Created: 2013-12-11
+ * Version: 1.0
+ * Authors: Viktoria Nowén, Kim Persson
  *
  * Denna fil borde vara en .c-fil
  * 
@@ -75,10 +76,6 @@ void forward(int speed_)
 	PORTB = 0x03; 
 	OCR1BL = speed_; // right side
 	OCR1AL = speed_; // left side
-/*	if(switch_ == 0)
-	{
-		send(0x01, 0x00);
-	}*/
 }
 
 void backward(int speed_)
@@ -86,10 +83,6 @@ void backward(int speed_)
 	PORTB = 0x00;
 	OCR1BL = speed_; // right side
 	OCR1AL = speed_; // left side
-/*	if(switch_ == 0)
-	{
-		send(0x01, 0x01);
-	}	*/
 }
 
 void forward_left() // int speed_
@@ -168,11 +161,6 @@ void stop()
 	PORTB = 0x00;	// hjulens rotationsriktning (stilla)
 	OCR1BL = 0x00;	// vänster sida
 	OCR1AL = 0x00;	// höger sida
-/*	
-	if(switch_ == 0)
-	{
-		send(0x01, 0x06);
-	}*/
 }
 
 void grip_on() // stäng så att roboten kan hålla i en festis (lite för hårt nu)

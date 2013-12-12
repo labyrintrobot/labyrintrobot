@@ -1,5 +1,5 @@
 /*
- * sensor_tabel.c
+ * sensor_tabel.c v1.1
  *
  * Created: 2013-11-18 18:49:45
  *  Author: Hampus Nilsson
@@ -11,43 +11,39 @@
 
 uint8_t sensorTabel(uint8_t data,enum sensor_t sensor)
 {
-	float fData;
-	switch(sensor)
-	{
-		case S11:
+	float fData=0;
+	if(sensor == S11)
 		fData = sensor11(data);
-		break;
-		case S12:
+	if(sensor==S12)
 		fData = sensor12(data);
-		break;
-		case S21:
+	if(sensor == S21)
 		fData = sensor21(data);
-		break;
-		case S22:
+	if(sensor==S22)
 		fData = sensor22(data);
-		break;
-		case S23:
+	if(sensor==S23)
 		fData = sensor23(data);
-		break;
-		case S24:
+	if(sensor==S24)
 		fData = sensor24(data);
-		break;
-		case S13:
+	if(sensor==S13)
 		fData = sensor13(data);
-		break;
-		default:
-		fData = 0;
-		break;
-	}
 	return (uint8_t)fData;
 }
+
+//////////////////////////////////////////////////////////////
+//	Every sensor has its unique sensor table which has been //
+//	determined through testing.								//
+//	These functions will compare the sensor_data with the   //
+//	known values, it will then interpolate and return the 	//
+//	result.													//
+//////////////////////////////////////////////////////////////
+
 
 uint8_t sensor11(uint8_t data)
 {
 	float fData;
 	uint8_t x1,x2,y1,y2;
 	if(data > 215)
-		return 255;
+		return 0;
 	else if(data > 150)
 	{
 		x1=5;
@@ -98,7 +94,7 @@ uint8_t sensor11(uint8_t data)
 		y2=36;
 	}
 	else
-		return 0;
+		return 32;
 	fData = interpolate(y1,y2,x1,x2,data);
 	return fData;
 }
@@ -107,7 +103,7 @@ uint8_t sensor12(uint8_t data)
 	float fData;
 	uint8_t x1,x2,y1,y2;
 	if(data > 221)
-		return 255;
+		return 0;
 	else if(data > 154)
 	{
 		x1 = 221;
@@ -158,8 +154,8 @@ uint8_t sensor12(uint8_t data)
 		y2 = 32;
 	}
 	else
-		return 0;
-	fData = interpolate(y1,y2,x1,x2,data);
+		return 32;
+	fData = interpolate(x1,x2,y1,y2,data);
 	return (int)fData;
 }
 uint8_t sensor13(uint8_t data)
@@ -167,7 +163,7 @@ uint8_t sensor13(uint8_t data)
 	float fData;
 	uint8_t x1,x2,y1,y2;
 	if(data > 227)
-		return 255;
+		return 0;
 	else if(data > 145)
 	{
 		x1=5;
@@ -218,7 +214,7 @@ uint8_t sensor13(uint8_t data)
 		y2=34;
 	}
 	else
-		return 0;
+		return 32;
 	fData = interpolate(y1,y2,x1,x2,data);
 	return fData;
 }
@@ -227,7 +223,7 @@ uint8_t sensor21(uint8_t data)
 	float fData;
 	uint8_t x1,x2,y1,y2;
 	if(data > 219)
-		return 255;
+		return 0;
 	else if(data > 192)
 	{
 		x1=25;
@@ -320,7 +316,7 @@ uint8_t sensor21(uint8_t data)
 		y2=40;
 	}
 	else
-		return 0;
+		return 255;
 	fData = interpolate(y1,y2,x1,x2,data);	
 	return fData;
 }
@@ -329,7 +325,7 @@ uint8_t sensor22(uint8_t data)
 	float fData;
 	uint8_t x1,x2,y1,y2;
 	if(data > 222)
-		return 255;
+		return 0;
 	else if(data > 195 )
 	{
 		x1 = 25;
@@ -422,7 +418,7 @@ uint8_t sensor22(uint8_t data)
 		y2 = 39;
 	}
 	else
-		return 0;
+		return 255;
 	fData = interpolate(y1,y2,x1,x2,data);
 	return fData;
 
@@ -432,7 +428,7 @@ uint8_t sensor23(uint8_t data)
 	float fData;
 	uint8_t x1,x2,y1,y2;
 	if(data > 190)
-		return 255;
+		return 0;
 	else if (data >163)
 	{
 		x1 = 25;
@@ -525,7 +521,7 @@ uint8_t sensor23(uint8_t data)
 		y2 = 39;
 	}
 	else
-		return 0;
+		return 255;
 	fData = interpolate(y1,y2,x1,x2,data);
 	return fData;
 }
@@ -534,7 +530,7 @@ uint8_t sensor24(uint8_t data)
 	float fData;
 	uint8_t x1,x2,y1,y2;
 	if(data > 219)
-		return 255;
+		return 0;
 	else if(data > 193)
 	{
 		x1=25;
@@ -627,7 +623,7 @@ uint8_t sensor24(uint8_t data)
 		y2=40;
 	}
 	else
-		return 0;
+		return 255;
 	fData = interpolate(y1,y2,x1,x2,data);
 	return fData;
 }

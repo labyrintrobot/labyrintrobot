@@ -1,5 +1,5 @@
 /*
- * Interpolate.h
+ * Interpolate.h v1.0
  *
  * Created: 2013-11-19 21:31:46
  *  Author: Hampus Nilsson

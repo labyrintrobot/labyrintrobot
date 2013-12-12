@@ -2,6 +2,8 @@
 //================================================================
 // Gyro.c
 // Dai D Trinh
+// Version 1.1
+// 2013-11-23
 //================================================================
 //================================================================
 #include<asf.h>
@@ -20,7 +22,7 @@ unsigned int SPI_GetTemp(void) ;
 int SPI_GetNullvalue(void);
 
 
-//SPI interface initialize and waking up the Gyro ADC . Do once at start up.
+//SPI interface initialize and waking up the Gyro ADC. 
 unsigned int SPI_Init(void)
 {
 	/* Set direction for SPI pins SCK, MOSI, SS is output */
@@ -33,7 +35,7 @@ unsigned int SPI_Init(void)
 	
 	SPCR = (1<<SPE)|(1<<MSTR)|(0<<DORD)|(1<<CPOL)|(1<<CPHA)|(1<<SPR1)|(1<<SPR0) ;
 	
-	//Wake up !!!
+	//Wake up, turn on Gyro AD conversion  !!!
 	unsigned int ADC_response;
 	SS_Low;
 	SPI_EXCH(0b10011100);
@@ -65,8 +67,7 @@ unsigned int SPI_GetRate(void)
 	Dummy_response |= SPI_EXCH(0x00);
 
 	SPI_EXCH(0b10000000); //Send ADCC Read command
-	//_delay_us(150);  //Do we need this delay ????
-	
+		
 	//Read 2 byte and put in Rate;
 	Rate = SPI_EXCH(0x00)<<8;
 	Rate |= SPI_EXCH(0x00);

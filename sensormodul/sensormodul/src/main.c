@@ -1,4 +1,10 @@
 
+/* main.c
+/ Dai Duong Trinh, Hampus Nilsson 
+/ Version 1.5
+/ 2013-12-11
+/
+*/
 #include <asf.h>
 #include <util/delay.h>
 #include <avr/interrupt.h> 
@@ -9,20 +15,24 @@
 #include "twi_common.h"
 #include "twi_common_private.h"
 #include "Gyro.h"
-#include "Turn_90.h"
-#include "INT2_Enable.h"
-
-//bool sensor_switch = false;
+#include "INT0_Enable.h"
 
 
-/*/========= Gyro variable ========== */
-
-
-/*/===================================*/
+volatile bool styrmodul_interrupt = false;
+volatile bool turn_90_done = false;
+volatile bool over_mark = false, keep_right=0, keep_left=0, line1_small, line2_small;
+volatile uint8_t step=0,  marking;
+volatile uint16_t line1, line2, line3, line_distance=0;
 
 #define NUMBER_OF_SENSORS 7
-#define OVER_MARKING 0
 
+int8_t weight();
+uint8_t minimum_of(uint8_t v1,uint8_t v2);
+void controlSensor();
+int8_t controlled_e(int16_t val);
+
+
+// Headers för att skicka dator
 enum headers_t
 {
 	kortV = 0x03,
@@ -33,46 +43,47 @@ enum headers_t
 	longH = 0x08,
 	kortH = 0x09,
 	e = 0x0A,
-	tejpMarkering = 0x0B,
-	lin0 = 0x0C,
-	lin1 = 0x0D,
-	lin2 = 0x0E,
-	lin3 = 0x0F,
-	lin4 = 0x10,
-	lin5 = 0x11,	
+	tejpMarkering = 0x0B	
 };
 
-enum sensor_t currentSensor = S12;
+enum linjeCH_t { CH2=0x10, CH3=0x20, CH4 = 0x30, CH5 = 0x40, CH6 = 0x50, CH7 = 0x60, CH8 = 0x70, CH9=0x80, CH10=0x90}; 
+	//X1[DCBA] CH2 = 0001 = 0x00 ========X2[DCBA] CH3 = 0010 = 0x02 ======X3[DCBA]  CH4 = 0011 = 0x30=======
+	//X4[DCBA] CH5 = 0100 = 0x40;========X5[DCBA] CH6 = 0101 = 0x50 ======X6[DCBA]  CH7 = 0110 = 0x06=======
+	//X7[DCBA] CH8 = 0111 = 0x70=========X8[DCBA] CH9 = 1000 = 0x00 ======X9[DCBA] CH10 = 1001 = 0x90=======
+	//Legend: Xn is output port of Mux, [DCBA] is address port of Mux to get Xn, CHn is IR array channel 
+
 bool sensors_to_read[NUMBER_OF_SENSORS];
 uint8_t sensor_data[NUMBER_OF_SENSORS];
 uint8_t proper_sensor_data[NUMBER_OF_SENSORS];
-bool mux_sensors = false;
+uint8_t proper_sensor_data_old[NUMBER_OF_SENSORS];
 bool read_line = false;
-uint8_t last_marking;
-uint8_t counter;
+bool stop_sending = false;
+
 bool recieve;
+bool check;
+bool finish_found = false;
 enum headers_t data_to_send = kortV;
-enum headers_t data_to_send2 = tejpMarkering;
 uint8_t recieve_header;
 uint8_t recieve_data;
-//void controlSensor();
-//void lookUpSensor();
-//void narrowing();
+uint8_t orgmux = 0xE0;
+uint8_t currentSensor = 0;
 
+
+
+uint8_t line_sensors[9]; 
+uint8_t current_line = 0;
+
+int16_t regulation_error;
+uint8_t linmux = 0x60;
 
 
 int main (void)
 {
-<<<<<<< HEAD
-	board_init();		
+	board_init();
 	ADCsetup();
-	Int2_setup();		//Enable Extern interrupt INT2
-	SPI_Init();			//Init SPI bus for Gyro	
-	
-
 	TWI_slave_initialize(TWI_SENSOR_MODULE_ADDRESS);
-	
-	
+	TCCR1B |= (1<<CS12) | (1<<CS10); //Timer1 Init , Prescale = 1024
+	TCCR3B |= (1<<CS31) | (1<<CS30); //Timer3 Init , Prescale = 1024
 	sensors_to_read[S12]=true;
 	sensors_to_read[S21]=true;
 	sensors_to_read[S22]=true;
@@ -80,280 +91,420 @@ int main (void)
 	sensors_to_read[S23]=true;
 	sensors_to_read[S24]=true;
 	sensors_to_read[S13]=true;
-	DDRB = 0xFF; // debugging
-	DDRD = 0x2F; // mux signals
-	sei(); // Allow interrupts
-	TCNT1 = 0; //Start at 0
-	TCCR1B |= (1<<CS12) | (1<<CS10); //Timer1 prescale
 	
-	ADMUX = 0xE5;
 	
+	DDRD = 0x01; ;    //PORTD0 as output ( KM module Int)
+	PORTD &= ~(1<<PORTD0); //PORTD0 Low
+	
+//================ 1 sec delay using 16bits timer1 === OBS Delay less than 221ms is OKKKK @ 14.7456 MHz ===========
+//	 Wait to other boards to init...
+	_delay_ms(200);_delay_ms(200);_delay_ms(200);_delay_ms(200);_delay_ms(200);
+	
+//============= Init SPI, Timer0, Extern int ================
+	Int0_setup();		//Enable Extern interrupt INT2
+	SPI_Init();			//Init SPI bus for Gyro
+//============= Init Analog Compare =========================
+	ACSR |= (1<<ACIE);  //Enable AC int, default mode output toggle.
+	
+//============Setup timer0 and start timer, PB0 as Output and low ================
+	Timer0_setup_start();   // This function is in INT0_Enable.h
 
+		
+	ADMUX = 0xE0;
+	ADCSRA |= 1<<ADSC;
+	//Set Mux_sel port as output. Mux_sel[3:0] @ PD[7:4] and low
+	DDRD |= 0xF0;
+	PORTD &= 0x0F;
 	
-	
-	do_turn_90();  // Testing Gyro
-	
+		
+	////////////////////////////_____Main loop_____///////////////////////////////////////////
+
 	while(1)
 	{	
-	
-		// start a conversion at the first sensor to be read
-		//_delay_ms(100);
-		//lookUpSensor();
-		//if(TCNT1%107==0)
-		//{
-			// Linjesensor
-			// Set admux
-			// Set mux
-			// Starta ADC för linjesensor
-		//}
-		if(TCNT1 >= 1439)
+		// Läs av microswitchen för att stänga av linjeföljning när objekt är funnet
+		check = PINB&0x02;
+		if(check == 0)
+			read_line = false;
+		if(TCNT3 >=46079) // 0.2sec, reset stat-machine for line marking. For fault reading.
+		{ 
+			TCNT3 = 0;
+			step = 0;
+			marking = 0;
+			stop_sending = false;
+			ADCSRA |= 1<<ADSC;
+		}
+		// om vi ska läsa av linjeföljaren så updaterar vi värdena från linjesensorn med en frekvens på 1.44 kHz
+		if(read_line)  
 		{
-			//data_to_send2 = kortV;
-			//currentSensor = S12;
-			//_delay_ms(100);
-			//currentSensor = S12;
-		//	ADMUX = 0xE4;
-			ADCSRA |= 1<<ADSC; // Start a new conversion sweep
-			TCNT1 = 0;
-			PORTB = proper_sensor_data[S12];
-			
-		//	PORTB = PORTB ^ 0x01; //Toggle PB0 for test of timer 
+			if(TCNT1%9==0)
+			{
+				ADCSRA |= 1<<ADSC;
+			}
+		}
+		
+		// Begär att skicka data över TWI bussen med en frekvens på 10 Hz
+		if(TCNT1 >= 1439 && !stop_sending)
+		{
+			PORTD |= (1<<PORTD0);  ///PD0 high, request to send data using TWI bus
+			TCNT1 = 0;              //reset timer
 		}		
 	}
-=======
-	board_init();
-	
-//int count = e_resistance(float orig_resistance, float *res_array ){
-	int i= 0, j=0, k=0, n=0;
-	int e12[] = {10, 12, 15, 18, 22, 27, 33, 39, 47, 56, 68, 82};
-	float orig, temp, temp2, temp3, e12_1, e12_2, e12_3;
-	for(i==0; i<11; i++ )
-	{
-		n = e12[i];	
-	}
-		
-
-
-
-k=n;
-	// Insert application code here, after the board has been initialized.
->>>>>>> Sensormodul
 }
+////////////////////////////__END___Main loop_____///////////////////////////////////////////
 
-ISR(TWI_vect)
+
+///////////////////////////____TWI___INTERRUPTS_____////////////////////////////
+// Hampus Nilsson 11/12-13 v1.11
+ISR(TWI_vect) 
 {
 	TWI_slave_wait_for_address(&recieve);
 	if(!recieve)
 	{
-		PORTD &= ~(1<<PORTD5); //reset request to send signal
-		data_to_send= kortV;		
-		TWI_slave_send_message(data_to_send,proper_sensor_data[data_to_send-4]);
-		
-	}
-	
-	/*
-	if(!recieve)
-	{
-		PORTD &= ~(1<<PORTD5); //reset request to send signal
-		if (data_to_send2 != tejpMarkering)
+		PORTD &= ~(1<<PORTD0); //PD0 low, reset TWI send-request
+		//================Send tjepmarkering========================
+		if(over_mark)
 		{
-			if(data_to_send < e)
+			TWI_slave_send_message(tejpMarkering, marking);
+			marking = 0;
+			over_mark=0;
+			
+		}
+		//================ End Send tjepmarkering ==================
+		if(!read_line)
+		{
+			if(data_to_send < e)  
 			{
-				TWI_slave_send_message(data_to_send,proper_sensor_data[data_to_send-4]);
+				TWI_slave_send_message(data_to_send, minimum_of(proper_sensor_data[data_to_send-3],proper_sensor_data_old[data_to_send-3]));
 				data_to_send++;
-				PORTD |= (1<<PORTD5);
+				PORTD |= (1<<PORTD0); //PD0 high, request to send more data
 			}
-			else if(data_to_send == e)
+			
+			//  Beräkna reglerfelet beroende på vilka sensorer som är aktiva
+			else if (data_to_send == e)
 			{
-				// Kolla mellan vilka sensorer som reglerfelet skall tas ut
-				if(sensors_to_read[S21]&&sensors_to_read[S22])
-					TWI_slave_send_message(e,proper_sensor_data[S21]-proper_sensor_data[S22]);
-				else if(sensors_to_read[S21]&&sensors_to_read[S13])
-					TWI_slave_send_message(e,proper_sensor_data[S21]-proper_sensor_data[S13]);
-				else if(sensors_to_read[S12]&&sensors_to_read[S22])
-					TWI_slave_send_message(e,proper_sensor_data[S12]-proper_sensor_data[S22]);
+				if(sensors_to_read[S21]&&sensors_to_read[S24])
+					regulation_error = minimum_of(proper_sensor_data[S24],proper_sensor_data_old[S24]) - minimum_of(proper_sensor_data[S21],proper_sensor_data_old[S21]);
+				else if(sensors_to_read[S21] && ( minimum_of(proper_sensor_data[S12],proper_sensor_data_old[S12]) > 27))
+					regulation_error =  minimum_of(proper_sensor_data[S13],proper_sensor_data_old[S13]) -  minimum_of(proper_sensor_data[S21],proper_sensor_data_old[S21]);
+				else if(sensors_to_read[S24] && ( minimum_of(proper_sensor_data[S13],proper_sensor_data_old[S13]) > 27))
+					regulation_error =  minimum_of(proper_sensor_data[S24],proper_sensor_data_old[S24])-  minimum_of(proper_sensor_data[S12],proper_sensor_data_old[S12]);
 				else
-					TWI_slave_send_message(e,proper_sensor_data[S12]-proper_sensor_data[S13]);
+					regulation_error =  minimum_of(proper_sensor_data[S13],proper_sensor_data_old[S13]) - minimum_of(proper_sensor_data[S12],proper_sensor_data_old[S12]);
+				TWI_slave_send_message(e,controlled_e(regulation_error));
 				data_to_send = kortV;
-				data_to_send2 = tejpMarkering;
-			}
-			else
-			{
-				data_to_send = kortV;
-				data_to_send2 = tejpMarkering;
 			}
 		}
 		else
-			TWI_slave_send_message(tejpMarkering,last_marking);
+			TWI_slave_send_message(e,weight());		
 	}
 	else
 	{
-		// Kalibreringsorder ska sätta alla sensorer to_read och kalibrera vinkelgivaren
-		TWI_slave_receive_message(&recieve_header,&recieve_data);
-	}*/
+		// Kalibreringsorder ska sätta alla sensorer to_read och nollställa linjeföljning
+		if(recieve_header == 0x02)
+		{
+			sensors_to_read[S12]=true;
+			sensors_to_read[S21]=true;
+			sensors_to_read[S22]=true;
+			sensors_to_read[S11]=true;
+			sensors_to_read[S23]=true;
+			sensors_to_read[S24]=true;
+			sensors_to_read[S13]=true;
+			read_line = 0;
+		}
+	}
+	// Läs av microswitchen för att stänga av linjeföljning när objekt är funnet
+	check = PINB&0x02;
+	if(check == 0)
+		read_line = false;
+//	over_mark=0;
 }
 
-ISR(ADC_vect) // this interrupt will sweep all the sensors once and interpolate between the two closest points from a table,
-			// when all the data has been read it will ask to send data over the i2c
+
+
+////////////////////////___ADC___INTERRUPTS___///////////////////////////////////
+// this interrupt will sweep all the sensors and interpolate between the two closest points from a table,
+// when all the data has been read it will update the control of the sensors 
+// Hampus Nilsson 10/12-13 v1.5
+
+ISR(ADC_vect) 
 {
-	sensor_data[S12] = ADCH;
-	proper_sensor_data[S12] = sensorTabel(sensor_data[12], S12);
-	// Ask to send data
-	PORTD |= (1<<PORTD5); //PD5= High
-	
-/*
-	if(sensors_to_read[currentSensor])
+	// Läs av microswitchen för att stänga av linjeföljning när objekt är funnet
+	check = PINB&0x02;
+	if(check == 0)
+		read_line = false;
+	ADMUX = orgmux;
+	if(!read_line)
 	{
-		sensor_data[currentSensor] = ADCH;
-		proper_sensor_data[currentSensor] = sensorTabel(sensor_data[currentSensor],currentSensor);
+		if(sensors_to_read[currentSensor])
+		{
+			sensor_data[currentSensor] = ADCH;
+			proper_sensor_data_old[currentSensor] = proper_sensor_data[currentSensor];
+			proper_sensor_data[currentSensor] = sensorTabel(sensor_data[currentSensor],currentSensor);
+		}
+		currentSensor++;
+		ADMUX = orgmux + currentSensor;
+		if(currentSensor > NUMBER_OF_SENSORS)
+		{
+			currentSensor = 0;
+			ADMUX = orgmux;
+		}
+		if(!stop_sending)
+			ADCSRA |= 1<<ADSC;
+		controlSensor();
 	}
-	// Ask to send data over I^2C
-	PORTB = proper_sensor_data[S24];
-	currentSensor++;
-	switch(currentSensor)
-	{
-		case S11:
-		ADMUX = 0xE6;
-		break;
-		
-		case S12:
-		ADMUX = 0xE4;
-		break;
-		
-		case S13:
-		ADMUX = 0xE5;
-		break;
-		
-		case S21:
-		PORTD &= ~(1<<PORTD4); //0x00;
-		ADMUX = 0xE2;  //Sensor??? S21 ???
-		break;
-		
-		case S22:
-		PORTD |= (1<<PORTD4); //0x10; // OBS PD4 is mux address and PD5 is Interrupt to KM
-		ADMUX = 0xE3;  //Sensor??? S23 ??? 
-		break;
-		
-		case S23:
-		PORTD &= ~(1<<PORTD4); //0x00;
-		ADMUX = 0xE3;  //Sensor??? S22 ???
-		break;
-		
-		case S24:
-		PORTD |= (1<<PORTD4); //0x10;
-		ADMUX = 0xE2;  //Sensor??? S24 ???
-		break;
-		
-		default:
-		currentSensor = S12;
-		ADMUX = 0xE4;
-		break;
-	}
-	if(currentSensor != S12)
-		ADCSRA |= 1<<ADSC;
-	// Send the regulation error over I^2C
 	else
 	{
-		// Ask to send data
-		PORTD |= (1<<PORTD5); //PD5= High
-		currentSensor = S12;
-		read_line = true;
-		if(data_to_send == kortV)
-			data_to_send2 = tejpMarkering;
-	}*/
-}
-/*else
-	{
-		if(ADCH < OVER_MARKING)
+		// linmux ändrar så ref värdet blir 5 V istället för 2.56 V
+		ADMUX = linmux + 7;
+		line_sensors[current_line] = ADCH;
+		current_line++;
+		if(current_line >= 9)
 		{
-			counter++;
-			last_marking = counter;
+			current_line = 0;	
 		}
-		else
+		switch(current_line)
 		{
-			if(counter != 0)
-			{
-				data_to_send2 = tejpMarkering;
-				PORTD = 0x10;
-				PORTD = 0x00;
-			}
-			counter = 0;
+			case 0:
+				PORTD  = (PORTD & 0x0F)| CH2;
+			break;
+			
+			case 1:
+				PORTD  = (PORTD & 0x0F)| CH3;
+			break;
+			
+			case 2:
+				PORTD  = (PORTD & 0x0F)| CH4;
+			break;
+			
+			case 3:
+				PORTD  = (PORTD & 0x0F)| CH5;
+			break;
+			
+			case 4:
+				PORTD  = (PORTD & 0x0F)| CH6;
+			break;
+			
+			case 5:
+				PORTD  = (PORTD & 0x0F)| CH7;
+			break;
+			
+			case 6:
+				PORTD  = (PORTD & 0x0F)| CH8;
+			break;			
+			
+			case 7:
+				PORTD  = (PORTD & 0x0F)| CH9;
+			break;
+			
+			case 8:
+				PORTD  = (PORTD & 0x0F)| CH9;
+			break;
+			
+			case 9:
+				PORTD  = (PORTD & 0x0F)| CH10;
+			break;
+			
+			default:
+				PORTD  = (PORTD & 0x0F)| CH2;
+			break;
 		}
 	}
-}*/
+		
+}
 
-
-/*void controlSensor()
-{
 	///////////////////////////////////////////////////////////
-	//// These if statements determines the sensors that   ////
+	////     This function determines the sensors that     ////
 	////			 should update its values              ////
 	///////////////////////////////////////////////////////////
-	if(proper_sensor_data[S12] > 25)
-	sensors_to_read[S21] = true;
-	if(proper_sensor_data[S13] > 25)
-	sensors_to_read[S24] == true;
-	if(proper_sensor_data[S11] > 25)
+	// Hampus Nilsson 28/11-13 v1.2
+void controlSensor()
+{
+	if( minimum_of(proper_sensor_data[S21],proper_sensor_data_old[S21]) == 0)
+		sensors_to_read[S21] = false;
+	if(minimum_of(proper_sensor_data[S22],proper_sensor_data_old[S22]) == 0)
+		sensors_to_read[S22] = false;
+	if(minimum_of(proper_sensor_data[S23],proper_sensor_data_old[S23]) == 0)
+		sensors_to_read[S23] = false;
+	if(minimum_of(proper_sensor_data[S24],proper_sensor_data_old[S24]) == 0)
+		sensors_to_read[S24] = false;
+	if(minimum_of(proper_sensor_data[S12],proper_sensor_data_old[S12]) > 25)
+		sensors_to_read[S21] = true;
+	if(minimum_of(proper_sensor_data[S13],proper_sensor_data_old[S13]) > 25)
+		sensors_to_read[S24] = true;
+	if(minimum_of(proper_sensor_data[S11],proper_sensor_data_old[S11]) > 25)
 	{
 		sensors_to_read[S22] = true;
 		sensors_to_read[S23] = true;
 	}
-	if(proper_sensor_data[S21] = 255)
-	sensors_to_read[S21] == false;
-	if(proper_sensor_data[S22] = 255)
-	sensors_to_read[S22] == false;
-	if(proper_sensor_data[S23] = 255)
-	sensors_to_read[S23] == false;
-	if(proper_sensor_data[S24] = 255)
-	sensors_to_read[S24] == false;
-	///////////////////////////////////////////////////////////
-}*/
-/*void lookUpSensor()
-{
-	while(!sensors_to_read[currentSensor] && currentSensor < NUMBER_OF_SENSORS)
-		currentSensor++;
-	if(currentSensor < NUMBER_OF_SENSORS)
-	{
-		switch(currentSensor)
-		{
-			case S11:
-			ADMUX = 0xE4;
-			break;
-			case S12:
-			ADMUX = 0xE5;
-			break;
-			case S13:
-			ADMUX = 0xE6;
-			case S21:
-			PORTD |= (0<<PORTD5);
-			ADMUX = 0xE2;
-			break;
-			case S22:
-			PORTD |= (1<<PORTD5);
-			ADMUX = 0xE2;
-			break;
-			case S23:
-			PORTD |= (0<<PORTD5);
-			ADMUX = 0xE3;
-			break;
-			case S24:
-			PORTD|= (0<<PORTD5);
-			ADMUX = 0xE3;
-			break;
-		}
-	}
-}*/
+	//////////////////////////////////////////////////////////
+}
 
-/*uint8_t narrowing()
+
+////////////////////___EXTERN___INT___GYRO___TURN_90___/////////////////////////
+// Dai Trinh 23/11-13 v1.1
+ISR(INT0_vect)
 {
-	if(proper_sensor_data[S22] - proper_sensor_data[S23] > 30);
-		return 40;// Right side gets narrow
-	else if(proper_sensor_data[S23] - proper_sensor_data[S22] > 30)
-		return -40;// Left side gets narrow
-	else if(proper_sensor_data[S22] = 0 && proper_sensor_data[S23] < 120)
-		return 40;// Right side gets narrow
-	else if(proper_sensor_data[S22] < 120 && proper_sensor_data[S23] = 0)
-		return -40;// Left side gets narrow
-	else 
-		return 0;
-}*/
+
+	read_line = false;
+	ADMUX = orgmux;		
+	uint8_t cSREG;
+	cSREG = SREG;
+	
+	int Angula_Rate;
+	float Angle=0, Degree=0;
+	
+	styrmodul_interrupt = true;
+	turn_90_done = false;
+	PORTB &= ~(1<<PORTB0);  //Reset interrupt signal to Styrmodul, Pb0 = low
+
+	TCNT0 = 0;   //set timer to 0
+	while(!turn_90_done)
+	{
+		if(TCNT0 == 255 && !turn_90_done) // This happens every 0.01770833333s
+		{
+			Angula_Rate = SPI_GetRate();
+			Angula_Rate = Angula_Rate - 1009;  // Use function SPI_GetNullvalue to get null value or set to 1009
+			Angle = (float)((Angula_Rate/3.2)*0.01771);
+			Degree += Angle;
+		} // End if
+		
+		if(abs(Degree) >= 85) //Trial n error....(delay between modules and traction) =>> 85 degree gives 90!
+		{
+			turn_90_done = 1;
+			styrmodul_interrupt=0;
+			PORTB |= (1<<PORTB0); // Signal to Styrmodul that turn_90 is done by set RB0 High
+			break;
+		}//End if
+		
+	} // End while
+
+	SREG = cSREG;
+	ADCSRA |= 1<<ADSC;
+} // End ISR INT2
+
+////////////////////___AC_COMP_INT___READ_MARKING___///////////////////////////
+// Dai Trinh 09/12-13 v1.1
+ISR(ANALOG_COMP_vect)
+{
+	// Läs av microswitchen för att stänga av linjeföljning när objekt är funnet
+	check = PINB&0x02;
+	if(check == 0)
+		read_line = false;
+	
+	stop_sending = true;
+	switch(step)
+	{
+		case 0:
+			TCNT3=0; //Timer1 = 0 start to wait for next change in ACO
+			step=1;
+		break;
+		
+		case 1:
+			line1=TCNT3;
+			TCNT3=0;
+			step=2;
+		break;
+		
+		case 2:
+			line_distance=TCNT3;
+			TCNT3=0;
+			step=3;
+		break;
+		
+		case 3:
+			line2=TCNT3;
+			TCNT3=0; //not needed here, we already have the distance between two lines.
+			
+			if(line1 > (line_distance + (line_distance>>1)))
+			{   //Check what type of marking it is
+				line1_small = false;
+			}
+			else
+			line1_small = true;
+			
+			if(line2 > (line_distance + (line_distance>>1)))
+			{
+				line2_small = false;
+			}
+			else
+				line2_small = true;
+			
+			
+			if(!line1_small || !line2_small)
+			{   
+				//Om en av tjepbitarna är tjock (minst 50% störe än small) =>> det finns bara två tjepbitar, annars finns det en till att vänta på
+				step=0;
+				if(!line1_small && line2_small)
+				{ // set databyte to send begär sendning via i2c bus
+					marking = 0x00;  //Header 0x0B, databyte 0x00	(Tjockt Smal) = Håll till höger
+				}
+				else if(line1_small && !line2_small)
+				{
+					marking = 0x01;  // Header 0x0B, databyte 0x01  (Smal Tjock) = Håll till vänster
+				}
+				else if(!line1_small && !line2_small)
+				{
+					marking = 0x02;  // Header 0x0B, databyte 0x02  (Tjock Tjock) = Start markering
+				}
+				over_mark=1;
+				stop_sending = false;
+				ADCSRA |= 1<<ADSC;
+				PORTD |= (1<<PORTD0);  ///PD0 high, request to send data using I2C bus
+			}
+			else
+				step = 4;
+		break;
+		
+		case 4:
+			step=5;
+			stop_sending = false;
+			ADCSRA |= 1<<ADSC;
+		break;
+		
+		case 5:
+			step=0;
+			marking=0x03;
+			over_mark=1;
+			stop_sending = false;
+			ADCSRA |= 1<<ADSC;
+			PORTD |= (1<<PORTD0);
+			if(!finish_found)
+			{
+				read_line = true;
+				finish_found = true;
+			}
+			ADMUX = linmux+7;
+		break;
+	}
+}
+
+// Hampus Nilsson 27/11-13 v1.0
+int8_t controlled_e(int16_t val)
+{
+	if(val > 120)
+		return 120;
+	else if (val < -120)
+		return -120;
+	else
+		return val;
+}
+
+// Hampus Nilsson 02/12-13 v1.0
+uint8_t minimum_of(uint8_t v1,uint8_t v2)
+{
+	if(v1 < v2)
+		return v1;
+	else
+		return v2;	
+}
+// dela "vikten"(resultatet från adc) från linje sensorerna med 255 för att få ett procentuelt värde över hur pass mycket över
+// en sensor är linjen gångra sedan det värdet med ett värde som blir större ju längre ifrån mitten sensorn ligger
+// Hampus Nilsson 09/12-13 v1.1
+int8_t weight()
+{
+	float vikt = 0;
+	vikt = (line_sensors[0]*40)/255+(line_sensors[1]*30)/255+(line_sensors[2]*20)/255+(line_sensors[3]*10)/255+
+		   (line_sensors[4]*(0))/255+(line_sensors[5]*(-10))/255+(line_sensors[6]*(-20))/255+(line_sensors[7]*(-30))/255+
+		   (line_sensors[8]*(-40))/255;
+	return controlled_e((int16_t)vikt);
+}

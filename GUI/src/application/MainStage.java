@@ -149,7 +149,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 			public void valueChanged(int newValue) {
 				//MainStage.this.bluetoothAdapter.sendMessage(Header.SPEED, newValue);
 			}
-		}, 115, 0, MAX);
+		}, 128, 0, MAX);
 
 		this.errorLog = new TextArea();
 	}

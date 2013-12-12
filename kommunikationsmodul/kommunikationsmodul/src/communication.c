@@ -67,12 +67,13 @@ void mainfunction() {
 	
 	bool received_data = false;
 	
+	bool has_sent_error = false;
+	
 	enable_irqs();
 	
 	while (true) {
 		
-		if (received_data) {
-			
+		while (received_data) {
 			int twi_send_err = 0;
 			
 			// Send to right instance depending on header
@@ -94,7 +95,9 @@ void mainfunction() {
 				cli();
 				twi_send_err = TWI_master_send_message(TWI_CONTROL_MODULE_ADDRESS, header, data);
 				sei();
-				USART_transmit(header, data);
+				if (! twi_send_err) {
+					USART_transmit(header, data);
+				}
 			} else if (header == 0x0D) {
 				// TODO: Ping
 			} else {
@@ -104,12 +107,17 @@ void mainfunction() {
 			
 			// If there was any error with TWI
 			if (twi_send_err) {
-				// TWI error. Send error message.
-				send_error(0x01);
+				// TWI error. Send error message, but only once.
+				if (! has_sent_error) {
+					send_error(0x01);
+					has_sent_error = true;
+				}
+			} else {
+				received_data = false;
 			}
-			
-			received_data = false;
 		}
+		
+		has_sent_error = false;
 		
 		int twi_rec_err = 0;
 		if (sensor_module_interrupt) {

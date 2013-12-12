@@ -376,7 +376,7 @@ void goal_regulated()
 	PORTB = 0x03;
 	float u, Kp, Kd, P, D;
 	uint8_t u_max = 0x40;
-	Kp = 5;
+	Kp = 10;
 	Kd = 10;
 	P = Kp*(float)e;
 	P = P/10.0;

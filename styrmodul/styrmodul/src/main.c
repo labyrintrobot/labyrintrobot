@@ -25,7 +25,7 @@ uint8_t control_command = 0x06, left_short_s, right_short_s, left_long_s, right_
 //-------- PD-reglering --------//
 uint8_t speed = 0x80;
 uint8_t Kp_lsb = 15, Kd_lsb = 20;	// Kp & Kd
-signed e = 0;						// Reglerfelet, 
+signed int e = 0;						// Reglerfelet, 
 signed int e_last = 0;				// Det sparade reglerfelet
 
 

@@ -40,10 +40,10 @@ int	i = 0;					// Indexering för arrayen
 // Returnera true när roboten kommit in i en korridor
 bool inside_corridor()
 {
-	if(left_long_s < 70 && right_long_s < 70)
-	return true;
+	if(left_long_s < 60 && right_long_s < 60)
+		return true;
 	else
-	return false;
+		return false;
 }
 
 // Returnera true när roboten befinner sig mitt i 80x80-biten i en sväng eller en korsning med en vägg rakt fram.
@@ -60,7 +60,7 @@ void get_into_intersection()
 {
 	send(0x01, 0x00);
 	forward(0x50);					// Kör framåt
-	_delay_ms(250);					// En viss tid
+	_delay_ms(450);					// En viss tid
 
 	if(forward_right_s < 80 && forward_left_s < 80)		// Om det är en vägg framför
 	{
@@ -159,6 +159,7 @@ void forward_regulated()
 		}
 		send(0x01, 0x04);
 		rotate_right90(0x90);
+		_delay_ms(250);
 		send(0x01, 0x00);
 		while(right_short_s > 25)
 		{
@@ -180,6 +181,7 @@ void forward_regulated()
 		}
 		send(0x01, 0x05);
 		rotate_left90(0x90);
+		_delay_ms(250);
 		send(0x01, 0x00);
 		while(left_short_s > 25)
 		{
@@ -198,13 +200,13 @@ void forward_regulated()
 		D = Kd * (float)(e - e_last); // Beräkna D-del
 		u = P + D;
 		
-		if(u > 64) // Max-värde 0x40
+		if(u > 56) // Max-värde 0x40
 		{
-			u = 64;
+			u = 56;
 		}
-		if(u < -64) // Min-värde
+		if(u < -56) // Min-värde
 		{
-			u = -64;
+			u = -56;
 		}
 		
 		// Reglera beroende på u
@@ -245,8 +247,12 @@ void find_start()
 {	
 	send(0x01, 0x00);
 	while(!start_detected())
-	{
-		forward(0x80);
+	{	if(forward_left_s > 40 && forward_right_s > 40)
+		{
+			forward(0x80);
+		}
+		else
+			stop();
 	}
 }
 
@@ -257,6 +263,7 @@ void turn(int direction)
 		case 0x00: // turn_left
 			send(0x01, 0x05);
 			rotate_left90(0x90);
+			_delay_ms(250);
 			send(0x01, 0x06);
 			stop();
 			send(0x01, 0x00);
@@ -283,6 +290,7 @@ void turn(int direction)
 		case 0x02: // turn_right
 			send(0x01, 0x04);
 			rotate_right90(0x90);
+			_delay_ms(250);
 			send(0x01, 0x06);
 			stop();
 			send(0x01, 0x00);			
@@ -309,6 +317,7 @@ void turn_back(int direction)
 		case 0x00: //turn_left
 			send(0x01, 0x04);
 			rotate_right90(0x90);
+			_delay_ms(250);
 			send(0x01, 0x06);
 			stop();
 			send(0x01, 0x00);
@@ -335,6 +344,7 @@ void turn_back(int direction)
 		case 0x02: // turn_right
 			send(0x01, 0x05);
 			rotate_left90(0x90);
+			_delay_ms(250);
 			send(0x01, 0x06);
 			stop();
 			send(0x01, 0x00);
@@ -367,7 +377,7 @@ void goal_regulated()
 	float u, Kp, Kd, P, D;
 	uint8_t u_max = 0x40;
 	Kp = 5;
-	Kd = 20;
+	Kd = 10;
 	P = Kp*(float)e;
 	P = P/10.0;
 	D = Kd * (float)(e - e_last);
@@ -459,7 +469,7 @@ void get_target()
 	stop();
 	send(0x01, 0x04);
 	rotate_left90(0x90);
-	_delay_ms(200);
+	_delay_ms(250);
 	send(0x01, 0x04);
 	rotate_left90(0x90);
 	_delay_ms(500);
@@ -483,6 +493,9 @@ void return_to_start()
 	{
 		forward_regulated();
 	}
+	forward(0x80);
+	_delay_ms(300);
 	send(0x01, 0x06);
 	stop();
+	grip_off();
 }

@@ -8,7 +8,6 @@
 
 #include <asf.h>
 #include <avr/interrupt.h>
-#include <util/delay.h>
 #include "twi_master.h"
 #include "USART.h"
 #include "communication.h"
@@ -16,7 +15,6 @@
 void send_error(uint8_t error_code);
 void enable_irqs(void);
 void enable_timer(void);
-int TWI_master_init_slaves(void);
 
 // Global variables
 volatile bool control_module_interrupt = false;
@@ -120,54 +118,52 @@ void mainfunction() {
 		has_sent_error = false;
 		
 		int twi_rec_err = 0;
-		if (sensor_module_interrupt) {
-			sensor_module_interrupt = false;
-			// Get data from sensor module
-			cli();
-			twi_rec_err = TWI_master_receive_message(TWI_SENSOR_MODULE_ADDRESS, &header, &data);
-			sei();
+		do {
+			if (sensor_module_interrupt) {
+				sensor_module_interrupt = false;
+				// Get data from sensor module
+				cli();
+				twi_rec_err = TWI_master_receive_message(TWI_SENSOR_MODULE_ADDRESS, &header, &data);
+				sei();
 			
-			received_data = true;
-		} else if (control_module_interrupt) {
-			control_module_interrupt = false;
-			// Get data from control module
-			cli();
-			twi_rec_err = TWI_master_receive_message(TWI_CONTROL_MODULE_ADDRESS, &header, &data);
-			sei();
+				if (twi_rec_err) {
+					sensor_module_interrupt = true;
+				} else {
+					received_data = true;
+				}
+			} else if (control_module_interrupt) {
+				control_module_interrupt = false;
+				// Get data from control module
+				cli();
+				twi_rec_err = TWI_master_receive_message(TWI_CONTROL_MODULE_ADDRESS, &header, &data);
+				sei();
+				
+				if (twi_rec_err) {
+					control_module_interrupt = true;
+				} else {
+					received_data = true;
+				}
+			} else if (firefly_received_data) {
 			
-			received_data = true;
-		} else if (firefly_received_data) {
+				cli();
+				header = firefly_header;
+				data = firefly_data;
+				firefly_received_data = false;
+				sei();
 			
-			cli();
-			header = firefly_header;
-			data = firefly_data;
-			firefly_received_data = false;
-			sei();
-			
-			received_data = true;
-		}
-		if (twi_rec_err) {
-			// TWI error. Send error message.
-			send_error(0x02);
-		}
+				received_data = true;
+			}
+		
+			// TWI error. Send error message, but only once.
+			if (twi_rec_err) {
+				if (! has_sent_error) {
+					send_error(0x02);
+					has_sent_error = true;
+				}
+			}
+		
+		} while (twi_rec_err);
+		
+		has_sent_error = false;
 	}
-}
-
-// Function to tell the slaves that it is ready to handle their interrupts. Currently unused.
-int TWI_master_init_slaves() {
-	
-	uint8_t init_header;
-	
-	_delay_ms(100);
-	
-	cli();
-	int err = TWI_master_send_message(TWI_CONTROL_MODULE_ADDRESS, init_header, 0);
-	if (err) {
-		sei();
-		return err;
-	}
-	err = TWI_master_send_message(TWI_SENSOR_MODULE_ADDRESS, init_header, 0);
-	sei();
-	
-	return err;
 }

@@ -2,6 +2,7 @@ package indicators;
 
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
+import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.HBox;
@@ -61,7 +62,10 @@ public class ControlSignalIndicator extends SignalIndicatorParent {
 	}
 	
 	public void clear() {
-		this.dirSignalsGroup.getSelectedToggle().setSelected(false);
+		Toggle sel = this.dirSignalsGroup.getSelectedToggle();
+		if (sel != null) {
+			sel.setSelected(false);
+		}
 	}
 	
 	public void pressLeftForward() {

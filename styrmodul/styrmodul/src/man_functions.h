@@ -100,7 +100,7 @@ void rotate_left90(int speed_)
 	
 	if(switch_ == 0)	// I autonomt läge skickas styrsignal
 	{
-		send(0x01, 0x05);
+		//send(0x01, 0x05);
 	}
 	
 	while(keep_turning == 1)	// Rotera tills avbrott 
@@ -122,7 +122,7 @@ void rotate_right90(int speed_)
 	
 	if(switch_ == 0)	// I autonomt läge skickas styrsignal
 	{
-		send(0x01, 0x04);
+		//send(0x01, 0x04);
 	}
 		
 	while(keep_turning == 1)	// Rotera tills avbrott

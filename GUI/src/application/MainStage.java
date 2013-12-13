@@ -212,7 +212,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 
 				if (data.size() != 0) {
 					xAxis.setLowerBound(data.get(lower).getXValue().doubleValue());
-					xAxis.setUpperBound(data.get(upper - 1).getXValue().doubleValue());
+					xAxis.setUpperBound(data.get(Math.max(upper - 1, 0)).getXValue().doubleValue());
 				}
 
 				yAxis.setLabel(dia.getyText());
@@ -242,8 +242,8 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 			public void run() {
 				XYChart.Series<Number, Number> series = lineChart.getData().get(0);
 
-				series.getData().add(newData);
 				ObservableList<Data<Number, Number>> data = series.getData();
+				data.add(newData);
 
 				if (data.size() > MAX_CHART_SIZE) {
 					data.subList(0, data.size() - MAX_CHART_SIZE).clear();
@@ -254,9 +254,9 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 
 				NumberAxis xAxis = (NumberAxis) lineChart.getXAxis();
 
-				if (series.getData().size() != 0) {
+				if (data.size() != 0) {
 					xAxis.setLowerBound(data.get(lower).getXValue().longValue());
-					xAxis.setUpperBound(data.get(upper - 1).getXValue().longValue());
+					xAxis.setUpperBound(data.get(Math.max(upper - 1, 0)).getXValue().longValue());
 				}
 			}
 		});

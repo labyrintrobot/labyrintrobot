@@ -494,8 +494,10 @@ void return_to_start()
 		forward_regulated();
 	}
 	forward(0x80);
-	_delay_ms(300);
+	_delay_ms(400);
 	send(0x01, 0x06);
 	stop();
+	_delay_ms(1000);
+	send(0x01, 0x09);
 	grip_off();
 }

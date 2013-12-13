@@ -130,7 +130,6 @@ void mainfunction() {
 					sensor_module_interrupt = true;
 				} else {
 					received_data = true;
-					twi_rec_err=0;// la till denne
 				}
 			} else if (control_module_interrupt) {
 				control_module_interrupt = false;
@@ -143,7 +142,6 @@ void mainfunction() {
 					control_module_interrupt = true;
 				} else {
 					received_data = true;
-					twi_rec_err=0;// la till denne
 				}
 			} else if (firefly_received_data) {
 			
@@ -166,6 +164,6 @@ void mainfunction() {
 		
 		} while (twi_rec_err);
 		
-		//has_sent_error = false; omdeklarerad och reset:ad ovanför loopen
+		has_sent_error = false;
 	}
 }

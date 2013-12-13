@@ -191,5 +191,6 @@ void TWI_slave_recover_from_bus_error() {
 	
 	//TWSR==0x00 is the statuscode for bus error
 	
-	TWSR|=(1<<TWSTO)|(1<<TWINT);
+	TWSR|=(1<<TWSTO);
+	TWSR|=(1<<TWINT);
 }

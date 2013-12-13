@@ -52,6 +52,7 @@ public class BluetoothAdapter {
 		}
 		isSetup = true;
 		receiver.communicationGained();
+		System.out.println(hourMinuteSecond.format(new Date()) + ": COMMUNICATION GAINED");
 	}
 
 	/**
@@ -70,12 +71,14 @@ public class BluetoothAdapter {
 	 * @param data The data byte to send
 	 */
 	public void sendMessage(Header header, int data) {
-		System.out.print(hourMinuteSecond.format(new Date()));
-		System.out.print(": Sent: [");
-		System.out.print(header.name());
-		System.out.print(", 0x");
-		System.out.print(Integer.toHexString(data));
-		System.out.println("]");
+		if (isSetup) {
+			System.out.print(hourMinuteSecond.format(new Date()));
+			System.out.print(": Sent: [");
+			System.out.print(header.name());
+			System.out.print(", 0x");
+			System.out.print(Integer.toHexString(data));
+			System.out.println("]");
+		}
 		if (! DEBUG) {
 			int[] b = new int[2];
 			b[0] = header.getIndex();
@@ -85,6 +88,7 @@ public class BluetoothAdapter {
 					sendMessageToDevice(b);
 				} catch (IOException e) {
 					this.teardown();
+					System.out.println(hourMinuteSecond.format(new Date()) + ": COMMUNICATION LOST");
 					receiver.communicationLost();
 				}
 			}
@@ -129,6 +133,7 @@ public class BluetoothAdapter {
 						rec(ret[0], ret[1]);
 					} catch (IOException e) {
 						this.teardown();
+						System.out.println(hourMinuteSecond.format(new Date()) + ": COMMUNICATION LOST");
 						receiver.communicationLost();
 					}
 				} else {

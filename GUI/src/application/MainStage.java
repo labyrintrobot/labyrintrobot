@@ -211,7 +211,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 				NumberAxis yAxis = (NumberAxis) lineChart.getYAxis();
 
 				if (data.size() != 0) {
-					xAxis.setLowerBound(data.get(lower).getXValue().doubleValue());
+					xAxis.setLowerBound(data.get(Math.min(lower, data.size() - 1)).getXValue().doubleValue());
 					xAxis.setUpperBound(data.get(Math.max(upper - 1, 0)).getXValue().doubleValue());
 				}
 
@@ -255,7 +255,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 				NumberAxis xAxis = (NumberAxis) lineChart.getXAxis();
 
 				if (data.size() != 0) {
-					xAxis.setLowerBound(data.get(lower).getXValue().longValue());
+					xAxis.setLowerBound(data.get(Math.min(lower, data.size() - 1)).getXValue().longValue());
 					xAxis.setUpperBound(data.get(Math.max(upper - 1, 0)).getXValue().longValue());
 				}
 			}

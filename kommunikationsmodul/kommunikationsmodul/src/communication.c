@@ -8,7 +8,6 @@
 
 #include <asf.h>
 #include <avr/interrupt.h>
-#include <util/delay.h>
 #include "twi_master.h"
 #include "USART.h"
 #include "communication.h"
@@ -18,22 +17,34 @@ void enable_irqs(void);
 void enable_timer(void);
 int TWI_master_init_slaves(void);
 
+typedef enum _firefly_datatype {
+  HEADER , DATA
+	
+} firefly_datatype;
+
 // Global variables
 volatile bool control_module_interrupt = false;
 volatile bool sensor_module_interrupt = false;
 volatile uint8_t firefly_header = 0xFF;
 volatile uint8_t firefly_data = 0xFF;
-volatile uint8_t firefly_received_data=0;
+volatile firefly_datatype firefly_bytetype=HEADER;
+volatile bool transfer_fireflydata=false;
+
+
 
 //Firefly interrupt routine
 ISR(USART0_RX_vect) {
 	
-	if(firefly_received_data==0)
-	firefly_header = UDR0;
-	if(firefly_received_data==1)
-	firefly_data = UDR0;
+	if(firefly_bytetype==HEADER){
+		firefly_header = UDR0;
+		firefly_bytetype=DATA;
+		transfer_fireflydata=false;
+	} else if(firefly_bytetype==DATA){
+		firefly_data = UDR0;
+		firefly_bytetype=HEADER;
+		transfer_fireflydata=true;
+	}
 	
-	firefly_received_data++;
 }
 
 // INT0 interrupts from control module
@@ -129,16 +140,14 @@ void mainfunction() {
 			sei();
 			
 			received_data = true;
-		} else if (firefly_received_data) {
+		} else if (transfer_fireflydata) {
 			
 			cli();
 			header = firefly_header;
 			data = firefly_data;
-			firefly_received_data %= 2;
+			transfer_fireflydata = false;
 			received_data = true;
 			sei();
-			
-			
 		}
 		if (twi_rec_err) {
 			// TWI error. Send error message.
@@ -151,8 +160,6 @@ void mainfunction() {
 int TWI_master_init_slaves() {
 	
 	uint8_t init_header;
-	
-	_delay_ms(100);
 	
 	cli();
 	int err = TWI_master_send_message(TWI_CONTROL_MODULE_ADDRESS, init_header, 0);

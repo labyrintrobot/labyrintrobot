@@ -27,11 +27,11 @@ volatile bool firefly_received_data = false;
 
 //Firefly interrupt routine
 ISR(USART0_RX_vect) {
-	uint8_t header;
-	uint8_t data;
-	USART_receive(&header, &data);
-	firefly_header = header;
-	firefly_data = data;
+	//uint8_t header;
+	//uint8_t data;
+	//USART_receive(&header, &data);
+	firefly_header = UDR0;
+	//firefly_data = data;
 	firefly_received_data = true;
 }
 
@@ -131,12 +131,13 @@ void mainfunction() {
 		} else if (firefly_received_data) {
 			
 			cli();
-			header = firefly_header;
-			data = firefly_data;
+			//header = firefly_header;
+			//data = firefly_data;
 			firefly_received_data = false;
+			//received_data = true;*/
 			sei();
 			
-			received_data = true;
+			
 		}
 		if (twi_rec_err) {
 			// TWI error. Send error message.

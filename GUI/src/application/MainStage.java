@@ -195,7 +195,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 				if (paused) {
 					data = dia.getPausedData();
 				} else {
-					data = dia.getPausedData();
+					data = dia.getCurrentData();
 				}
 				
 				XYChart.Series<Number, Number> series = new XYChart.Series<>();
@@ -328,7 +328,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 		southChildBox3.getChildren().addAll(this.pSelector, this.dSelector, this.speedSelector);
 		buttonBox.getChildren().addAll(this.pauseButton,this.progressIndicator, this.clearButton);
 		northBox.getChildren().addAll(buttonBox, this.minSlider, this.minSliderLabel, this.maxSlider, this.maxSliderLabel);
-		southBox.getChildren().addAll(this.errorLog, southChildBox1, southChildBox2, southChildBox3);
+		southBox.getChildren().addAll(this.errorLog, southChildBox1, southChildBox2/*, southChildBox3*/);
 		
 		buttonBox.setSpacing(16);
 		southBox.setSpacing(16);
@@ -473,9 +473,9 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 
 		primaryStage.show();
 
-		Thread st = new Thread(new SendThread(this.bluetoothAdapter, pSelector, dSelector, speedSelector));
-		st.setDaemon(true);
-		st.start();
+		//Thread st = new Thread(new SendThread(this.bluetoothAdapter, pSelector, dSelector, speedSelector));
+		//st.setDaemon(true);
+		//st.start();
 		
 		listen();
 	}

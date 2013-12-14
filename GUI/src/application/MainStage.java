@@ -502,13 +502,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 
 			@Override
 			public void run() {
-				final StringBuilder sb = new StringBuilder();
-				sb.append(errorLog.getText());
-				sb.append(hourMinuteSecond.format(new Date()));
-				sb.append(": ");
-				sb.append(text);
-				sb.append('\n');
-				MainStage.this.errorLog.setText(sb.toString());
+				MainStage.this.errorLog.appendText(hourMinuteSecond.format(new Date()) + ": " + text + '\n');
 				MainStage.this.errorLog.positionCaret(MainStage.this.errorLog.getText().length()); // Scroll to end
 			}
 		});

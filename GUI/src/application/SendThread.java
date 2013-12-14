@@ -1,7 +1,7 @@
 package application;
 
 /**
- * A simple thread that periodically sends contorl messages to the robot. Currently unused.
+ * A simple thread that periodically sends control messages to the robot. Currently unused.
  * @author Emil Berg
  *
  */

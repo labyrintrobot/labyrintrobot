@@ -23,16 +23,17 @@ volatile bool control_module_interrupt = false;
 volatile bool sensor_module_interrupt = false;
 volatile uint8_t firefly_header = 0xFF;
 volatile uint8_t firefly_data = 0xFF;
-volatile bool firefly_received_data = false;
+volatile uint8_t firefly_received_data=0;
 
 //Firefly interrupt routine
 ISR(USART0_RX_vect) {
-	//uint8_t header;
-	//uint8_t data;
-	//USART_receive(&header, &data);
+	
+	if(firefly_received_data==0)
 	firefly_header = UDR0;
-	//firefly_data = data;
-	firefly_received_data = true;
+	if(firefly_received_data==1)
+	firefly_data = UDR0;
+	
+	firefly_received_data++;
 }
 
 // INT0 interrupts from control module
@@ -131,10 +132,10 @@ void mainfunction() {
 		} else if (firefly_received_data) {
 			
 			cli();
-			//header = firefly_header;
-			//data = firefly_data;
-			firefly_received_data = false;
-			//received_data = true;*/
+			header = firefly_header;
+			data = firefly_data;
+			firefly_received_data %= 2;
+			received_data = true;
 			sei();
 			
 			

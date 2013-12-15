@@ -84,15 +84,12 @@ int main (void)
 				find_start();
 				find_goal();
 				get_target();
-				return_to_start();	
-				while(1) // evighetslopp som förhindrar omstart av automatiskt läge
-				{
-				
-				}		
+				return_to_start();			
 			}
 			
 			switch_ = PINA & 0x01;	// Läs PORTA, PINA0
 		}
 	}
 }
+
 

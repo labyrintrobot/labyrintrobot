@@ -58,7 +58,7 @@ bool intersection_stop()
 // Kör in till mitten av korsningen, om det är en vägg framför: kör på avståndet, om det saknas vägg: kör på tid
 void get_into_intersection() 
 {
-	send(0x01, 0x00);
+	//send(0x01, 0x00);
 	forward(0x50);					// Kör framåt
 	_delay_ms(450);					// En viss tid
 
@@ -68,13 +68,13 @@ void get_into_intersection()
 		{
 			forward(0x50);
 		}
-		send(0x01, 0x06);			// Skicka att den stannat
+		//send(0x01, 0x06);			// Skicka att den stannat
 		stop();						// Stanna
 	}
 	else //Annars om det inte är en vägg framför
 	{
 		_delay_ms(400);				// En viss tid
-		send(0x01, 0x06);			// Skicka att den stannat
+		//send(0x01, 0x06);			// Skicka att den stannat
 		stop();						// Stanna
 	}
 }
@@ -82,13 +82,13 @@ void get_into_intersection()
 // Returnerar True när den hittat en korsning eller sväng
 bool intersection_detected()
 {
-	return ((left_long_s > 110) || (right_long_s > 110));
+	return ((left_long_s > 110) || (right_long_s > 110)); //!!!!!!!!!!!!!OSÄKERT AVSTÅND?????????
 }
 
 // Svänger vänster som förstaval
 int unmarked_intersection_choice()
 {
-	if(left_long_s > 130)			// Vänster håll öppet
+	if(left_long_s > 130)			// Vänster håll öppet !!!!!!!!!!!!!!!!!!!130cm OSÄKERT AVSTÅND??????????????
 	{
 		return turn_left;
 	}
@@ -147,12 +147,12 @@ void forward_regulated()
 	
 	else if(forward_right_s < 30 && forward_left_s > 80) // Avsmalning åt vänster, kör in till vänster vägg
 	{
-		send(0x01, 0x06);
+		//send(0x01, 0x06);
 		stop();
 		send(0x01, 0x05);
 		rotate_left90(0x80);
 		_delay_ms(250);
-		send(0x01, 0x00);
+		//send(0x01, 0x00);
 		forward(0xA0); // En liten knuff så roboten kommer i rullning med dåligt batteri
 		_delay_ms(70);
 		while(forward_center_s > 13)
@@ -162,7 +162,7 @@ void forward_regulated()
 		send(0x01, 0x04);
 		rotate_right90(0x80);
 		_delay_ms(250);
-		send(0x01, 0x00);
+		//send(0x01, 0x00);
 		while(right_short_s > 25)
 		{
 			forward(0x80);
@@ -171,12 +171,12 @@ void forward_regulated()
 	
 	else if(forward_right_s > 80 && forward_left_s < 30) // Avsmalning åt höger, kör in till höger vägg
 	{
-		send(0x01, 0x06);
+		//send(0x01, 0x06);
 		stop();
 		send(0x01, 0x04);
 		rotate_right90(0x80);
 		_delay_ms(250);
-		send(0x01, 0x00);
+		//send(0x01, 0x00);
 		forward(0xA0); // En liten knuff så roboten kommer i rullning med dåligt batteri
 		_delay_ms(70);
 		while(forward_center_s > 13)
@@ -186,7 +186,7 @@ void forward_regulated()
 		send(0x01, 0x05);
 		rotate_left90(0x80);
 		_delay_ms(250);
-		send(0x01, 0x00);
+		//send(0x01, 0x00);
 		while(left_short_s > 25)
 		{
 			forward(0x80);
@@ -268,9 +268,9 @@ void turn(int direction)
 			send(0x01, 0x05);
 			rotate_left90(0x80);
 			_delay_ms(250);
-			send(0x01, 0x06);
+			//send(0x01, 0x06);
 			stop();
-			send(0x01, 0x00);
+			//send(0x01, 0x00);
 			while(!inside_corridor()) // Kör ut ur korsningen
 			{
 				forward(0x80);
@@ -278,11 +278,11 @@ void turn(int direction)
 			_delay_ms(250);
 			e = 0;
 			e_last = 0;
-			send(0x01, 0x06);
+			//send(0x01, 0x06);
 			stop();
 			break;
 		case 0x01: // go_forward
-			send(0x01, 0x00);
+			//send(0x01, 0x00);
 			while(!inside_corridor()) // Kör ut ur korsningen
 			{
 				forward(0x80);
@@ -290,16 +290,16 @@ void turn(int direction)
 			_delay_ms(250);
 			e = 0;
 			e_last = 0;
-			send(0x01, 0x06);
+			//send(0x01, 0x06);
 			stop();
 			break;
 		case 0x02: // turn_right
 			send(0x01, 0x04);
 			rotate_right90(0x80);
 			_delay_ms(250);
-			send(0x01, 0x06);
+			//send(0x01, 0x06);
 			stop();
-			send(0x01, 0x00);			
+			//send(0x01, 0x00);			
 			while(!inside_corridor()) // Kör ut ur korsningen
 			{
 				forward(0x80);
@@ -307,11 +307,11 @@ void turn(int direction)
 			_delay_ms(250);
 			e = 0;
 			e_last = 0;			
-			send(0x01, 0x06);
+			//send(0x01, 0x06);
 			stop();
 			break;
 		case 0x03: // stay
-			send(0x01, 0x06);
+			//send(0x01, 0x06);
 			stop();
 			break;
 	}
@@ -325,9 +325,9 @@ void turn_back(int direction)
 			send(0x01, 0x04);
 			rotate_right90(0x80);
 			_delay_ms(250);
-			send(0x01, 0x06);
+			//send(0x01, 0x06);
 			stop();
-			send(0x01, 0x00);
+			//send(0x01, 0x00);
 			while(!inside_corridor()) // Kör ut ur korsningen
 			{
 				forward(0x80);
@@ -335,11 +335,11 @@ void turn_back(int direction)
 			_delay_ms(250);
 			e = 0;
 			e_last = 0;			
-			send(0x01, 0x06);
+			//send(0x01, 0x06);
 			stop();
 			break;
 		case 0x01: // go_forward
-			send(0x01, 0x00);
+			//send(0x01, 0x00);
 			while(!inside_corridor()) // Kör ut ur korsningen
 			{
 				forward(0x80);
@@ -347,16 +347,16 @@ void turn_back(int direction)
 			_delay_ms(250);
 			e = 0;
 			e_last = 0;			
-			send(0x01, 0x06);
+			//send(0x01, 0x06);
 			stop();
 			break;
 		case 0x02: // turn_right
 			send(0x01, 0x05);
 			rotate_left90(0x80);
 			_delay_ms(250);
-			send(0x01, 0x06);
+			//send(0x01, 0x06);
 			stop();
-			send(0x01, 0x00);
+			//send(0x01, 0x00);
 			while(!inside_corridor()) // Kör ut ur korsningen
 			{
 				forward(0x80);
@@ -364,11 +364,11 @@ void turn_back(int direction)
 			_delay_ms(250);
 			e = 0;
 			e_last = 0;			
-			send(0x01, 0x06);
+			//send(0x01, 0x06);
 			stop();
 			break;
 		case 0x03:	// stay
-			send(0x01, 0x06);
+			//send(0x01, 0x06);
 			stop();
 			break;
 	}
@@ -449,7 +449,7 @@ void find_goal()
 	tape_value = 0x04; // "Nollställ" tejpmarkeringen
 	
 	// Hittat målmarkeringen!
-	send(0x01, 0x06);
+	//send(0x01, 0x06);
 	stop();
 	_delay_ms(500);
 	
@@ -468,6 +468,7 @@ void get_target()
 	}
 	// Framme vid föremålet
 	send(0x01, 0x06);
+	_delay_ms(200); //!!!!!!!!!!!!!!!!!!
 	stop();
 	send(0x01, 0x0A);
 	
@@ -476,12 +477,12 @@ void get_target()
 	send(0x01, 0x01);
 	backward(0x80);
 	_delay_ms(500);
-	send(0x01, 0x06);
+	//send(0x01, 0x06);
 	stop();
-	send(0x01, 0x04);
+	send(0x01, 0x05);
 	rotate_left90(0x90);
 	_delay_ms(250);
-	send(0x01, 0x04);
+	send(0x01, 0x05);
 	rotate_left90(0x90);
 	_delay_ms(500);
 	

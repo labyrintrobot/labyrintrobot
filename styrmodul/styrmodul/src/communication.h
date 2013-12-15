@@ -50,7 +50,7 @@ void send(uint8_t h, uint8_t d)
 {
 	header_s = h;
 	data_s = d;
-	// start_sending();
+	start_sending();
 }
 
 // Tar emot kommandon, sensordata och reglerparameter

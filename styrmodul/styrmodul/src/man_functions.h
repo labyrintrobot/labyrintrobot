@@ -53,7 +53,7 @@ void pwm_start_R()
 // Starta PWM för griparm
 void pwm_start_G() 
 {
-	OCR3AL = 0x0E;	//Ställ griparmen i öppet läge
+	OCR3AL = 0x0F;	//Ställ griparmen i öppet läge
 	OCR3AH = 0;		// Jämför med 0 och pulsbredd
 	TCCR3B = 5;		// skala ner timern till 1/8
 }
@@ -100,7 +100,7 @@ void rotate_left90(int speed_)
 	
 	if(switch_ == 0)	// I autonomt läge skickas styrsignal
 	{
-		//send(0x01, 0x05);
+		send(0x01, 0x05);
 	}
 	
 	while(keep_turning == 1)	// Rotera tills avbrott 
@@ -122,7 +122,7 @@ void rotate_right90(int speed_)
 	
 	if(switch_ == 0)	// I autonomt läge skickas styrsignal
 	{
-		//send(0x01, 0x04);
+		send(0x01, 0x04);
 	}
 		
 	while(keep_turning == 1)	// Rotera tills avbrott
@@ -168,7 +168,7 @@ void grip_on()
 // Öppnar griparmen helt
 void grip_off()		
 {
-	OCR3AL = 0x0E;
+	OCR3AL = 0x0F;
 	data_r = 0x06;
 }
 
@@ -178,10 +178,10 @@ void manual_action(uint8_t control_command_)
 	switch (control_command_) // Kommandon från laptopen
 	{
 	case 0x00:
-		forward(0x80);
+		forward(0xF8);
 		break;
 	case 0x01:
-		backward(0x80);
+		backward(0xF8);
 		break;
 	case 0x02:
 		forward_right();

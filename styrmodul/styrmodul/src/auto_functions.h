@@ -110,17 +110,17 @@ int unmarked_intersection_choice()
 int marked_intersection_choice()
 {
 	// tape: 0x00 = right, tape: 0x01 = left
-	if((tape_value == 0x00) & (right_long_s < 80))
+	if((tape_value == 0x00) && (right_long_s <= 80))
 	{
 		tape_value = 0x04; // "Nollställ"
 		return go_forward;
 	}
-	else if((tape_value == 0x00) & (forward_right_s < 80))
+	else if((tape_value == 0x00) && (right_long_s > 80))
 	{
 		tape_value = 0x04; // "Nollställ"
 		return turn_right;
 	}
-	else if((tape_value == 0x01) & (left_long_s < 80))
+	else if((tape_value == 0x01) && (left_long_s < 80))
 	{
 		tape_value = 0x04;// "Nollställ"
 		return go_forward;

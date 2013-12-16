@@ -98,6 +98,7 @@ uint8_t sensor11(uint8_t data)
 	fData = interpolate(y1,y2,x1,x2,data);
 	return fData;
 }
+
 uint8_t sensor12(uint8_t data)
 {
 	float fData;

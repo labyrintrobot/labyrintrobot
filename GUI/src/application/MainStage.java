@@ -553,7 +553,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 
 			case 0x03:
 				this.controlSignalIndicator.pressLeftForward();
-				log("Signal - Turning left 90 deg");
+				log("Signal - Turning left");
 				break;
 
 			case 0x04:
@@ -563,7 +563,7 @@ public class MainStage extends Application implements BluetoothAdapter.IMessageR
 
 			case 0x05:
 				this.controlSignalIndicator.pressRotateLeft();
-				log("Signal - Rotating left");
+				log("Signal - Rotating left 90 deg");
 				break;
 
 			case 0x06:
